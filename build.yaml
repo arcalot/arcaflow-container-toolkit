@@ -1,0 +1,11 @@
+revision: 20220824
+container: fio
+versions:
+  v0.0.1:
+    - latest
+    - 0.0.1
+    - 0.0
+registries:
+  quay.io:
+    user_variable: QUAY_USERNAME
+    password_variable: QUAY_PASSWORD
