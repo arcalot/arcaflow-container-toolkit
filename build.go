@@ -11,6 +11,7 @@ import (
 	// "path"
 	"path/filepath"
 
+	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v2"
 )
 
@@ -207,7 +208,7 @@ type config struct {
 	Revision   string              `yaml:"revision"`
 	Versions   map[string][]string `yaml:"versions"`
 	Registries map[string]registry `yaml:"registries"`
-	Container  string
+	Container  string              `default:"all"`
 }
 
 func main() {
@@ -225,11 +226,14 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	conf := &config{}
 	if err := yaml.Unmarshal(data, conf); err != nil {
 		log.Fatal(err)
 	}
+	if err := defaults.Set(conf); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%v\n", conf)
 
 	var pwd, err3 = os.Getwd()
 	if err3 != nil {
@@ -262,11 +266,22 @@ func main() {
 	defer source_project_file.Close()
 	lst, _ := source_project_file.Readdir(-1)
 	for _, file := range lst {
-		// fmt.Printf("%v: %v\n", file.Name(), file.IsDir())
-		if file.IsDir() && file.Name() == conf.Container {
+		if file.IsDir() {
 			list = append(list, file.Name())
 		}
 	}
+
+	// filter by conf.container selection
+	if conf.Container != "all" {
+		list2 := make([]string, 0, 10)
+		for _, container := range list {
+			if container == conf.Container {
+				list2 = append(list2, container)
+			}
+		}
+		list = list2
+	}
+
 	// fmt.Printf("[%v]", list)
 	fmt.Println(source_project)
 	for _, img := range list {
