@@ -96,37 +96,6 @@ func buildVersion(
 	registries map[string]registry,
 ) error {
 
-	// stdout := &bytes.Buffer{}
-	// env := []string{
-	// 	fmt.Sprintf("version=%s", version),
-	// }
-
-	// var pwd, err3 = os.Getwd()
-	// if err3 != nil {
-	// 	fmt.Println(err3)
-	// }
-	// fmt.Println(pwd)
-
-	// if err := runExternalProgram(
-	// 	"docker",
-	// 	[]string{
-	// 		"build",
-	// 		".",
-	// 	},
-	// 	env,
-	// 	nil,
-	// 	stdout,
-	// 	stdout,
-	// ); err != nil {
-	// 	err := fmt.Errorf(
-	// 		"build failed for version %s (%w)",
-	// 		version,
-	// 		err,
-	// 	)
-	// 	writeOutput(version, stdout, err)
-	// 	return err
-	// }
-
 	var newTags []string
 	for _, tag := range tags {
 		newTags = append(newTags, tag)
