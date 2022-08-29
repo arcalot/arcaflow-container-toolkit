@@ -20,6 +20,14 @@ type registry struct {
 	PasswordVariable string `yaml:"password_variable"`
 }
 
+type config struct {
+	Revision         string              `yaml:"revision"`
+	Versions         map[string][]string `yaml:"versions"`
+	Registries       map[string]registry `yaml:"registries"`
+	Container        string              `default:"all"`
+	Project_Filepath string
+}
+
 func runExternalProgram(
 	program string,
 	args []string,
@@ -67,11 +75,9 @@ func writeOutput(
 		prefix = "\033[0;31m❌ "
 	}
 	output += fmt.Sprintf(
-		"::group::%sversion=%s registry=%s tag=%s\n",
+		"::group::%sversion=%s\n",
 		prefix,
 		version,
-		registry,
-		tag,
 	)
 	output += stdout.String()
 	if err != nil {
@@ -88,20 +94,49 @@ func buildVersion(
 	tags []string,
 	date string,
 	registries map[string]registry,
-	push bool,
-	githubToken string,
 ) error {
+
+	// stdout := &bytes.Buffer{}
+	// env := []string{
+	// 	fmt.Sprintf("version=%s", version),
+	// }
+
+	// var pwd, err3 = os.Getwd()
+	// if err3 != nil {
+	// 	fmt.Println(err3)
+	// }
+	// fmt.Println(pwd)
+
+	// if err := runExternalProgram(
+	// 	"docker",
+	// 	[]string{
+	// 		"build",
+	// 		".",
+	// 	},
+	// 	env,
+	// 	nil,
+	// 	stdout,
+	// 	stdout,
+	// ); err != nil {
+	// 	err := fmt.Errorf(
+	// 		"build failed for version %s (%w)",
+	// 		version,
+	// 		err,
+	// 	)
+	// 	writeOutput(version, stdout, err)
+	// 	return err
+	// }
+
 	var newTags []string
 	for _, tag := range tags {
 		newTags = append(newTags, tag)
 		newTags = append(newTags, fmt.Sprintf("%s-%s", tag, date))
 	}
 
-	for registryName, registry := range registries {
+	for registryName, _ := range registries {
 		for _, tag := range newTags {
 			stdout := &bytes.Buffer{}
 			env := []string{
-				fmt.Sprintf("GITHUB_TOKEN=%s", githubToken),
 				fmt.Sprintf("REGISTRY=%s/", registryName),
 			}
 
@@ -126,79 +161,11 @@ func buildVersion(
 				writeOutput(version, registryName, tag, stdout, err)
 				return err
 			}
-
-			if push {
-				username := os.Getenv(registry.UserVariable)
-				if username == "" {
-					return fmt.Errorf(
-						"cannot push: no username set in the %s environment variable",
-						registry.UserVariable,
-					)
-				}
-				password := os.Getenv(registry.PasswordVariable)
-				if password == "" {
-					return fmt.Errorf(
-						"cannot push: no password set in the %s environment variable",
-						registry.PasswordVariable,
-					)
-				}
-				if err := runExternalProgram(
-					"docker",
-					[]string{
-						"login",
-						registryName,
-						"-u",
-						os.Getenv(registry.UserVariable),
-						"--password-stdin",
-					},
-					env,
-					bytes.NewBuffer([]byte(password)),
-					stdout,
-					stdout,
-				); err != nil {
-					err := fmt.Errorf(
-						"push failed for version %s tag %s registry %s (%w)",
-						version,
-						tag,
-						registryName,
-						err,
-					)
-					writeOutput(version, registryName, tag, stdout, err)
-					return err
-				}
-				if err := runExternalProgram(
-					"docker-compose",
-					[]string{
-						"push",
-					},
-					env,
-					nil,
-					stdout,
-					stdout,
-				); err != nil {
-					err := fmt.Errorf(
-						"push failed for version %s tag %s registry %s (%w)",
-						version,
-						tag,
-						registryName,
-						err,
-					)
-					writeOutput(version, registryName, tag, stdout, err)
-					return err
-				}
-			}
 			writeOutput(version, registryName, tag, stdout, nil)
 		}
 	}
 
 	return nil
-}
-
-type config struct {
-	Revision   string              `yaml:"revision"`
-	Versions   map[string][]string `yaml:"versions"`
-	Registries map[string]registry `yaml:"registries"`
-	Container  string              `default:"all"`
 }
 
 func listPackagesFromFile(source_project string) []string {
@@ -257,23 +224,18 @@ func getConfig(configYamlPath string) *config {
 }
 
 func main() {
-	push := false
-	if len(os.Args) == 2 && os.Args[1] == "--push" {
-		push = true
-	}
-	githubToken := os.Getenv("GITHUB_TOKEN")
 
 	conf := getConfig("build.yaml")
-	source_project := "fixtures/arcaflow-plugins/python/"
+	source_project := conf.Project_Filepath
 	list := listPackagesFromFile(source_project)
 	list = filterContainerSelection(conf.Container, list)
 
 	for _, img := range list {
 		img_ctx := filepath.Join(source_project, img)
-		fmt.Printf("%v", img_ctx)
+		fmt.Printf("%v\n", img_ctx)
 		os.Chdir(img_ctx)
 		for version, tags := range conf.Versions {
-			if err := buildVersion(version, tags, conf.Revision, conf.Registries, push, githubToken); err != nil {
+			if err := buildVersion(version, tags, conf.Revision, conf.Registries); err != nil {
 				log.Fatal(err)
 			}
 		}
