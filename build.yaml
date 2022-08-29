@@ -1,10 +1,10 @@
 revision: 20220824
 container: fio
 project_filepath: ../arcaflow-plugins/python/
-versions:
-  v0.0.1:
-    - latest
-registries:
-  quay.io:
-    user_variable: QUAY_USERNAME
-    password_variable: QUAY_PASSWORD
+# versions:
+#   v0.0.1:
+#     - latest
+# registries:
+#   quay.io:
+#     user_variable: QUAY_USERNAME
+#     password_variable: QUAY_PASSWORD

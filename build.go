@@ -7,24 +7,15 @@ import (
 	"log"
 	"os"
 	"os/exec"
-
-	// "path"
 	"path/filepath"
 
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v2"
 )
 
-type registry struct {
-	UserVariable     string `yaml:"user_variable"`
-	PasswordVariable string `yaml:"password_variable"`
-}
-
 type config struct {
-	Revision         string              `yaml:"revision"`
-	Versions         map[string][]string `yaml:"versions"`
-	Registries       map[string]registry `yaml:"registries"`
-	Container        string              `default:"all"`
+	Revision         string `yaml:"revision"`
+	Container        string `default:"all"`
 	Project_Filepath string
 }
 
@@ -63,9 +54,8 @@ func runExternalProgram(
 }
 
 func writeOutput(
+	image string,
 	version string,
-	registry string,
-	tag string,
 	stdout *bytes.Buffer,
 	err error,
 ) {
@@ -75,8 +65,9 @@ func writeOutput(
 		prefix = "\033[0;31m❌ "
 	}
 	output += fmt.Sprintf(
-		"::group::%sversion=%s\n",
+		"::group::%s img=%s version=%s\n",
 		prefix,
+		image,
 		version,
 	)
 	output += stdout.String()
@@ -92,67 +83,54 @@ func writeOutput(
 func buildVersion(
 	image string,
 	version string,
-	tags []string,
 	date string,
-	registries map[string]registry,
 ) error {
 
-	var newTags []string
-	for _, tag := range tags {
-		newTags = append(newTags, tag)
-		newTags = append(newTags, fmt.Sprintf("%s-%s", tag, date))
+	image_tag := image + ":" + version
+	stdout := &bytes.Buffer{}
+	env := []string{
+		fmt.Sprintf("BLDIMG=%s/", image_tag),
 	}
 
-	for registryName, _ := range registries {
-		for _, tag := range newTags {
-			image_tag := image + ":" + tag
-			stdout := &bytes.Buffer{}
-			env := []string{
-				fmt.Sprintf("REGISTRY=%s/", registryName),
-			}
-
-			if err := runExternalProgram(
-				"docker",
-				[]string{
-					"build",
-					".",
-					"--tag",
-					image_tag,
-				},
-				env,
-				nil,
-				stdout,
-				stdout,
-			); err != nil {
-				err := fmt.Errorf(
-					"build failed for version %s registry %s tag %s (%w)",
-					version,
-					registryName,
-					tag,
-					err,
-				)
-				writeOutput(version, registryName, tag, stdout, err)
-				return err
-			}
-			writeOutput(version, registryName, tag, stdout, nil)
-		}
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"build",
+			".",
+			"--tag",
+			image_tag,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"build failed for %s version %s (%w)",
+			image,
+			version,
+			err,
+		)
+		writeOutput(image, version, stdout, err)
+		return err
 	}
+	writeOutput(image, version, stdout, nil)
 
 	return nil
 }
 
 func listPackagesFromFile(source_project string) []string {
-	var pwd, err3 = os.Getwd()
-	if err3 != nil {
-		fmt.Println(err3)
+	var pwd, err = os.Getwd()
+	if err != nil {
+		log.Fatal(err)
 	}
 	var source_project_dir string = filepath.Join(pwd, source_project)
 
 	list := make([]string, 0, 10)
 
-	source_project_file, err4 := os.Open(source_project_dir)
-	if err4 != nil {
-		fmt.Println(err4)
+	source_project_file, err2 := os.Open(source_project_dir)
+	if err2 != nil {
+		log.Fatal(err2)
 	}
 	defer source_project_file.Close()
 	lst, _ := source_project_file.Readdir(-1)
@@ -199,18 +177,14 @@ func getConfig(configYamlPath string) *config {
 func main() {
 
 	conf := getConfig("build.yaml")
-	source_project := conf.Project_Filepath
-	list := listPackagesFromFile(source_project)
+	list := listPackagesFromFile(conf.Project_Filepath)
 	list = filterContainerSelection(conf.Container, list)
 
 	for _, img := range list {
-		img_ctx := filepath.Join(source_project, img)
-		fmt.Printf("%v\n", img_ctx)
+		img_ctx := filepath.Join(conf.Project_Filepath, img)
 		os.Chdir(img_ctx)
-		for version, tags := range conf.Versions {
-			if err := buildVersion(img, version, tags, conf.Revision, conf.Registries); err != nil {
-				log.Fatal(err)
-			}
+		if err := buildVersion(img, "latest", conf.Revision); err != nil {
+			log.Fatal(err)
 		}
 	}
 }
