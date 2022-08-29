@@ -19,6 +19,11 @@ type config struct {
 	Project_Filepath string
 }
 
+type Image struct {
+	name    string
+	context string
+}
+
 func runExternalProgram(
 	program string,
 	args []string,
@@ -81,16 +86,17 @@ func writeOutput(
 }
 
 func buildVersion(
-	image string,
+	image Image,
 	version string,
 	date string,
 ) error {
 
-	image_tag := image + ":" + version
+	image_tag := image.name + ":" + version
 	stdout := &bytes.Buffer{}
 	env := []string{
 		fmt.Sprintf("BLDIMG=%s/", image_tag),
 	}
+	os.Chdir(image.context)
 
 	if err := runExternalProgram(
 		"docker",
@@ -107,26 +113,26 @@ func buildVersion(
 	); err != nil {
 		err := fmt.Errorf(
 			"build failed for %s version %s (%w)",
-			image,
+			image.name,
 			version,
 			err,
 		)
-		writeOutput(image, version, stdout, err)
+		writeOutput(image.name, version, stdout, err)
 		return err
 	}
-	writeOutput(image, version, stdout, nil)
+	writeOutput(image.name, version, stdout, nil)
 
 	return nil
 }
 
-func listPackagesFromFile(source_project string) []string {
+func listPackagesFromFile(source_project string) []Image {
 	var pwd, err = os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 	var source_project_dir string = filepath.Join(pwd, source_project)
 
-	list := make([]string, 0, 10)
+	list := make([]Image, 0, 10)
 
 	source_project_file, err2 := os.Open(source_project_dir)
 	if err2 != nil {
@@ -136,17 +142,17 @@ func listPackagesFromFile(source_project string) []string {
 	lst, _ := source_project_file.Readdir(-1)
 	for _, file := range lst {
 		if file.IsDir() {
-			list = append(list, file.Name())
+			list = append(list, Image{file.Name(), filepath.Join(source_project_dir, file.Name())})
 		}
 	}
 	return list
 }
 
-func filterContainerSelection(selection string, list []string) []string {
+func filterContainerSelection(selection string, list []Image) []Image {
 	if selection != "all" {
-		list2 := make([]string, 0, 10)
+		list2 := make([]Image, 0, 10)
 		for _, container := range list {
-			if container == selection {
+			if container.name == selection {
 				list2 = append(list2, container)
 			}
 		}
@@ -174,15 +180,39 @@ func getConfig(configYamlPath string) *config {
 	return conf
 }
 
+func hasRootDockerfile(filepath string) bool {
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+	names, err := file.Readdirnames(0)
+	for _, name := range names {
+		if name == "Dockerfile" {
+			return true
+		}
+	}
+	return false
+}
+
+func listImagesToBuild(conf *config) []Image {
+	if !hasRootDockerfile(conf.Project_Filepath) {
+		list := listPackagesFromFile(conf.Project_Filepath)
+		return filterContainerSelection(conf.Container, list)
+	}
+
+	abspath, err := filepath.Abs(conf.Project_Filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return []Image{{
+		name:    filepath.Base(conf.Project_Filepath),
+		context: abspath}}
+}
+
 func main() {
-
 	conf := getConfig("build.yaml")
-	list := listPackagesFromFile(conf.Project_Filepath)
-	list = filterContainerSelection(conf.Container, list)
-
-	for _, img := range list {
-		img_ctx := filepath.Join(conf.Project_Filepath, img)
-		os.Chdir(img_ctx)
+	for _, img := range listImagesToBuild(conf) {
 		if err := buildVersion(img, "latest", conf.Revision); err != nil {
 			log.Fatal(err)
 		}

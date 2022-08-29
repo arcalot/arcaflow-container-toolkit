@@ -1,6 +1,6 @@
 revision: 20220824
-container: fio
-project_filepath: ../arcaflow-plugins/python/
+container:
+project_filepath: ../arcaflow-plugins/python/fio
 # versions:
 #   v0.0.1:
 #     - latest
