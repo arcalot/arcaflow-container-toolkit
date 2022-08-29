@@ -2,12 +2,9 @@ module github.com/mleader/carpenter
 
 go 1.17
 
-require gopkg.in/yaml.v2 v2.4.0
-
 require (
-	github.com/creasty/defaults v1.6.0 // indirect
-	github.com/google/go-github v17.0.0+incompatible // indirect
-	github.com/google/go-github/v47 v47.0.0 // indirect
+	github.com/creasty/defaults v1.6.0
+	gopkg.in/yaml.v2 v2.4.0
 )
 
 // Fixes CVE-2019-11254

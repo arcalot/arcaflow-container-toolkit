@@ -90,6 +90,7 @@ func writeOutput(
 }
 
 func buildVersion(
+	image string,
 	version string,
 	tags []string,
 	date string,
@@ -104,6 +105,7 @@ func buildVersion(
 
 	for registryName, _ := range registries {
 		for _, tag := range newTags {
+			image_tag := image + ":" + tag
 			stdout := &bytes.Buffer{}
 			env := []string{
 				fmt.Sprintf("REGISTRY=%s/", registryName),
@@ -114,6 +116,8 @@ func buildVersion(
 				[]string{
 					"build",
 					".",
+					"--tag",
+					image_tag,
 				},
 				env,
 				nil,
@@ -204,7 +208,7 @@ func main() {
 		fmt.Printf("%v\n", img_ctx)
 		os.Chdir(img_ctx)
 		for version, tags := range conf.Versions {
-			if err := buildVersion(version, tags, conf.Revision, conf.Registries); err != nil {
+			if err := buildVersion(img, version, tags, conf.Revision, conf.Registries); err != nil {
 				log.Fatal(err)
 			}
 		}
