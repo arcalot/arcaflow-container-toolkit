@@ -263,13 +263,57 @@ func basicRequirements(img Image) bool {
 	return meets_reqs
 }
 
+func licenseRequirements(img Image) bool {
+	meets_reqs := true
+	files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer files.Close()
+	filenames, _ := files.Readdirnames(0)
+	if !hasFilename(filenames, "LICENSE") {
+		fmt.Println("Missing LICENSE")
+		meets_reqs = false
+	} else {
+		license, err2 := os.ReadFile(filepath.Join(img.context, "LICENSE"))
+		if err2 != nil {
+			log.Fatal(err2)
+		}
+		matched, err3 := regexp.MatchString("Apache License\\s*Version 2.0, January 2004", string(license))
+		if err3 != nil {
+			log.Fatal(err3)
+		}
+		if matched {
+			return true
+		}
+	}
+	return meets_reqs
+}
+
+func containerRequirements(img Image) bool {
+	return true
+}
+
+func allTrue(checks []bool) bool {
+	for _, v := range checks {
+		if !v {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
 	conf := getConfig("build.yaml")
 	for _, img := range listImagesToBuild(conf) {
-		// fmt.Println(img)
-		basicRequirements(img)
-		// if err := buildVersion(img, "latest", conf.Revision); err != nil {
-		// 	log.Fatal(err)
-		// }
+		fmt.Printf("Building %s from %v\n", img.name, img.context)
+		meets_reqs := make([]bool, 4)
+		meets_reqs[0] = basicRequirements(img)
+		meets_reqs[1] = containerRequirements(img)
+		if allTrue(meets_reqs) {
+			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
+			//     log.Fatal(err)
+			// }
+		}
 	}
 }
