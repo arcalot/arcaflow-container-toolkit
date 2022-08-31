@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 
 	"github.com/creasty/defaults"
 	"gopkg.in/yaml.v2"
@@ -180,23 +181,8 @@ func getConfig(configYamlPath string) *config {
 	return conf
 }
 
-func hasRootDockerfile(filepath string) bool {
-	file, err := os.Open(filepath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-	names, err := file.Readdirnames(0)
-	for _, name := range names {
-		if name == "Dockerfile" {
-			return true
-		}
-	}
-	return false
-}
-
 func listImagesToBuild(conf *config) []Image {
-	if !hasRootDockerfile(conf.Project_Filepath) {
+	if allDirectories(conf.Project_Filepath) {
 		list := listPackagesFromFile(conf.Project_Filepath)
 		return filterContainerSelection(conf.Target, list)
 	}
@@ -210,11 +196,80 @@ func listImagesToBuild(conf *config) []Image {
 		context: abspath}}
 }
 
+func allDirectories(filepath string) bool {
+	file, err := os.Open(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	lst, _ := file.Readdir(-1)
+	for _, file := range lst {
+		if !file.IsDir() {
+			return false
+		}
+	}
+	return true
+}
+
+func hasFilename(names []string, filename string) bool {
+	for _, name := range names {
+		matched, err4 := regexp.MatchString(filename, name)
+		if err4 != nil {
+			log.Fatal(err4)
+		}
+		if matched {
+			return true
+		}
+	}
+	return false
+}
+
+func hasMatchedFilename(names []string, match_name string) bool {
+	for _, name := range names {
+		matched, err4 := regexp.MatchString(match_name, name)
+		if err4 != nil {
+			log.Fatal(err4)
+		}
+		if matched {
+			return true
+		}
+	}
+	return false
+}
+
+func basicRequirements(img Image) bool {
+	meets_reqs := true
+	files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer files.Close()
+	filenames, _ := files.Readdirnames(0)
+
+	if !hasFilename(filenames, "README.md") {
+		fmt.Println("Missing README.md")
+		meets_reqs = false
+	}
+	if !hasFilename(filenames, "Dockerfile") {
+		fmt.Println("Missing Dockerfile")
+		meets_reqs = false
+	}
+	if !hasMatchedFilename(filenames, "(?i).*test.*") {
+		// match case-insensitive 'test'?
+		fmt.Println("Missing a test file")
+		meets_reqs = false
+	}
+	return meets_reqs
+}
+
 func main() {
 	conf := getConfig("build.yaml")
 	for _, img := range listImagesToBuild(conf) {
-		if err := buildVersion(img, "latest", conf.Revision); err != nil {
-			log.Fatal(err)
-		}
+		// fmt.Println(img)
+		basicRequirements(img)
+		// if err := buildVersion(img, "latest", conf.Revision); err != nil {
+		// 	log.Fatal(err)
+		// }
 	}
 }
