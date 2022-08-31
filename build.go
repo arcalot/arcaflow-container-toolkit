@@ -15,7 +15,7 @@ import (
 
 type config struct {
 	Revision         string `yaml:"revision"`
-	Container        string `default:"all"`
+	Target           string `default:"all"`
 	Project_Filepath string
 }
 
@@ -198,7 +198,7 @@ func hasRootDockerfile(filepath string) bool {
 func listImagesToBuild(conf *config) []Image {
 	if !hasRootDockerfile(conf.Project_Filepath) {
 		list := listPackagesFromFile(conf.Project_Filepath)
-		return filterContainerSelection(conf.Container, list)
+		return filterContainerSelection(conf.Target, list)
 	}
 
 	abspath, err := filepath.Abs(conf.Project_Filepath)
