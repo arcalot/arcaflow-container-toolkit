@@ -34,6 +34,8 @@ project_filepath: ../arcaflow-plugins/python
 ### Requirements
 
 * `build.yaml` in the same directory with this executable
+* `docker`, or `alias docker=podman`, executable on your `$PATH`
+* a [directory of sub-directories where each sub-directory contains a Dockerfile](https://github.com/arcalot/arcaflow-plugins/tree/main/python)
 
 ```shell
 ./build
