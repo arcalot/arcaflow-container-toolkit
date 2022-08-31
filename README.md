@@ -9,11 +9,9 @@
 go build build.go
 ```
 
-## Example Execution
+## Example build configurations
 
-### Requirements
-
-* `build.yaml` in the same directory with this executable
+### Build a single plugin directory
 
 example `build.yaml`
 ```yaml
@@ -21,6 +19,21 @@ revision: 20220824
 target: fio
 project_filepath: ../arcaflow-plugins/python/fio
 ```
+
+### Build a directory of plugins
+
+example `build.yaml`
+```yaml
+revision: 20220824
+target: all
+project_filepath: ../arcaflow-plugins/python
+```
+
+## Example execution
+
+### Requirements
+
+* `build.yaml` in the same directory with this executable
 
 ```shell
 ./build
