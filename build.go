@@ -396,14 +396,13 @@ func pythonRequirements(img Image) bool {
 	}
 	defer project_files.Close()
 	filenames, _ := project_files.Readdirnames(0)
-
-	missing_reqs_txt := hasFilename(filenames, "requirements.txt")
-	missing_pyproject := hasFilename(filenames, "pyproject.toml")
-	if missing_reqs_txt && missing_pyproject {
-		if missing_reqs_txt {
+	has_reqs_txt := hasFilename(filenames, "requirements.txt")
+	has_pyproject := hasFilename(filenames, "pyproject.toml")
+	if !has_reqs_txt && !has_pyproject {
+		if !has_reqs_txt {
 			fmt.Println("Missing requirements.txt")
 		}
-		if missing_pyproject {
+		if !has_pyproject {
 			fmt.Println("Missing pyproject.toml")
 		}
 		meets_reqs = false
@@ -442,6 +441,7 @@ func main() {
 		meets_reqs := make([]bool, 3)
 		meets_reqs[0] = basicRequirements(img)
 		meets_reqs[1] = containerRequirements(img)
+		meets_reqs[2] = languageRequirements(img)
 		if allTrue(meets_reqs) {
 			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
 			//     log.Fatal(err)
