@@ -328,7 +328,6 @@ func containerRequirements(img Image) bool {
 			fmt.Println("Dockerfile does not contain copy of arcaflow plugin license")
 			meets_reqs = false
 		}
-		// if !dockerfileHasLine(dockerfile, "ENTRYPOINT [\"python3\\.9\", \".*(i)plugin.*\"]") {
 		if !dockerfileHasLine(dockerfile, "ENTRYPOINT \\[\"python3\\.9\", \"(?i).*plugin.*\" \\]") {
 			fmt.Println("Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name")
 			meets_reqs = false
@@ -368,11 +367,79 @@ func containerRequirements(img Image) bool {
 	return meets_reqs
 }
 
+func golangRequirements(img Image) bool {
+	meets_reqs := true
+	project_files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer project_files.Close()
+	filenames, _ := project_files.Readdirnames(0)
+
+	if !hasFilename(filenames, "go.mod") {
+		fmt.Println("Missing go.md")
+		meets_reqs = false
+	}
+	if !hasFilename(filenames, "go.sum") {
+		fmt.Println("Missing go.sum")
+		meets_reqs = false
+	}
+	// TODO: formatted to gofmt?
+	return meets_reqs
+}
+
+func pythonRequirements(img Image) bool {
+	meets_reqs := true
+	project_files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer project_files.Close()
+	filenames, _ := project_files.Readdirnames(0)
+
+	missing_reqs_txt := hasFilename(filenames, "requirements.txt")
+	missing_pyproject := hasFilename(filenames, "pyproject.toml")
+	if missing_reqs_txt && missing_pyproject {
+		if missing_reqs_txt {
+			fmt.Println("Missing requirements.txt")
+		}
+		if missing_pyproject {
+			fmt.Println("Missing pyproject.toml")
+		}
+		meets_reqs = false
+	}
+	// TODO: formatted to PEP 8?
+
+	return meets_reqs
+}
+
+func languageRequirements(img Image) bool {
+	meets_reqs := true
+	project_files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer project_files.Close()
+	filenames, _ := project_files.Readdirnames(0)
+
+	switch lang := imageLanguage(filenames); lang {
+	case "go":
+		meets_reqs = golangRequirements(img)
+	case "python":
+		meets_reqs = pythonRequirements(img)
+	default:
+		fmt.Printf("Programming Language %s not supported\n", lang)
+		meets_reqs = false
+	}
+
+	return meets_reqs
+}
+
 func main() {
 	conf := getConfig("build.yaml")
 	for _, img := range listImagesToBuild(conf) {
 		fmt.Printf("Building %s from %v\n", img.name, img.context)
-		meets_reqs := make([]bool, 2)
+		meets_reqs := make([]bool, 3)
 		meets_reqs[0] = basicRequirements(img)
 		meets_reqs[1] = containerRequirements(img)
 		if allTrue(meets_reqs) {
