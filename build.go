@@ -25,6 +25,15 @@ type Image struct {
 	context string
 }
 
+func allTrue(checks []bool) bool {
+	for _, v := range checks {
+		if !v {
+			return false
+		}
+	}
+	return true
+}
+
 func runExternalProgram(
 	program string,
 	args []string,
@@ -263,57 +272,95 @@ func basicRequirements(img Image) bool {
 	return meets_reqs
 }
 
-func licenseRequirements(img Image) bool {
-	meets_reqs := true
-	files, err := os.Open(img.context)
+func dockerfileHasLine(dockerfile string, line string) bool {
+	matched, err := regexp.MatchString(line, dockerfile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer files.Close()
-	filenames, _ := files.Readdirnames(0)
-	if !hasFilename(filenames, "LICENSE") {
-		fmt.Println("Missing LICENSE")
-		meets_reqs = false
-	} else {
-		license, err2 := os.ReadFile(filepath.Join(img.context, "LICENSE"))
-		if err2 != nil {
-			log.Fatal(err2)
-		}
-		matched, err3 := regexp.MatchString("Apache License\\s*Version 2.0, January 2004", string(license))
-		if err3 != nil {
-			log.Fatal(err3)
+	return matched
+}
+
+func imageLanguage(filenames []string) string {
+	ext2Lang := map[string]string{"go": "go", "py": "python"}
+	for _, name := range filenames {
+		matched, err := regexp.MatchString("(i).*plugin.*", name)
+		if err != nil {
+			log.Fatal(err)
 		}
 		if matched {
-			return true
+			ext := filepath.Ext(name)
+			lang, ok := ext2Lang[ext[1:]]
+			if ok {
+				return lang
+			}
 		}
 	}
-	return meets_reqs
+	// this seems like a bad way to finish this function
+	return ""
 }
 
 func containerRequirements(img Image) bool {
-	return true
-}
+	meets_reqs := true
 
-func allTrue(checks []bool) bool {
-	for _, v := range checks {
-		if !v {
-			return false
-		}
+	project_files, err := os.Open(img.context)
+	if err != nil {
+		log.Fatal(err)
 	}
-	return true
+	defer project_files.Close()
+	filenames, _ := project_files.Readdirnames(0)
+	if !hasFilename(filenames, "Dockerfile") {
+		fmt.Println("Missing Dockerfile")
+		meets_reqs = false
+
+	} else {
+		file, err := os.ReadFile(filepath.Join(img.context, "Dockerfile"))
+		if err != nil {
+			log.Fatal(err)
+		}
+		dockerfile := string(file)
+
+		if !dockerfileHasLine(dockerfile, "FROM quay\\.io/centos/centos:stream8") {
+			fmt.Println("Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "(ADD|COPY) .*/LICENSE /.*") {
+			// this regex could match on an invalid filepath
+			fmt.Println("Dockerfile does not contain copy of arcaflow plugin license")
+			meets_reqs = false
+		}
+		// if !dockerfileHasLine(dockerfile, "ENTRYPOINT [\"python3\\.9\", \".*(i)plugin.*\"]") {
+		if !dockerfileHasLine(dockerfile, "ENTRYPOINT \\[\"python3\\.9\", \"(?i).*plugin.*\" \\]") {
+			fmt.Println("Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "CMD \\[\\]") {
+			fmt.Println("Dockerfile does not contain an empty command (i.e. CMD [])")
+			meets_reqs = false
+		}
+		img_lang := imageLanguage(filenames)
+		img_src := "https://github.com/arcalot/arcaflow-plugins/tree/main/" + img_lang + "/" + img.name
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\""+img_src+"\"") {
+			fmt.Println("Dockerfile is missing LABEL for image.source")
+			meets_reqs = false
+		}
+
+	}
+	return meets_reqs
 }
 
 func main() {
 	conf := getConfig("build.yaml")
 	for _, img := range listImagesToBuild(conf) {
 		fmt.Printf("Building %s from %v\n", img.name, img.context)
-		meets_reqs := make([]bool, 4)
+		meets_reqs := make([]bool, 2)
 		meets_reqs[0] = basicRequirements(img)
 		meets_reqs[1] = containerRequirements(img)
 		if allTrue(meets_reqs) {
 			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
 			//     log.Fatal(err)
 			// }
+		} else {
+			fmt.Printf("Failed requirements check, not building %s\n", img.name)
 		}
 	}
 }
