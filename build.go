@@ -340,10 +340,30 @@ func containerRequirements(img Image) bool {
 		img_lang := imageLanguage(filenames)
 		img_src := "https://github.com/arcalot/arcaflow-plugins/tree/main/" + img_lang + "/" + img.name
 		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\""+img_src+"\"") {
-			fmt.Println("Dockerfile is missing LABEL for image.source")
+			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.source")
 			meets_reqs = false
 		}
-
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0\\+GPL-2\\.0-only\"") {
+			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.licenses")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.vendor=\"Arcalot project\"") {
+			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.vendor")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.authors=\"Arcalot contributors\"") {
+			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.authors")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.title=\".*\"") {
+			// this title regular expression could match anything
+			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.title")
+			meets_reqs = false
+		}
+		if !dockerfileHasLine(dockerfile, "LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\"") {
+			fmt.Println("Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z")
+			meets_reqs = false
+		}
 	}
 	return meets_reqs
 }
