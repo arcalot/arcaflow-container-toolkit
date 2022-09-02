@@ -497,11 +497,11 @@ func languageRequirements(img Image, version string) bool {
 // 	}
 // }
 
-var rootCmd = &cobra.Command{
+var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		conf := getConfig("../build.yaml")
+		conf := getConfig("build.yaml")
 		for _, img := range listImagesToBuild(conf) {
 			fmt.Printf("Building %s from %v\n", img.name, img.context)
 			meets_reqs := make([]bool, 3)
@@ -519,8 +519,8 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		log.Fatal(err)
-	}
-}
+// func Execute() {
+// 	if err := buildCmd.Execute(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }

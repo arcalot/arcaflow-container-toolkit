@@ -1,4 +1,4 @@
-module github.com/mleader/carpenter
+module github.com/arcalot/arcaflow-plugin-image-builder
 
 go 1.17
 
