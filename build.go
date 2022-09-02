@@ -42,7 +42,7 @@ func runExternalProgram(
 	stdout io.Writer,
 	stderr io.Writer,
 ) error {
-	_, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
+	// _, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
 	programPath, err := exec.LookPath(program)
 	if err != nil {
 		return err
@@ -388,7 +388,7 @@ func golangRequirements(img Image) bool {
 	return meets_reqs
 }
 
-func pythonRequirements(img Image) bool {
+func pythonRequirements(img Image, version string) bool {
 	meets_reqs := true
 	project_files, err := os.Open(img.context)
 	if err != nil {
@@ -408,11 +408,55 @@ func pythonRequirements(img Image) bool {
 		meets_reqs = false
 	}
 	// TODO: formatted to PEP 8?
+	if !pythonCodeStyle(img, version) {
+		meets_reqs = false
+	}
 
 	return meets_reqs
 }
 
-func languageRequirements(img Image) bool {
+func pythonCodeStyle(image Image, version string) bool {
+	meets_reqs := true
+
+	image_tag := image.name + ":" + version
+	stdout := &bytes.Buffer{}
+	env := []string{
+		fmt.Sprintf("BLDIMG=%s/", image_tag),
+	}
+	os.Chdir(image.context)
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"run",
+			"--rm",
+			"--volume",
+			image.context + ":" + "/plugin",
+			"build-py",
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Code style check caused an error for %s version %s (%w)",
+			image.name,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
+		// return err
+		log.Fatal(err)
+	}
+	// fail if code style checks returns anything besides whitespace to stdout
+	if len(stdout.String()) > 0 {
+		meets_reqs = false
+	}
+	return meets_reqs
+}
+
+func languageRequirements(img Image, version string) bool {
 	meets_reqs := true
 	project_files, err := os.Open(img.context)
 	if err != nil {
@@ -425,7 +469,7 @@ func languageRequirements(img Image) bool {
 	case "go":
 		meets_reqs = golangRequirements(img)
 	case "python":
-		meets_reqs = pythonRequirements(img)
+		meets_reqs = pythonRequirements(img, "latest")
 	default:
 		fmt.Printf("Programming Language %s not supported\n", lang)
 		meets_reqs = false
@@ -441,7 +485,7 @@ func main() {
 		meets_reqs := make([]bool, 3)
 		meets_reqs[0] = basicRequirements(img)
 		meets_reqs[1] = containerRequirements(img)
-		meets_reqs[2] = languageRequirements(img)
+		meets_reqs[2] = languageRequirements(img, "latest")
 		if allTrue(meets_reqs) {
 			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
 			//     log.Fatal(err)
