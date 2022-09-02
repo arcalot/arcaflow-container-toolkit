@@ -11,6 +11,17 @@ go build build.go
 
 If successful, this will result in the arcaflow-plugin-image-builder executable, and it will be named `build` in your current working directory.
 
+## Build carpenter's image dependencies
+
+### Requirements
+
+* docker or podman
+* current working directory is `arcaflow-plugin-image-builder/containerfiles/python`
+
+```shell
+docker build . --tag build-py
+```
+
 ## Example build configurations
 
 ### Build a single plugin directory
