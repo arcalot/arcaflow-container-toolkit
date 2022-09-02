@@ -13,11 +13,33 @@ import (
 	"path/filepath"
 	"regexp"
 
-	// "github.com/creasty/defaults"
+	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	// "gopkg.in/yaml.v2"
 )
+
+var Push bool
+var Build bool
+
+type config struct {
+	Revision         string `yaml:"revision"`
+	Target           string `default:"all"`
+	Project_Filepath string
+	Registries       []Registry
+}
+
+type Registry struct {
+	Url             string
+	Username_Envvar string
+	Password_Envvar string
+	username        string `default:""`
+	password        string `default:""`
+}
+
+type Image struct {
+	name    string
+	context string
+}
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
@@ -28,20 +50,52 @@ func init() {
 	// and all subcommands, e.g.:
 	// buildCmd.PersistentFlags().String("foo", "", "A help for foo")
 
+	buildCmd.PersistentFlags().BoolVarP(&Push, "push", "p", false, "push images to registry")
+	buildCmd.PersistentFlags().BoolVarP(&Build, "build", "b", false, "validate requirements and build image")
+
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-// type config struct {
-// 	Revision         string `yaml:"revision"`
-// 	Target           string `default:"all"`
-// 	Project_Filepath string
-// }
+var buildCmd = &cobra.Command{
+	Use:   "build an image",
+	Short: "build image",
+	Run: func(cmd *cobra.Command, args []string) {
 
-type Image struct {
-	name    string
-	context string
+		conf := getConfig()
+
+		for _, registry := range conf.Registries {
+			for _, img := range listImagesToBuild(&conf) {
+				fmt.Printf("=======%s=======\n", img)
+				meets_reqs := make([]bool, 3)
+				// meets_reqs[0] = basicRequirements(img)
+				meets_reqs[0] = true
+				// meets_reqs[1] = containerRequirements(img)
+				meets_reqs[1] = true
+				// meets_reqs[2] = languageRequirements(img, "latest")
+				meets_reqs[2] = true
+				all_checks := allTrue(meets_reqs)
+
+				if all_checks && Build {
+					fmt.Printf("Building %s from %v\n", img.name, img.context)
+					if err := buildVersion(img, "latest", conf.Revision); err != nil {
+						log.Fatal(err)
+					}
+					if Push {
+						fmt.Printf("Pushing %s version %s to registry\n", img.name, "latest")
+						if err := pushImage(img, "latest", registry); err != nil {
+							log.Fatal(err)
+						}
+					}
+				} else if all_checks && !Build {
+					fmt.Printf("Passed all requirements: %s\n", img.name)
+				} else {
+					fmt.Printf("Failed requirements check, not building: %s\n", img.name)
+				}
+			}
+		}
+	},
 }
 
 func allTrue(checks []bool) bool {
@@ -51,6 +105,26 @@ func allTrue(checks []bool) bool {
 		}
 	}
 	return true
+}
+
+func getConfig() config {
+	var Registries []Registry
+	viper.UnmarshalKey("registries", &Registries)
+	for i := range Registries {
+		Registries[i].username = os.Getenv(Registries[i].Username_Envvar)
+		Registries[i].password = os.Getenv(Registries[i].Password_Envvar)
+	}
+
+	conf := config{
+		Revision:         viper.GetString("revision"),
+		Target:           viper.GetString("target"),
+		Project_Filepath: viper.GetString("project_filepath"),
+		Registries:       Registries}
+
+	if err := defaults.Set(&conf); err != nil {
+		log.Fatal(err)
+	}
+	return conf
 }
 
 func runExternalProgram(
@@ -160,9 +234,7 @@ func listPackagesFromFile(source_project string) []Image {
 		log.Fatal(err)
 	}
 	var source_project_dir string = filepath.Join(pwd, source_project)
-
 	list := make([]Image, 0, 10)
-
 	source_project_file, err2 := os.Open(source_project_dir)
 	if err2 != nil {
 		log.Fatal(err2)
@@ -190,28 +262,17 @@ func filterContainerSelection(selection string, list []Image) []Image {
 	return list
 }
 
-// func getConfig(configYamlPath string) *config {
-// 	fh, err := os.Open(configYamlPath)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	data, err := io.ReadAll(fh)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	conf := &config{}
-// 	if err := yaml.Unmarshal(data, conf); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	if err := defaults.Set(conf); err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	return conf
-// }
-
 func listImagesToBuild(conf *config) []Image {
-	if allDirectories(conf.Project_Filepath) {
+	files, err := os.Open(conf.Project_Filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer files.Close()
+	filenames, _ := files.Readdirnames(0)
+
+	if !hasFilename(filenames, "Dockerfile") {
 		list := listPackagesFromFile(conf.Project_Filepath)
+		// fmt.Println(list)
 		return filterContainerSelection(conf.Target, list)
 	}
 
@@ -302,7 +363,7 @@ func dockerfileHasLine(dockerfile string, line string) bool {
 func imageLanguage(filenames []string) string {
 	ext2Lang := map[string]string{"go": "go", "py": "python"}
 	for _, name := range filenames {
-		matched, err := regexp.MatchString("(i).*plugin.*", name)
+		matched, err := regexp.MatchString("(?i).*plugin.*", name)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -347,7 +408,7 @@ func containerRequirements(img Image) bool {
 			fmt.Println("Dockerfile does not contain copy of arcaflow plugin license")
 			meets_reqs = false
 		}
-		if !dockerfileHasLine(dockerfile, "ENTRYPOINT \\[\"python3\\.9\", \"(?i).*plugin.*\" \\]") {
+		if !dockerfileHasLine(dockerfile, "ENTRYPOINT \\[.*\".*plugin.*\".*\\]") {
 			fmt.Println("Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name")
 			meets_reqs = false
 		}
@@ -355,13 +416,14 @@ func containerRequirements(img Image) bool {
 			fmt.Println("Dockerfile does not contain an empty command (i.e. CMD [])")
 			meets_reqs = false
 		}
-		img_lang := imageLanguage(filenames)
-		img_src := "https://github.com/arcalot/arcaflow-plugins/tree/main/" + img_lang + "/" + img.name
-		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\""+img_src+"\"") {
+		// img_lang := imageLanguage(filenames)
+		// img_src := "https://github.com/arcalot/arcaflow-plugins/tree/main/" + img_lang + "/" + img.name
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\".*\"") {
 			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.source")
 			meets_reqs = false
 		}
-		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0\\+GPL-2\\.0-only\"") {
+		// if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0\\+GPL-2\\.0-only\"") {
+		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\"") {
 			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.licenses")
 			meets_reqs = false
 		}
@@ -465,7 +527,6 @@ func pythonCodeStyle(image Image, version string) bool {
 			err,
 		)
 		writeOutput(image.name, version, stdout, err)
-		// return err
 		log.Fatal(err)
 	}
 	// fail if code style checks returns anything besides whitespace to stdout
@@ -483,6 +544,7 @@ func languageRequirements(img Image, version string) bool {
 	}
 	defer project_files.Close()
 	filenames, _ := project_files.Readdirnames(0)
+	// fmt.Println(filenames)
 
 	switch lang := imageLanguage(filenames); lang {
 	case "go":
@@ -497,26 +559,82 @@ func languageRequirements(img Image, version string) bool {
 	return meets_reqs
 }
 
-var buildCmd = &cobra.Command{
-	Use:   "build an image",
-	Short: "build image",
-	Run: func(cmd *cobra.Command, args []string) {
-		// conf := getConfig("build.yaml")
-		conf := config{viper.GetString("revision"), viper.GetString("target"), viper.GetString("project_filepath")}
-		fmt.Println(conf)
-		for _, img := range listImagesToBuild(&conf) {
-			fmt.Printf("Building %s from %v\n", img.name, img.context)
-			meets_reqs := make([]bool, 3)
-			meets_reqs[0] = basicRequirements(img)
-			meets_reqs[1] = containerRequirements(img)
-			meets_reqs[2] = languageRequirements(img, "latest")
-			if allTrue(meets_reqs) {
-				// if err := buildVersion(img, "latest", conf.Revision); err != nil {
-				//     log.Fatal(err)
-				// }
-			} else {
-				fmt.Printf("Failed requirements check, not building %s\n", img.name)
-			}
-		}
-	},
+func pushImage(image Image, version string, registry Registry) error {
+	destination := filepath.Join(registry.Url, registry.username, image.name)
+	destination = destination + ":" + version
+	image_tag := image.name + ":" + version
+	env := []string{
+		fmt.Sprintf("BLDIMG=%s/", image_tag),
+	}
+	stdout := &bytes.Buffer{}
+	fmt.Println(destination)
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"login",
+			"--username",
+			registry.username,
+			"--password",
+			registry.password,
+			registry.Url,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error logging in for %s version %s (%w)",
+			registry.username,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
+		return err
+	}
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"tag",
+			image.name,
+			destination,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error tagging for %s version %s (%w)",
+			image.name,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
+		return err
+	}
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"push",
+			destination,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error pushing for %s version %s (%w)",
+			image.name,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
+		return err
+	}
+	return nil
 }
