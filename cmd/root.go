@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/arcalot/arcaflow-plugin-image-builder/cmd"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -40,7 +39,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.AddCommand(cmd.buildCmd)
+	// rootCmd.AddCommand(cmd.buildCmd)
 
 	// Here you will define your flags and configuration settings.
 	// Cobra supports persistent flags, which, if defined here,
