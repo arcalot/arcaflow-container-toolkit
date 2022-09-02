@@ -11,6 +11,7 @@ import (
 	"regexp"
 
 	"github.com/creasty/defaults"
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
@@ -478,20 +479,55 @@ func languageRequirements(img Image, version string) bool {
 	return meets_reqs
 }
 
-func main() {
-	conf := getConfig("build.yaml")
-	for _, img := range listImagesToBuild(conf) {
-		fmt.Printf("Building %s from %v\n", img.name, img.context)
-		meets_reqs := make([]bool, 3)
-		meets_reqs[0] = basicRequirements(img)
-		meets_reqs[1] = containerRequirements(img)
-		meets_reqs[2] = languageRequirements(img, "latest")
-		if allTrue(meets_reqs) {
-			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
-			//     log.Fatal(err)
-			// }
-		} else {
-			fmt.Printf("Failed requirements check, not building %s\n", img.name)
+// func main() {
+// 	conf := getConfig("build.yaml")
+// 	for _, img := range listImagesToBuild(conf) {
+// 		fmt.Printf("Building %s from %v\n", img.name, img.context)
+// 		meets_reqs := make([]bool, 3)
+// 		meets_reqs[0] = basicRequirements(img)
+// 		meets_reqs[1] = containerRequirements(img)
+// 		meets_reqs[2] = languageRequirements(img, "latest")
+// 		if allTrue(meets_reqs) {
+// 			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
+// 			//     log.Fatal(err)
+// 			// }
+// 		} else {
+// 			fmt.Printf("Failed requirements check, not building %s\n", img.name)
+// 		}
+// 	}
+// }
+
+var rootCmd = &cobra.Command{
+	Use:   "build an image",
+	Short: "build image",
+	Run: func(cmd *cobra.Command, args []string) {
+		conf := getConfig("build.yaml")
+		for _, img := range listImagesToBuild(conf) {
+			fmt.Printf("Building %s from %v\n", img.name, img.context)
+			meets_reqs := make([]bool, 3)
+			meets_reqs[0] = basicRequirements(img)
+			meets_reqs[1] = containerRequirements(img)
+			meets_reqs[2] = languageRequirements(img, "latest")
+			if allTrue(meets_reqs) {
+				// if err := buildVersion(img, "latest", conf.Revision); err != nil {
+				//     log.Fatal(err)
+				// }
+			} else {
+				fmt.Printf("Failed requirements check, not building %s\n", img.name)
+			}
 		}
+	},
+}
+
+// func Execute() {
+// 	if err := rootCmd.Execute(); err != nil {
+// 		log.Fatal(err)
+// 	}
+// }
+
+func main() {
+	// cmd.Execute()
+	if err := rootCmd.Execute(); err != nil {
+		log.Fatal(err)
 	}
 }
