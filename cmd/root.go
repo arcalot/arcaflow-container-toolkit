@@ -5,12 +5,21 @@ package cmd
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 
+	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
+
+type config struct {
+	Revision         string `yaml:"revision"`
+	Target           string `default:"all"`
+	Project_Filepath string
+}
 
 var cfgFile string
 
@@ -38,6 +47,25 @@ func Execute() {
 	}
 }
 
+func getConfig(configYamlPath string) *config {
+	fh, err := os.Open(configYamlPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data, err := io.ReadAll(fh)
+	if err != nil {
+		log.Fatal(err)
+	}
+	conf := &config{}
+	if err := yaml.Unmarshal(data, conf); err != nil {
+		log.Fatal(err)
+	}
+	if err := defaults.Set(conf); err != nil {
+		log.Fatal(err)
+	}
+	return conf
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 	// rootCmd.AddCommand(cmd.buildCmd)
@@ -63,10 +91,17 @@ func initConfig() {
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
 
-		// Search config in home directory with name ".arcaflow-plugin-image-builder" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
 		viper.SetConfigName(".carpenter")
+
+		project_files, err := os.Open(home)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer project_files.Close()
+		filenames, _ := project_files.Readdirnames(0)
+		fmt.Println(filenames)
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

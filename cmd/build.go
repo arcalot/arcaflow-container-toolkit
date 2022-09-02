@@ -13,10 +13,10 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/creasty/defaults"
+	// "github.com/creasty/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"gopkg.in/yaml.v2"
+	// "gopkg.in/yaml.v2"
 )
 
 func init() {
@@ -33,11 +33,11 @@ func init() {
 	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-type config struct {
-	Revision         string `yaml:"revision"`
-	Target           string `default:"all"`
-	Project_Filepath string
-}
+// type config struct {
+// 	Revision         string `yaml:"revision"`
+// 	Target           string `default:"all"`
+// 	Project_Filepath string
+// }
 
 type Image struct {
 	name    string
@@ -190,24 +190,24 @@ func filterContainerSelection(selection string, list []Image) []Image {
 	return list
 }
 
-func getConfig(configYamlPath string) *config {
-	fh, err := os.Open(configYamlPath)
-	if err != nil {
-		log.Fatal(err)
-	}
-	data, err := io.ReadAll(fh)
-	if err != nil {
-		log.Fatal(err)
-	}
-	conf := &config{}
-	if err := yaml.Unmarshal(data, conf); err != nil {
-		log.Fatal(err)
-	}
-	if err := defaults.Set(conf); err != nil {
-		log.Fatal(err)
-	}
-	return conf
-}
+// func getConfig(configYamlPath string) *config {
+// 	fh, err := os.Open(configYamlPath)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	data, err := io.ReadAll(fh)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	conf := &config{}
+// 	if err := yaml.Unmarshal(data, conf); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	if err := defaults.Set(conf); err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return conf
+// }
 
 func listImagesToBuild(conf *config) []Image {
 	if allDirectories(conf.Project_Filepath) {
@@ -497,30 +497,13 @@ func languageRequirements(img Image, version string) bool {
 	return meets_reqs
 }
 
-// func main() {
-// 	conf := getConfig("build.yaml")
-// 	for _, img := range listImagesToBuild(conf) {
-// 		fmt.Printf("Building %s from %v\n", img.name, img.context)
-// 		meets_reqs := make([]bool, 3)
-// 		meets_reqs[0] = basicRequirements(img)
-// 		meets_reqs[1] = containerRequirements(img)
-// 		meets_reqs[2] = languageRequirements(img, "latest")
-// 		if allTrue(meets_reqs) {
-// 			// if err := buildVersion(img, "latest", conf.Revision); err != nil {
-// 			//     log.Fatal(err)
-// 			// }
-// 		} else {
-// 			fmt.Printf("Failed requirements check, not building %s\n", img.name)
-// 		}
-// 	}
-// }
-
 var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
 		// conf := getConfig("build.yaml")
 		conf := config{viper.GetString("revision"), viper.GetString("target"), viper.GetString("project_filepath")}
+		fmt.Println(conf)
 		for _, img := range listImagesToBuild(&conf) {
 			fmt.Printf("Building %s from %v\n", img.name, img.context)
 			meets_reqs := make([]bool, 3)
