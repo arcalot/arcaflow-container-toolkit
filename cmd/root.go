@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -33,7 +34,7 @@ to quickly create a Cobra application.`,
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 }
 
@@ -65,7 +66,7 @@ func initConfig() {
 		// Search config in home directory with name ".arcaflow-plugin-image-builder" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".arcaflow-plugin-image-builder")
+		viper.SetConfigName(".carpenter")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match

@@ -15,6 +15,7 @@ import (
 
 	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"gopkg.in/yaml.v2"
 )
 
@@ -518,8 +519,9 @@ var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		conf := getConfig("build.yaml")
-		for _, img := range listImagesToBuild(conf) {
+		// conf := getConfig("build.yaml")
+		conf := config{viper.GetString("revision"), viper.GetString("target"), viper.GetString("project_filepath")}
+		for _, img := range listImagesToBuild(&conf) {
 			fmt.Printf("Building %s from %v\n", img.name, img.context)
 			meets_reqs := make([]bool, 3)
 			meets_reqs[0] = basicRequirements(img)
