@@ -12,6 +12,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
@@ -21,10 +23,13 @@ import (
 var Push bool
 var Build bool
 
+type Empty struct{}
+
 type config struct {
 	Revision         string `yaml:"revision"`
-	Target           string `default:"all"`
+	Image_Name       string `default:"all"`
 	Project_Filepath string
+	Image_Tag        string `default:"latest"`
 	Registries       []Registry
 }
 
@@ -64,128 +69,127 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		conf := getConfig()
+		fmt.Println(conf)
 
 		for _, registry := range conf.Registries {
 			for _, img := range listImagesToBuild(&conf) {
-				fmt.Printf("=======%s=======\n", img)
 				meets_reqs := make([]bool, 3)
-				// meets_reqs[0] = basicRequirements(img)
-				meets_reqs[0] = true
-				// meets_reqs[1] = containerRequirements(img)
-				meets_reqs[1] = true
-				// meets_reqs[2] = languageRequirements(img, "latest")
-				meets_reqs[2] = true
+				meets_reqs[0] = basicRequirements(img)
+				meets_reqs[1] = containerRequirements(img)
+				meets_reqs[2] = languageRequirements(img, conf.Image_Tag)
+				// meets_reqs[0] = true
+				// meets_reqs[1] = true
+				// meets_reqs[2] = true
 				all_checks := allTrue(meets_reqs)
 
-				if all_checks && Build {
-					fmt.Printf("Building %s from %v\n", img.name, img.context)
-					if err := buildVersion(img, "latest", conf.Revision); err != nil {
+				if !all_checks {
+					fmt.Println("Please fix requirements.")
+					os.Exit(1)
+				}
+
+				if Build {
+					fmt.Printf("Building %s %s from %v\n", img.name, conf.Image_Tag, img.context)
+					if err := buildVersion(img, conf.Image_Tag, conf.Revision); err != nil {
 						log.Fatal(err)
 					}
 					if Push {
-						fmt.Printf("Pushing %s version %s to registry\n", img.name, "latest")
-						if err := pushImage(img, "latest", registry); err != nil {
+						fmt.Printf("Pushing %s version %s to registry %s\n", img.name, conf.Image_Tag, registry.Url)
+						if err := pushImage(img, conf.Image_Tag, registry); err != nil {
 							log.Fatal(err)
 						}
 					}
 				} else if all_checks && !Build {
-					fmt.Printf("Passed all requirements: %s\n", img.name)
+					fmt.Printf("Passed all requirements: %s %s\n", img.name, conf.Image_Tag)
 				} else {
-					fmt.Printf("Failed requirements check, not building: %s\n", img.name)
+					fmt.Printf("Failed requirements check, not building: %s %s\n", img.name, conf.Image_Tag)
 				}
 			}
 		}
 	},
 }
 
-func allTrue(checks []bool) bool {
-	for _, v := range checks {
-		if !v {
-			return false
-		}
+func pushImage(image Image, version string, registry Registry) error {
+	image_tag := image.name + ":" + version
+	env := []string{
+		fmt.Sprintf("BLDIMG=%s/", image_tag),
 	}
-	return true
-}
+	stdout := &bytes.Buffer{}
 
-func getConfig() config {
-	var Registries []Registry
-	viper.UnmarshalKey("registries", &Registries)
-	for i := range Registries {
-		Registries[i].username = os.Getenv(Registries[i].Username_Envvar)
-		Registries[i].password = os.Getenv(Registries[i].Password_Envvar)
-	}
-
-	conf := config{
-		Revision:         viper.GetString("revision"),
-		Target:           viper.GetString("target"),
-		Project_Filepath: viper.GetString("project_filepath"),
-		Registries:       Registries}
-
-	if err := defaults.Set(&conf); err != nil {
-		log.Fatal(err)
-	}
-	return conf
-}
-
-func runExternalProgram(
-	program string,
-	args []string,
-	env []string,
-	stdin io.Reader,
-	stdout io.Writer,
-	stderr io.Writer,
-) error {
-	// _, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
-	programPath, err := exec.LookPath(program)
-	if err != nil {
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"login",
+			"--username",
+			registry.username,
+			"--password",
+			registry.password,
+			registry.Url,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error logging in for %s version %s (%w)",
+			registry.username,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
 		return err
 	}
-	env = append(env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
-	env = append(env, fmt.Sprintf("TMP=%s", os.Getenv("TMP")))
-	env = append(env, fmt.Sprintf("TEMP=%s", os.Getenv("TEMP")))
-	cmd := &exec.Cmd{
-		Path:   programPath,
-		Args:   append([]string{programPath}, args...),
-		Env:    env,
-		Stdout: stdout,
-		Stderr: stderr,
-		Stdin:  stdin,
-	}
-	if err := cmd.Start(); err != nil {
 
+	destination := filepath.Join(registry.Url, registry.username, image.name)
+	if userIsQuayRobot(registry.username) {
+		robot_owner := strings.Split(registry.username, "+")
+		destination = filepath.Join(registry.Url, robot_owner[0], image.name)
+	}
+	destination = destination + ":" + version
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"tag",
+			image_tag,
+			destination,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error tagging for %s version %s (%w)",
+			image.name,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
 		return err
 	}
-	if err := cmd.Wait(); err != nil {
+
+	if err := runExternalProgram(
+		"docker",
+		[]string{
+			"push",
+			destination,
+		},
+		env,
+		nil,
+		stdout,
+		stdout,
+	); err != nil {
+		err := fmt.Errorf(
+			"Error pushing for %s version %s (%w)",
+			image.name,
+			version,
+			err,
+		)
+		writeOutput(image.name, version, stdout, err)
 		return err
 	}
 	return nil
-}
-
-func writeOutput(
-	image string,
-	version string,
-	stdout *bytes.Buffer,
-	err error,
-) {
-	output := ""
-	prefix := "\033[0;32m✅ "
-	if err != nil {
-		prefix = "\033[0;31m❌ "
-	}
-	output += fmt.Sprintf(
-		"::group::%s img=%s version=%s\n",
-		prefix,
-		image,
-		version,
-	)
-	output += stdout.String()
-	if err != nil {
-		output += fmt.Sprintf("\033[0;31m%s\033[0m\n", err.Error())
-	}
-	output += "::endgroup::\n"
-	if _, err := os.Stdout.Write([]byte(output)); err != nil {
-		panic(err)
-	}
 }
 
 func buildVersion(
@@ -228,6 +232,132 @@ func buildVersion(
 	return nil
 }
 
+func allTrue(checks []bool) bool {
+	for _, v := range checks {
+		if !v {
+			return false
+		}
+	}
+	return true
+}
+
+func lookupEnvVar(key string) string {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		fmt.Printf("%s not set\n", key)
+	} else if len(val) == 0 {
+		fmt.Printf("%s is empty\n", key)
+	}
+	return val
+}
+
+func filterByIndex(list []Registry, remove map[string]Empty) []Registry {
+	list2 := make([]Registry, 0, 5)
+	for i := range list {
+		_, ok := remove[strconv.FormatInt(int64(i), 10)]
+		if !ok {
+			list2 = append(list2, list[i])
+		}
+	}
+	return list2
+}
+
+func getConfig() config {
+	var Registries []Registry
+	var PlaceHolder struct{}
+	fmt.Println(viper.GetString("image_name"))
+
+	viper.UnmarshalKey("registries", &Registries)
+	misconfigured_registries := make(map[string]Empty)
+	for i := range Registries {
+		username_envvar := Registries[i].Username_Envvar
+		password_envvar := Registries[i].Password_Envvar
+		username := lookupEnvVar(username_envvar)
+		password := lookupEnvVar(password_envvar)
+		if len(username) > 0 && len(password) > 0 {
+			Registries[i].username = username
+			Registries[i].password = password
+		} else {
+			fmt.Printf("Missing credentials for %s\n", Registries[i].Url)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+		}
+	}
+	filteredRegistries := filterByIndex(Registries, misconfigured_registries)
+	conf := config{
+		Revision:         viper.GetString("revision"),
+		Image_Name:       viper.GetString("image_name"),
+		Project_Filepath: viper.GetString("project_filepath"),
+		Image_Tag:        viper.GetString("image_tag"),
+		Registries:       filteredRegistries}
+	if err := defaults.Set(&conf); err != nil {
+		log.Fatal(err)
+	}
+	return conf
+}
+
+func runExternalProgram(
+	program string,
+	args []string,
+	env []string,
+	stdin io.Reader,
+	stdout io.Writer,
+	stderr io.Writer,
+) error {
+	// _, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
+	programPath, err := exec.LookPath(program)
+	if err != nil {
+		return err
+	}
+	env = append(env, fmt.Sprintf("PATH=%s", os.Getenv("PATH")))
+	env = append(env, fmt.Sprintf("TMP=%s", os.Getenv("TMP")))
+	env = append(env, fmt.Sprintf("TEMP=%s", os.Getenv("TEMP")))
+	cmd := &exec.Cmd{
+		Path:   programPath,
+		Args:   append([]string{programPath}, args...),
+		Env:    env,
+		Stdout: stdout,
+		Stderr: stderr,
+		Stdin:  stdin,
+	}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	if err := cmd.Wait(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func writeOutput(
+	image string,
+	version string,
+	stdout *bytes.Buffer,
+	err error,
+) {
+	output := ""
+	// prefix := "\033[0;32m✅ "
+	// if err != nil {
+	// 	prefix = "\033[0;31m❌ "
+	// }
+
+	output += fmt.Sprintf(
+		// "::group::%s img=%s version=%s%\n",
+		"img=%s version=%s%\n",
+		// prefix,
+		image,
+		version,
+	)
+	output += stdout.String()
+	if err != nil {
+		// output += fmt.Sprintf("\033[0;31m%s\033[0m\n", err.Error())
+		output += fmt.Sprintf(err.Error())
+	}
+	// output += "::endgroup::\n"
+	if _, err := os.Stdout.Write([]byte(output)); err != nil {
+		panic(err)
+	}
+}
+
 func listPackagesFromFile(source_project string) []Image {
 	var pwd, err = os.Getwd()
 	if err != nil {
@@ -268,12 +398,14 @@ func listImagesToBuild(conf *config) []Image {
 		log.Fatal(err)
 	}
 	defer files.Close()
-	filenames, _ := files.Readdirnames(0)
+	filenames, err := files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if !hasFilename(filenames, "Dockerfile") {
 		list := listPackagesFromFile(conf.Project_Filepath)
-		// fmt.Println(list)
-		return filterContainerSelection(conf.Target, list)
+		return filterContainerSelection(conf.Image_Name, list)
 	}
 
 	abspath, err := filepath.Abs(conf.Project_Filepath)
@@ -281,7 +413,8 @@ func listImagesToBuild(conf *config) []Image {
 		log.Fatal(err)
 	}
 	return []Image{{
-		name:    filepath.Base(conf.Project_Filepath),
+		// name:    filepath.Base(conf.Project_Filepath),
+		name:    conf.Image_Name,
 		context: abspath}}
 }
 
@@ -329,24 +462,40 @@ func hasMatchedFilename(names []string, match_name string) bool {
 
 func basicRequirements(img Image) bool {
 	meets_reqs := true
+	stdout := &bytes.Buffer{}
+	// output_builder := strings.Builder()
 	files, err := os.Open(img.context)
+	output := ""
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer files.Close()
-	filenames, _ := files.Readdirnames(0)
+	filenames, err := files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if !hasFilename(filenames, "README.md") {
-		fmt.Println("Missing README.md")
+		output = "Missing README.md\n"
+		// output_builder.WriteString("Missing README.md")
+		if _, err := os.Stdout.Write([]byte(output)); err != nil {
+			panic(err)
+		}
+		writeOutput(img.name, "latest", stdout, nil)
 		meets_reqs = false
 	}
 	if !hasFilename(filenames, "Dockerfile") {
-		fmt.Println("Missing Dockerfile")
+		output = "Missing Dockerfile\n"
+		// fmt.Println("Missing Dockerfile")
+		if _, err := os.Stdout.Write([]byte(output)); err != nil {
+			panic(err)
+		}
+		writeOutput(img.name, "latest", stdout, nil)
 		meets_reqs = false
 	}
 	if !hasMatchedFilename(filenames, "(?i).*test.*") {
 		// match case-insensitive 'test'?
-		fmt.Println("Missing a test file")
+		fmt.Print("Missing a test file\n")
 		meets_reqs = false
 	}
 	return meets_reqs
@@ -381,13 +530,17 @@ func imageLanguage(filenames []string) string {
 
 func containerRequirements(img Image) bool {
 	meets_reqs := true
-
+	output := ""
+	stdout := &bytes.Buffer{}
 	project_files, err := os.Open(img.context)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer project_files.Close()
-	filenames, _ := project_files.Readdirnames(0)
+	filenames, err := project_files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 	if !hasFilename(filenames, "Dockerfile") {
 		fmt.Println("Missing Dockerfile")
 		meets_reqs = false
@@ -400,12 +553,21 @@ func containerRequirements(img Image) bool {
 		dockerfile := string(file)
 
 		if !dockerfileHasLine(dockerfile, "FROM quay\\.io/centos/centos:stream8") {
-			fmt.Println("Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'")
+			// fmt.Println("Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'")
+			output = "Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'\n"
+			if _, err := os.Stdout.Write([]byte(output)); err != nil {
+				panic(err)
+			}
+			writeOutput(img.name, "latest", stdout, nil)
 			meets_reqs = false
 		}
 		if !dockerfileHasLine(dockerfile, "(ADD|COPY) .*/LICENSE /.*") {
 			// this regex could match on an invalid filepath
-			fmt.Println("Dockerfile does not contain copy of arcaflow plugin license")
+			output = "Dockerfile does not contain copy of arcaflow plugin license\n"
+			if _, err := os.Stdout.Write([]byte(output)); err != nil {
+				panic(err)
+			}
+			writeOutput(img.name, "latest", stdout, nil)
 			meets_reqs = false
 		}
 		if !dockerfileHasLine(dockerfile, "ENTRYPOINT \\[.*\".*plugin.*\".*\\]") {
@@ -455,7 +617,10 @@ func golangRequirements(img Image) bool {
 		log.Fatal(err)
 	}
 	defer project_files.Close()
-	filenames, _ := project_files.Readdirnames(0)
+	filenames, err := project_files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if !hasFilename(filenames, "go.mod") {
 		fmt.Println("Missing go.md")
@@ -476,7 +641,10 @@ func pythonRequirements(img Image, version string) bool {
 		log.Fatal(err)
 	}
 	defer project_files.Close()
-	filenames, _ := project_files.Readdirnames(0)
+	filenames, err := project_files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 	has_reqs_txt := hasFilename(filenames, "requirements.txt")
 	has_pyproject := hasFilename(filenames, "pyproject.toml")
 	if !has_reqs_txt && !has_pyproject {
@@ -507,13 +675,12 @@ func pythonCodeStyle(image Image, version string) bool {
 	os.Chdir(image.context)
 
 	if err := runExternalProgram(
-		"docker",
+		"python3",
 		[]string{
-			"run",
-			"--rm",
-			"--volume",
-			image.context + ":" + "/plugin",
-			"build-py",
+			"-m",
+			"flake8",
+			"--show-source",
+			image.context,
 		},
 		env,
 		nil,
@@ -521,13 +688,13 @@ func pythonCodeStyle(image Image, version string) bool {
 		stdout,
 	); err != nil {
 		err := fmt.Errorf(
-			"Code style check caused an error for %s version %s (%w)",
+			"Code style and quality check caused an error for %s version %s (%w)",
 			image.name,
 			version,
 			err,
 		)
 		writeOutput(image.name, version, stdout, err)
-		log.Fatal(err)
+		// log.Fatal(err)
 	}
 	// fail if code style checks returns anything besides whitespace to stdout
 	if len(stdout.String()) > 0 {
@@ -543,8 +710,10 @@ func languageRequirements(img Image, version string) bool {
 		log.Fatal(err)
 	}
 	defer project_files.Close()
-	filenames, _ := project_files.Readdirnames(0)
-	// fmt.Println(filenames)
+	filenames, err := project_files.Readdirnames(0)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	switch lang := imageLanguage(filenames); lang {
 	case "go":
@@ -559,82 +728,13 @@ func languageRequirements(img Image, version string) bool {
 	return meets_reqs
 }
 
-func pushImage(image Image, version string, registry Registry) error {
-	destination := filepath.Join(registry.Url, registry.username, image.name)
-	destination = destination + ":" + version
-	image_tag := image.name + ":" + version
-	env := []string{
-		fmt.Sprintf("BLDIMG=%s/", image_tag),
+func userIsQuayRobot(username string) bool {
+	matched, err := regexp.MatchString("^[a-z][a-z0-9_]{1,254}\\+[a-z][a-z0-9_]{1,254}$", username)
+	if err != nil {
+		log.Fatal(err)
 	}
-	stdout := &bytes.Buffer{}
-	fmt.Println(destination)
-
-	if err := runExternalProgram(
-		"docker",
-		[]string{
-			"login",
-			"--username",
-			registry.username,
-			"--password",
-			registry.password,
-			registry.Url,
-		},
-		env,
-		nil,
-		stdout,
-		stdout,
-	); err != nil {
-		err := fmt.Errorf(
-			"Error logging in for %s version %s (%w)",
-			registry.username,
-			version,
-			err,
-		)
-		writeOutput(image.name, version, stdout, err)
-		return err
+	if matched {
+		return true
 	}
-
-	if err := runExternalProgram(
-		"docker",
-		[]string{
-			"tag",
-			image.name,
-			destination,
-		},
-		env,
-		nil,
-		stdout,
-		stdout,
-	); err != nil {
-		err := fmt.Errorf(
-			"Error tagging for %s version %s (%w)",
-			image.name,
-			version,
-			err,
-		)
-		writeOutput(image.name, version, stdout, err)
-		return err
-	}
-
-	if err := runExternalProgram(
-		"docker",
-		[]string{
-			"push",
-			destination,
-		},
-		env,
-		nil,
-		stdout,
-		stdout,
-	); err != nil {
-		err := fmt.Errorf(
-			"Error pushing for %s version %s (%w)",
-			image.name,
-			version,
-			err,
-		)
-		writeOutput(image.name, version, stdout, err)
-		return err
-	}
-	return nil
+	return false
 }
