@@ -39,18 +39,8 @@ func Execute() {
 }
 
 func init() {
-	// fmt.Print("::set-output name=carpenter::hello from carpenter.cmd.root.init%0A")
 	cobra.OnInitialize(initConfig)
-	// rootCmd.AddCommand(cmd.buildCmd)
-
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.carpenter.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
@@ -73,12 +63,11 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		// fmt.Fprint(os.Stderr, "Using config file:%v\n", viper.ConfigFileUsed())
+		fmt.Fprint(os.Stderr, "Using config file:%v\n", viper.ConfigFileUsed())
 	} else {
 		fmt.Fprint(os.Stderr, "Did not find .carpenter config file")
 		os.Exit(1)
 	}
 
-	// viper.SetEnvPrefix("github")
 	viper.AutomaticEnv() // read in environment variables that match
 }

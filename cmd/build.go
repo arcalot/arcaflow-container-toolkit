@@ -48,19 +48,8 @@ type Image struct {
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// buildCmd.PersistentFlags().String("foo", "", "A help for foo")
-
 	buildCmd.PersistentFlags().BoolVarP(&Push, "push", "p", false, "push images to registry")
 	buildCmd.PersistentFlags().BoolVarP(&Build, "build", "b", false, "validate requirements and build image")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// buildCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
 var buildCmd = &cobra.Command{
@@ -69,7 +58,6 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		conf := getConfig()
-		fmt.Println(conf)
 
 		for _, registry := range conf.Registries {
 			for _, img := range listImagesToBuild(&conf) {
@@ -77,9 +65,6 @@ var buildCmd = &cobra.Command{
 				meets_reqs[0] = basicRequirements(img)
 				meets_reqs[1] = containerRequirements(img)
 				meets_reqs[2] = languageRequirements(img, conf.Image_Tag)
-				// meets_reqs[0] = true
-				// meets_reqs[1] = true
-				// meets_reqs[2] = true
 				all_checks := allTrue(meets_reqs)
 
 				if !all_checks {
@@ -265,7 +250,6 @@ func filterByIndex(list []Registry, remove map[string]Empty) []Registry {
 func getConfig() config {
 	var Registries []Registry
 	var PlaceHolder struct{}
-	fmt.Println(viper.GetString("image_name"))
 
 	viper.UnmarshalKey("registries", &Registries)
 	misconfigured_registries := make(map[string]Empty)
@@ -303,7 +287,6 @@ func runExternalProgram(
 	stdout io.Writer,
 	stderr io.Writer,
 ) error {
-	// _, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
 	programPath, err := exec.LookPath(program)
 	if err != nil {
 		return err
@@ -335,24 +318,15 @@ func writeOutput(
 	err error,
 ) {
 	output := ""
-	// prefix := "\033[0;32m✅ "
-	// if err != nil {
-	// 	prefix = "\033[0;31m❌ "
-	// }
-
 	output += fmt.Sprintf(
-		// "::group::%s img=%s version=%s%\n",
 		"img=%s version=%s%\n",
-		// prefix,
 		image,
 		version,
 	)
 	output += stdout.String()
 	if err != nil {
-		// output += fmt.Sprintf("\033[0;31m%s\033[0m\n", err.Error())
 		output += fmt.Sprintf(err.Error())
 	}
-	// output += "::endgroup::\n"
 	if _, err := os.Stdout.Write([]byte(output)); err != nil {
 		panic(err)
 	}
@@ -413,7 +387,6 @@ func listImagesToBuild(conf *config) []Image {
 		log.Fatal(err)
 	}
 	return []Image{{
-		// name:    filepath.Base(conf.Project_Filepath),
 		name:    conf.Image_Name,
 		context: abspath}}
 }
@@ -463,7 +436,6 @@ func hasMatchedFilename(names []string, match_name string) bool {
 func basicRequirements(img Image) bool {
 	meets_reqs := true
 	stdout := &bytes.Buffer{}
-	// output_builder := strings.Builder()
 	files, err := os.Open(img.context)
 	output := ""
 	if err != nil {
@@ -477,7 +449,6 @@ func basicRequirements(img Image) bool {
 
 	if !hasFilename(filenames, "README.md") {
 		output = "Missing README.md\n"
-		// output_builder.WriteString("Missing README.md")
 		if _, err := os.Stdout.Write([]byte(output)); err != nil {
 			panic(err)
 		}
@@ -486,7 +457,6 @@ func basicRequirements(img Image) bool {
 	}
 	if !hasFilename(filenames, "Dockerfile") {
 		output = "Missing Dockerfile\n"
-		// fmt.Println("Missing Dockerfile")
 		if _, err := os.Stdout.Write([]byte(output)); err != nil {
 			panic(err)
 		}
@@ -553,7 +523,6 @@ func containerRequirements(img Image) bool {
 		dockerfile := string(file)
 
 		if !dockerfileHasLine(dockerfile, "FROM quay\\.io/centos/centos:stream8") {
-			// fmt.Println("Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'")
 			output = "Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'\n"
 			if _, err := os.Stdout.Write([]byte(output)); err != nil {
 				panic(err)
@@ -578,13 +547,10 @@ func containerRequirements(img Image) bool {
 			fmt.Println("Dockerfile does not contain an empty command (i.e. CMD [])")
 			meets_reqs = false
 		}
-		// img_lang := imageLanguage(filenames)
-		// img_src := "https://github.com/arcalot/arcaflow-plugins/tree/main/" + img_lang + "/" + img.name
 		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\".*\"") {
 			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.source")
 			meets_reqs = false
 		}
-		// if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0\\+GPL-2\\.0-only\"") {
 		if !dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\"") {
 			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.licenses")
 			meets_reqs = false
@@ -694,7 +660,6 @@ func pythonCodeStyle(image Image, version string) bool {
 			err,
 		)
 		writeOutput(image.name, version, stdout, err)
-		// log.Fatal(err)
 	}
 	// fail if code style checks returns anything besides whitespace to stdout
 	if len(stdout.String()) > 0 {

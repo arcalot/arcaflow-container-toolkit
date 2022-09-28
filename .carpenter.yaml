@@ -9,6 +9,3 @@ registries:
   - url: quay.io
     username_envvar: "QUAY_USERNAME"
     password_envvar: "QUAY_PASSWORD"
-  # - url: docker.io
-  #   username_envvar: "DOCKER_USERNAME"
-  #   password_envvar: "DOCKER_PASSWORD"
