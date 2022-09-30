@@ -1,10 +1,11 @@
 revision: 20220824
-target: fio
-project_filepath: ../arcaflow-plugins/python/fio
-# versions:
-#   v0.0.1:
-#     - latest
-# registries:
-#   quay.io:
-#     user_variable: QUAY_USERNAME
-#     password_variable: QUAY_PASSWORD
+image_name: arcaflow-plugin-template-python
+image_tag: '0.1.0'
+project_filepath: /github/workspace
+registries:
+  - url: ghcr.io
+    username_envvar: "GITHUB_USERNAME"
+    password_envvar: "GITHUB_PASSWORD"
+  - url: quay.io
+    username_envvar: "QUAY_USERNAME"
+    password_envvar: "QUAY_PASSWORD"
