@@ -10,9 +10,9 @@ import (
 	"github.com/golang/mock/gomock"
 
 	// "fmt"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	arcalog "go.arcalot.io/log"
+	"testing"
 )
 
 func IntMin(a, b int) int {
@@ -384,14 +384,13 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	BuildCmdMain(
-		true,
-		true,
-		cec,
-		conf,
-		".",
-		python_filenames,
-	)
+	logConfig := arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationTest,
+		T:           t,
+	}
+	logger := arcalog.New(logConfig)
+	BuildCmdMain(true, true, cec, conf, ".", python_filenames, logger)
 }
 
 func TestPushImage(t *testing.T) {

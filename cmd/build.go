@@ -6,7 +6,6 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,6 +17,7 @@ import (
 	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.arcalot.io/log"
 )
 
 var Push bool
@@ -60,34 +60,35 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		cec, err := ce_client.NewCeClient("docker")
+
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid container engine client (%w)", err)
 		}
 		conf, err := getConfig()
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid carpenter config (%w)", err)
 		}
 		abspath, err := filepath.Abs(conf.Project_Filepath)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid absolute path to project (%w)", err)
 		}
 		files, err := os.Open(abspath)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("error opening project directory (%w)", err)
 		}
 		defer files.Close()
 		filenames, err := files.Readdirnames(0)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("error reading project directory (%w)", err)
 		}
 
-		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames); err != nil {
-			log.Fatal(err)
+		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger); err != nil {
+			rootLogger.Errorf("error in build command (%w)", err)
 		}
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string) error {
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string, logger log.Logger) error {
 	for _, registry := range conf.Registries {
 		meets_reqs := make([]bool, 3)
 		basic_reqs, err := BasicRequirements(filenames)
@@ -185,7 +186,7 @@ func getConfig() (config, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		log.Fatal(err)
+		return config{}, err
 	}
 	return conf, nil
 }
@@ -332,7 +333,7 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 	meets_reqs := true
 	project_files, err := os.Open(abspath)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	defer project_files.Close()
 	filenames, err := project_files.Readdirnames(0)
