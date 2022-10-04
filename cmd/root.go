@@ -26,13 +26,12 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
 		log_level := log.LevelInfo
 		if verbosity {
 			log_level = log.LevelDebug
 		}
 		ConfigureLogger(&rootLogger, log_level, log.DestinationStdout, os.Stdout)
-		return nil
 	},
 }
 
