@@ -75,10 +75,6 @@ func TestUserIsQuayRobot(t *testing.T) {
 			assert.Equal(t, tc.expectedResult, act)
 		})
 	}
-
-	//assert.False(t, UserIsQuayRobot("river+"))
-	//assert.False(t, UserIsQuayRobot("river"))
-	//assert.False(t, UserIsQuayRobot("+robot"))
 }
 
 func TestImageLanguage(t *testing.T) {
