@@ -5,14 +5,17 @@ package cmd
 
 import (
 	"fmt"
-	"log"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.arcalot.io/log"
 )
 
 var cfgFile string
+var verbosity bool
+var Logger log.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -34,7 +37,7 @@ to quickly create a Cobra application.`,
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Fatal(err)
+		Logger.Errorf("root command failed", err)
 	}
 }
 
@@ -42,6 +45,22 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.carpenter.yaml)")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&verbosity, "verbosity", "v", false, "verbose debugging log messages")
+
+	log_level := log.LevelInfo
+	if verbosity {
+		log_level = log.LevelDebug
+	}
+	ConfigureLogger(&Logger, log_level, log.DestinationStdout, os.Stdout)
+}
+
+func ConfigureLogger(logger *log.Logger, level log.Level, dest log.Destination, w io.Writer) {
+	logConfig := log.Config{
+		Level:       level,
+		Destination: dest,
+		Stdout:      w,
+	}
+	*logger = log.New(logConfig)
 }
 
 // initConfig reads in config file and ENV variables if set.
