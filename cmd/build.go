@@ -330,8 +330,6 @@ func BasicRequirements(filenames []string) (bool, error) {
 
 func ContainerRequirements(abspath string, name string, version string) (bool, error) {
 	meets_reqs := true
-	output := ""
-	stdout := &bytes.Buffer{}
 	project_files, err := os.Open(abspath)
 	if err != nil {
 		log.Fatal(err)
@@ -356,83 +354,27 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 		}
 		dockerfile := string(file)
 
-		if has_, err := dockerfileHasLine(dockerfile, "FROM quay\\.io/centos/centos:stream8"); err != nil {
-			return false, err
-		} else if !has_ {
-			output = "Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'\n"
-			if _, err := os.Stdout.Write([]byte(output)); err != nil {
-				panic(err)
+		// create map of regexp patterns to search for in Dockerfile as well as log information if not found
+		m := map[string]string{
+			"FROM quay\\.io/centos/centos:stream8":                                             "Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'\n",
+			"(ADD|COPY) .*/LICENSE /.*":                                                        "Dockerfile does not contain copy of arcaflow plugin license\n",
+			"ENTRYPOINT \\[.*\".*plugin.*\".*\\]":                                              "Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name",
+			"CMD \\[\\]":                                                                       "Dockerfile does not contain an empty command (i.e. CMD [])",
+			"LABEL org.opencontainers.image.source=\".*\"":                                     "Dockerfile is missing LABEL org.opencontainers.image.source",
+			"LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\"":                       "Dockerfile is missing LABEL org.opencontainers.image.licenses",
+			"LABEL org.opencontainers.image.vendor=\"Arcalot project\"":                        "Dockerfile is missing LABEL org.opencontainers.image.vendor",
+			"LABEL org.opencontainers.image.authors=\"Arcalot contributors\"":                  "Dockerfile is missing LABEL org.opencontainers.image.authors",
+			"LABEL org.opencontainers.image.title=\".*\"":                                      "Dockerfile is missing LABEL org.opencontainers.image.title",
+			"LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\"": "Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z",
+		}
+
+		for regexp, loggerResp := range m {
+			if has_, err := dockerfileHasLine(dockerfile, regexp); err != nil {
+				return false, err
+			} else if !has_ {
+				fmt.Println(loggerResp)
+				meets_reqs = has_
 			}
-			util.WriteOutput(name, "latest", stdout, nil)
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "(ADD|COPY) .*/LICENSE /.*"); err != nil {
-			return false, err
-		} else if !has_ {
-			// this regex could match on an invalid filepath
-			output = "Dockerfile does not contain copy of arcaflow plugin license\n"
-			if _, err := os.Stdout.Write([]byte(output)); err != nil {
-				panic(err)
-			}
-			util.WriteOutput(name, "latest", stdout, nil)
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "ENTRYPOINT \\[.*\".*plugin.*\".*\\]"); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "CMD \\[\\]"); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile does not contain an empty command (i.e. CMD [])")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.source=\".*\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.source")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.licenses")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.vendor=\"Arcalot project\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.vendor")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.authors=\"Arcalot contributors\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.authors")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL org.opencontainers.image.title=\".*\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL org.opencontainers.image.title")
-			meets_reqs = false
-		}
-
-		if has_, err := dockerfileHasLine(dockerfile, "LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\""); err != nil {
-			return false, err
-		} else if !has_ {
-			fmt.Println("Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z")
-			meets_reqs = false
 		}
 	}
 	return meets_reqs, nil

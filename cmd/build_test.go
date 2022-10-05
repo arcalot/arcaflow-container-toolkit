@@ -3,10 +3,11 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
-	"github.com/golang/mock/gomock"
 	"log"
 	"os"
+
+	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
+	"github.com/golang/mock/gomock"
 
 	// "fmt"
 	"testing"
