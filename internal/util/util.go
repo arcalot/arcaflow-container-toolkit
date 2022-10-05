@@ -16,7 +16,6 @@ func RunExternalProgram(
 	stdout io.Writer,
 	stderr io.Writer,
 ) error {
-	// _, _ = stdout.Write([]byte(fmt.Sprintf("\033[0;32m⚙ Running %s...\u001B[0m\n", program)))
 	programPath, err := exec.LookPath(program)
 	if err != nil {
 		return err
