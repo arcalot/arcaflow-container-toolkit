@@ -370,9 +370,8 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 
 		for regexp, loggerResp := range m {
 			if has_, err := dockerfileHasLine(dockerfile, regexp); err != nil {
-				return has_, err
-			}
-			if !has_ {
+				return false, err
+			} else if !has_ {
 				fmt.Println(loggerResp)
 				meets_reqs = has_
 			}
