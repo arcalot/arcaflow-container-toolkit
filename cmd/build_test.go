@@ -137,7 +137,7 @@ func TestPythonFileRequirements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			fmt.Println(tc.filenames)
-			act, err := PythonFileRequirements(tc.filenames)
+			act, err := PythonFileRequirements(tc.filenames, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -178,7 +178,7 @@ func TestBasicRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := BasicRequirements(tc.filenames)
+			act, err := BasicRequirements(tc.filenames, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -224,7 +224,7 @@ func TestContainerRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := ContainerRequirements(tc.path, "dummy", "latest")
+			act, err := ContainerRequirements(tc.path, "dummy", "latest", nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -257,7 +257,7 @@ func TestGolangRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := GolangRequirements(tc.filenames)
+			act, err := GolangRequirements(tc.filenames, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -297,7 +297,7 @@ func TestPythonCodeStyle(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn)
+			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, nil)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -307,7 +307,7 @@ func TestPythonCodeStyle(t *testing.T) {
 }
 
 func TestLanguageRequirements(t *testing.T) {
-	act, err := LanguageRequirements(".", nil, "dummy", "latest")
+	act, err := LanguageRequirements(".", nil, "dummy", "latest", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -323,18 +323,18 @@ func TestLookupEnvVar(t *testing.T) {
 		return_value string
 	}
 
-	v := LookupEnvVar(envvar_key)
+	v := LookupEnvVar(envvar_key, nil)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s not set", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key)
+	v = LookupEnvVar(envvar_key, nil)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s is empty", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	envvar_val = "robot"
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key)
+	v = LookupEnvVar(envvar_key, nil)
 	assert.Equal(t, v.msg, "")
 	assert.Equal(t, v.return_value, envvar_val)
 
@@ -349,8 +349,7 @@ func TestBuildImage(t *testing.T) {
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
 		Times(1)
-	BuildImage(true, true, cec,
-		"use", "the", "forks")
+	BuildImage(true, true, cec, "use", "the", "forks", nil)
 }
 
 func TestBuildCmdMain(t *testing.T) {
@@ -410,5 +409,5 @@ func TestPushImage(t *testing.T) {
 		Push(destination, rg1.Username, rg1.Password, rg1.Url).
 		Return(nil).
 		Times(1)
-	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url)
+	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url, nil)
 }
