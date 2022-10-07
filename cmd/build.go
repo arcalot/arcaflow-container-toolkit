@@ -82,13 +82,15 @@ var buildCmd = &cobra.Command{
 			rootLogger.Errorf("error reading project directory (%w)", err)
 		}
 
-		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger); err != nil {
+		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger,
+			flake8PythonCodeStyle); err != nil {
 			rootLogger.Errorf("error in build command (%w)", err)
 		}
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string, logger log.Logger) error {
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string,
+	filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) error {
 	for _, registry := range conf.Registries {
 		meets_reqs := make([]bool, 3)
 		basic_reqs, err := BasicRequirements(filenames, logger)
@@ -101,16 +103,19 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 			return err
 		}
 		meets_reqs[1] = container_reqs
-		lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, nil)
+		lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
+			pythonCodeStyleChecker)
 		if err != nil {
 			return err
 		}
 		meets_reqs[2] = lang_req
 		all_checks := AllTrue(meets_reqs)
-		if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, logger); err != nil {
+		if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+			logger); err != nil {
 			return err
 		}
-		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag, registry.Username, registry.Password, registry.Url, nil); err != nil {
+		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+			registry.Username, registry.Password, registry.Url, nil); err != nil {
 			return err
 		}
 		if all_checks && !build_img {
@@ -191,14 +196,15 @@ func getConfig(logger log.Logger) (config, error) {
 	return conf, nil
 }
 
-func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger) (bool, error) {
+func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
 	meets_reqs := true
 	meets_reqs, err := PythonFileRequirements(filenames, logger)
 	if err != nil {
 		return false, err
 	}
 	// TODO: formatted to PEP 8?
-	good_style, err := PythonCodeStyle(abspath, name, version, flake8PythonCodeStyle, logger)
+	good_style, err := PythonCodeStyle(abspath, name, version, pythonCodeStyleChecker, logger)
 	if err != nil {
 		return false, err
 	} else if !good_style {
@@ -237,7 +243,8 @@ func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 	)
 }
 
-func LanguageRequirements(abspath string, filenames []string, name string, version string, logger log.Logger) (bool, error) {
+func LanguageRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
 	meets_reqs := true
 	lang, err := ImageLanguage(filenames)
 	if err != nil {
@@ -250,7 +257,7 @@ func LanguageRequirements(abspath string, filenames []string, name string, versi
 			return false, err
 		}
 	case "python":
-		meets_reqs, err = PythonRequirements(abspath, filenames, name, version, logger)
+		meets_reqs, err = PythonRequirements(abspath, filenames, name, version, logger, pythonCodeStyleChecker)
 		if err != nil {
 			return false, err
 		}

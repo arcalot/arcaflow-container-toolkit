@@ -136,8 +136,13 @@ func TestPythonFileRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			fmt.Println(tc.filenames)
-			act, err := PythonFileRequirements(tc.filenames, nil)
+			logConfig := arcalog.Config{
+				Level:       arcalog.LevelInfo,
+				Destination: arcalog.DestinationTest,
+				T:           t,
+			}
+			logger := arcalog.New(logConfig)
+			act, err := PythonFileRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -178,7 +183,13 @@ func TestBasicRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := BasicRequirements(tc.filenames, nil)
+			logConfig := arcalog.Config{
+				Level:       arcalog.LevelInfo,
+				Destination: arcalog.DestinationTest,
+				T:           t,
+			}
+			logger := arcalog.New(logConfig)
+			act, err := BasicRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -224,7 +235,14 @@ func TestContainerRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := ContainerRequirements(tc.path, "dummy", "latest", nil)
+			logConfig := arcalog.Config{
+				Level:       arcalog.LevelInfo,
+				Destination: arcalog.DestinationTest,
+				T:           t,
+			}
+			logger := arcalog.New(logConfig)
+			act, err := ContainerRequirements(
+				tc.path, "dummy", "latest", logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -257,7 +275,13 @@ func TestGolangRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := GolangRequirements(tc.filenames, nil)
+			logConfig := arcalog.Config{
+				Level:       arcalog.LevelInfo,
+				Destination: arcalog.DestinationTest,
+				T:           t,
+			}
+			logger := arcalog.New(logConfig)
+			act, err := GolangRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -279,6 +303,7 @@ func textPythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 }
 
 func TestPythonCodeStyle(t *testing.T) {
+
 	testCases := map[string]struct {
 		fn             func(string, *bytes.Buffer) error
 		expectedResult bool
@@ -307,7 +332,13 @@ func TestPythonCodeStyle(t *testing.T) {
 }
 
 func TestLanguageRequirements(t *testing.T) {
-	act, err := LanguageRequirements(".", nil, "dummy", "latest", nil)
+	logConfig := arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationTest,
+		T:           t,
+	}
+	logger := arcalog.New(logConfig)
+	act, err := LanguageRequirements(".", nil, "dummy", "latest", logger, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -315,6 +346,12 @@ func TestLanguageRequirements(t *testing.T) {
 }
 
 func TestLookupEnvVar(t *testing.T) {
+	logConfig := arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationTest,
+		T:           t,
+	}
+	logger := arcalog.New(logConfig)
 	// these debug messages shouldn't be hard coded into this test
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
@@ -323,18 +360,18 @@ func TestLookupEnvVar(t *testing.T) {
 		return_value string
 	}
 
-	v := LookupEnvVar(envvar_key, nil)
+	v := LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s not set", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key, nil)
+	v = LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s is empty", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	envvar_val = "robot"
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key, nil)
+	v = LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, "")
 	assert.Equal(t, v.return_value, envvar_val)
 
@@ -342,6 +379,12 @@ func TestLookupEnvVar(t *testing.T) {
 }
 
 func TestBuildImage(t *testing.T) {
+	logConfig := arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationTest,
+		T:           t,
+	}
+	logger := arcalog.New(logConfig)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -349,10 +392,16 @@ func TestBuildImage(t *testing.T) {
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
 		Times(1)
-	BuildImage(true, true, cec, "use", "the", "forks", nil)
+	BuildImage(true, true, cec, "use", "the", "forks", logger)
 }
 
 func TestBuildCmdMain(t *testing.T) {
+	logConfig := arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationTest,
+		T:           t,
+	}
+	logger := arcalog.New(logConfig)
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -379,16 +428,18 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
+	assert.AnError = BuildCmdMain(
+		true, true, cec, conf, ".",
+		python_filenames, logger, emptyPythonCodeStyle)
+}
+
+func TestPushImage(t *testing.T) {
 	logConfig := arcalog.Config{
 		Level:       arcalog.LevelInfo,
 		Destination: arcalog.DestinationTest,
 		T:           t,
 	}
 	logger := arcalog.New(logConfig)
-	BuildCmdMain(true, true, cec, conf, ".", python_filenames, logger)
-}
-
-func TestPushImage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -409,5 +460,5 @@ func TestPushImage(t *testing.T) {
 		Push(destination, rg1.Username, rg1.Password, rg1.Url).
 		Return(nil).
 		Times(1)
-	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url, nil)
+	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url, logger)
 }
