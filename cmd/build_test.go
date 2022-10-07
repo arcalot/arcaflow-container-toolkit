@@ -8,8 +8,6 @@ import (
 
 	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
 	"github.com/golang/mock/gomock"
-
-	// "fmt"
 	"github.com/stretchr/testify/assert"
 	arcalog "go.arcalot.io/log"
 	"testing"
@@ -41,7 +39,6 @@ func TestAllTrue(t *testing.T) {
 }
 
 func TestUserIsQuayRobot(t *testing.T) {
-
 	testCases := map[string]struct {
 		username       string
 		expectedResult bool
@@ -136,12 +133,7 @@ func TestPythonFileRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logConfig := arcalog.Config{
-				Level:       arcalog.LevelInfo,
-				Destination: arcalog.DestinationTest,
-				T:           t,
-			}
-			logger := arcalog.New(logConfig)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 			act, err := PythonFileRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
@@ -183,12 +175,7 @@ func TestBasicRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logConfig := arcalog.Config{
-				Level:       arcalog.LevelInfo,
-				Destination: arcalog.DestinationTest,
-				T:           t,
-			}
-			logger := arcalog.New(logConfig)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 			act, err := BasicRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
@@ -235,12 +222,7 @@ func TestContainerRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logConfig := arcalog.Config{
-				Level:       arcalog.LevelInfo,
-				Destination: arcalog.DestinationTest,
-				T:           t,
-			}
-			logger := arcalog.New(logConfig)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 			act, err := ContainerRequirements(
 				tc.path, "dummy", "latest", logger)
 			if err != nil {
@@ -275,12 +257,7 @@ func TestGolangRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			logConfig := arcalog.Config{
-				Level:       arcalog.LevelInfo,
-				Destination: arcalog.DestinationTest,
-				T:           t,
-			}
-			logger := arcalog.New(logConfig)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 			act, err := GolangRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
@@ -332,12 +309,7 @@ func TestPythonCodeStyle(t *testing.T) {
 }
 
 func TestLanguageRequirements(t *testing.T) {
-	logConfig := arcalog.Config{
-		Level:       arcalog.LevelInfo,
-		Destination: arcalog.DestinationTest,
-		T:           t,
-	}
-	logger := arcalog.New(logConfig)
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	act, err := LanguageRequirements(".", nil, "dummy", "latest", logger, nil)
 	if err != nil {
 		log.Fatal(err)
@@ -346,12 +318,7 @@ func TestLanguageRequirements(t *testing.T) {
 }
 
 func TestLookupEnvVar(t *testing.T) {
-	logConfig := arcalog.Config{
-		Level:       arcalog.LevelInfo,
-		Destination: arcalog.DestinationTest,
-		T:           t,
-	}
-	logger := arcalog.New(logConfig)
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	// these debug messages shouldn't be hard coded into this test
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
@@ -379,12 +346,7 @@ func TestLookupEnvVar(t *testing.T) {
 }
 
 func TestBuildImage(t *testing.T) {
-	logConfig := arcalog.Config{
-		Level:       arcalog.LevelInfo,
-		Destination: arcalog.DestinationTest,
-		T:           t,
-	}
-	logger := arcalog.New(logConfig)
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -396,12 +358,7 @@ func TestBuildImage(t *testing.T) {
 }
 
 func TestBuildCmdMain(t *testing.T) {
-	logConfig := arcalog.Config{
-		Level:       arcalog.LevelInfo,
-		Destination: arcalog.DestinationTest,
-		T:           t,
-	}
-	logger := arcalog.New(logConfig)
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -434,12 +391,7 @@ func TestBuildCmdMain(t *testing.T) {
 }
 
 func TestPushImage(t *testing.T) {
-	logConfig := arcalog.Config{
-		Level:       arcalog.LevelInfo,
-		Destination: arcalog.DestinationTest,
-		T:           t,
-	}
-	logger := arcalog.New(logConfig)
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
