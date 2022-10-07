@@ -203,7 +203,6 @@ func PythonRequirements(abspath string, filenames []string, name string, version
 	if err != nil {
 		return false, err
 	}
-	// TODO: formatted to PEP 8?
 	good_style, err := PythonCodeStyle(abspath, name, version, pythonCodeStyleChecker, logger)
 	if err != nil {
 		return false, err
@@ -415,7 +414,6 @@ func GolangRequirements(filenames []string, logger log.Logger) (bool, error) {
 		logger.Infof("Missing go.sum")
 		meets_reqs = false
 	}
-	// TODO: formatted to gofmt?
 	return meets_reqs, nil
 }
 
