@@ -299,7 +299,8 @@ func TestPythonCodeStyle(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, nil)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -310,7 +311,7 @@ func TestPythonCodeStyle(t *testing.T) {
 
 func TestLanguageRequirements(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	act, err := LanguageRequirements(".", nil, "dummy", "latest", logger, nil)
+	act, err := LanguageRequirements(".", []string{"dummy_plugin.py"}, "dummy", "latest", logger, emptyPythonCodeStyle)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -385,7 +386,7 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	assert.AnError = BuildCmdMain(
+	BuildCmdMain(
 		true, true, cec, conf, ".",
 		python_filenames, logger, emptyPythonCodeStyle)
 }
