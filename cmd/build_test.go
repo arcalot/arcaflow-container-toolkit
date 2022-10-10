@@ -8,11 +8,9 @@ import (
 
 	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
 	"github.com/golang/mock/gomock"
-
-	// "fmt"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	arcalog "go.arcalot.io/log"
+	"testing"
 )
 
 func IntMin(a, b int) int {
@@ -41,7 +39,6 @@ func TestAllTrue(t *testing.T) {
 }
 
 func TestUserIsQuayRobot(t *testing.T) {
-
 	testCases := map[string]struct {
 		username       string
 		expectedResult bool
@@ -75,10 +72,6 @@ func TestUserIsQuayRobot(t *testing.T) {
 			assert.Equal(t, tc.expectedResult, act)
 		})
 	}
-
-	//assert.False(t, UserIsQuayRobot("river+"))
-	//assert.False(t, UserIsQuayRobot("river"))
-	//assert.False(t, UserIsQuayRobot("+robot"))
 }
 
 func TestImageLanguage(t *testing.T) {
@@ -140,8 +133,8 @@ func TestPythonFileRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			fmt.Println(tc.filenames)
-			act, err := PythonFileRequirements(tc.filenames)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := PythonFileRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -182,7 +175,8 @@ func TestBasicRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := BasicRequirements(tc.filenames)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := BasicRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -228,7 +222,9 @@ func TestContainerRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := ContainerRequirements(tc.path, "dummy", "latest")
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := ContainerRequirements(
+				tc.path, "dummy", "latest", logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -261,7 +257,8 @@ func TestGolangRequirements(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := GolangRequirements(tc.filenames)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := GolangRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -283,6 +280,7 @@ func textPythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 }
 
 func TestPythonCodeStyle(t *testing.T) {
+
 	testCases := map[string]struct {
 		fn             func(string, *bytes.Buffer) error
 		expectedResult bool
@@ -301,7 +299,8 @@ func TestPythonCodeStyle(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn)
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -311,7 +310,8 @@ func TestPythonCodeStyle(t *testing.T) {
 }
 
 func TestLanguageRequirements(t *testing.T) {
-	act, err := LanguageRequirements(".", nil, "dummy", "latest")
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+	act, err := LanguageRequirements(".", []string{"dummy_plugin.py"}, "dummy", "latest", logger, emptyPythonCodeStyle)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -319,6 +319,7 @@ func TestLanguageRequirements(t *testing.T) {
 }
 
 func TestLookupEnvVar(t *testing.T) {
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	// these debug messages shouldn't be hard coded into this test
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
@@ -327,18 +328,18 @@ func TestLookupEnvVar(t *testing.T) {
 		return_value string
 	}
 
-	v := LookupEnvVar(envvar_key)
+	v := LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s not set", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key)
+	v = LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s is empty", envvar_key))
 	assert.Equal(t, v.return_value, "")
 
 	envvar_val = "robot"
 	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key)
+	v = LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, "")
 	assert.Equal(t, v.return_value, envvar_val)
 
@@ -346,6 +347,7 @@ func TestLookupEnvVar(t *testing.T) {
 }
 
 func TestBuildImage(t *testing.T) {
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -353,11 +355,11 @@ func TestBuildImage(t *testing.T) {
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
 		Times(1)
-	BuildImage(true, true, cec,
-		"use", "the", "forks")
+	BuildImage(true, true, cec, "use", "the", "forks", logger)
 }
 
 func TestBuildCmdMain(t *testing.T) {
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
@@ -385,28 +387,25 @@ func TestBuildCmdMain(t *testing.T) {
 		"requirements.txt",
 		"pyproject.toml"}
 	BuildCmdMain(
-		true,
-		true,
-		cec,
-		conf,
-		".",
-		python_filenames,
-	)
+		true, true, cec, conf, ".",
+		python_filenames, logger, emptyPythonCodeStyle)
 }
 
 func TestPushImage(t *testing.T) {
+	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
 	rg1 := Registry{
-		Url:      "reg1.io",
-		Username: "user1",
-		Password: "secret1",
+		Url:       "reg1.io",
+		Username:  "user1",
+		Password:  "secret1",
+		Namespace: "allyourbases",
 	}
 	image_name := "usethe"
 	image_tag := "forks"
 
-	destination := fmt.Sprintf("%s/%s/%s:%s", rg1.Url, rg1.Username, image_name, image_tag)
+	destination := fmt.Sprintf("%s/%s/%s:%s", rg1.Url, rg1.Namespace, image_name, image_tag)
 	cec.EXPECT().
 		Tag(fmt.Sprintf("%s:%s", image_name, image_tag), destination).
 		Return(nil).
@@ -415,5 +414,6 @@ func TestPushImage(t *testing.T) {
 		Push(destination, rg1.Username, rg1.Password, rg1.Url).
 		Return(nil).
 		Times(1)
-	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url)
+	PushImage(true, true, true, cec, image_name, image_tag,
+		rg1.Username, rg1.Password, rg1.Url, rg1.Namespace, logger)
 }

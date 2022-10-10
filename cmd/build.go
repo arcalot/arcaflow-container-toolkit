@@ -6,7 +6,6 @@ package cmd
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,6 +17,7 @@ import (
 	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.arcalot.io/log"
 )
 
 var Push bool
@@ -34,16 +34,24 @@ type config struct {
 }
 
 type Registry struct {
-	Url             string
-	Username_Envvar string
-	Password_Envvar string
-	Username        string `default:""`
-	Password        string `default:""`
+	Url              string
+	Username_Envvar  string
+	Password_Envvar  string
+	Namespace_Envvar string
+	Username         string `default:""`
+	Password         string `default:""`
+	Namespace        string `default:""`
 }
 
 type verbose struct {
 	msg          string
 	return_value string
+}
+
+func (s *Registry) SetDefaults() {
+	if len(s.Namespace) == 0 {
+		s.Namespace = s.Username
+	}
 }
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer) error
@@ -60,70 +68,77 @@ var buildCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		cec, err := ce_client.NewCeClient("docker")
+
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid container engine client (%w)", err)
 		}
-		conf, err := getConfig()
+		conf, err := getConfig(rootLogger)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid carpenter config (%w)", err)
 		}
 		abspath, err := filepath.Abs(conf.Project_Filepath)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("invalid absolute path to project (%w)", err)
 		}
 		files, err := os.Open(abspath)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("error opening project directory (%w)", err)
 		}
 		defer files.Close()
 		filenames, err := files.Readdirnames(0)
 		if err != nil {
-			log.Fatal(err)
+			rootLogger.Errorf("error reading project directory (%w)", err)
 		}
 
-		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames); err != nil {
-			log.Fatal(err)
+		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger,
+			flake8PythonCodeStyle); err != nil {
+			rootLogger.Errorf("error in build command (%w)", err)
 		}
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string) error {
-	for _, registry := range conf.Registries {
-		meets_reqs := make([]bool, 3)
-		basic_reqs, err := BasicRequirements(filenames)
-		if err != nil {
-			return err
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string,
+	filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) error {
+	meets_reqs := make([]bool, 3)
+	basic_reqs, err := BasicRequirements(filenames, logger)
+	if err != nil {
+		return err
+	}
+	meets_reqs[0] = basic_reqs
+	container_reqs, err := ContainerRequirements(abspath, conf.Image_Name, conf.Image_Tag, logger)
+	if err != nil {
+		return err
+	}
+	meets_reqs[1] = container_reqs
+	lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
+		pythonCodeStyleChecker)
+	if err != nil {
+		return err
+	}
+	meets_reqs[2] = lang_req
+	all_checks := AllTrue(meets_reqs)
+	if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+		logger); err != nil {
+		return err
+	}
+	if all_checks && build_img {
+		logger.Infof("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
+		for _, registry := range conf.Registries {
+			if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+				return err
+			}
+
 		}
-		meets_reqs[0] = basic_reqs
-		container_reqs, err := ContainerRequirements(abspath, conf.Image_Name, conf.Image_Tag)
-		if err != nil {
-			return err
-		}
-		meets_reqs[1] = container_reqs
-		lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag)
-		if err != nil {
-			return err
-		}
-		meets_reqs[2] = lang_req
-		all_checks := AllTrue(meets_reqs)
-		if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag); err != nil {
-			return err
-		}
-		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag, registry.Username, registry.Password, registry.Url); err != nil {
-			return err
-		}
-		if all_checks && !build_img {
-			fmt.Printf("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		} else {
-			fmt.Printf("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		}
+	} else {
+		logger.Infof("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
 }
 
-func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string) error {
+func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
 	if all_checks && build_img {
-		fmt.Printf("Building %s %s from %v\n", image_name, image_tag, abspath)
+		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
 		if err := cec.Build(abspath, image_name, []string{image_tag}); err != nil {
 			return err
 		}
@@ -131,12 +146,13 @@ func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineCl
 	return nil
 }
 
-func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address string) error {
+func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address, registry_namespace string, logger log.Logger) error {
 	if all_checks && build_image && push_image {
-		fmt.Printf("Pushing %s version %s to registry %s\n", name, version, registry_address)
+		destination := filepath.Join(registry_address, registry_namespace, name)
+		//logger.Infof("Pushing %s version %s to %s\n", name, version, destination)
+		logger.Infof("Pushing %s", destination)
 		image_name_tag := name + ":" + version
 
-		destination := filepath.Join(registry_address, username, name)
 		if robot, err := UserIsQuayRobot(username); err != nil {
 			return err
 		} else if robot {
@@ -158,7 +174,7 @@ func PushImage(all_checks, build_image, push_image bool, cec ce_client.Container
 	return nil
 }
 
-func getConfig() (config, error) {
+func getConfig(logger log.Logger) (config, error) {
 	var Registries []Registry
 	var PlaceHolder struct{}
 
@@ -167,13 +183,20 @@ func getConfig() (config, error) {
 	for i := range Registries {
 		username_envvar := Registries[i].Username_Envvar
 		password_envvar := Registries[i].Password_Envvar
-		username := LookupEnvVar(username_envvar).return_value
-		password := LookupEnvVar(password_envvar).return_value
+		namespace_envvar := Registries[i].Namespace_Envvar
+		username := LookupEnvVar(username_envvar, logger).return_value
+		password := LookupEnvVar(password_envvar, logger).return_value
+		namespace := LookupEnvVar(namespace_envvar, logger).return_value
 		if len(username) > 0 && len(password) > 0 {
 			Registries[i].Username = username
 			Registries[i].Password = password
+			if len(namespace) == 0 {
+				Registries[i].Namespace = Registries[i].Username
+			} else {
+				Registries[i].Namespace = namespace
+			}
 		} else {
-			fmt.Printf("Missing credentials for %s\n", Registries[i].Url)
+			logger.Infof("Missing credentials for %s\n", Registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 		}
 	}
@@ -185,52 +208,42 @@ func getConfig() (config, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		log.Fatal(err)
+		return config{}, err
 	}
 	return conf, nil
 }
 
-func PythonRequirements(abspath string, filenames []string, name string, version string) (bool, error) {
+func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
 	meets_reqs := true
-	meets_reqs, err := PythonFileRequirements(filenames)
+	meets_reqs, err := PythonFileRequirements(filenames, logger)
 	if err != nil {
 		return false, err
 	}
-
-	// TODO: formatted to PEP 8?
-	good_style, err := PythonCodeStyle(abspath, name, version, flake8PythonCodeStyle)
+	good_style, err := PythonCodeStyle(abspath, name, version, pythonCodeStyleChecker, logger)
 	if err != nil {
 		return false, err
 	} else if !good_style {
 		meets_reqs = false
 	}
-
 	return meets_reqs, nil
 }
 
-func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile) (bool, error) {
-	meets_reqs := true
+func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
 	stdout := &bytes.Buffer{}
-	os.Chdir(abspath)
-
 	if err := checkPythonCodeStyle(abspath, stdout); err != nil {
-		err := fmt.Errorf(
-			"Code style and quality check caused an error for %s version %s (%w)",
-			name,
-			version,
-			err,
-		)
-		util.WriteOutput(name, version, stdout, err)
+		logger.Infof("Code style and quality check caused an error for %s version %s (%w)", name, version, err)
 		return false, err
 	}
 	// fail if code style checks returns anything besides whitespace to stdout
 	if len(stdout.String()) > 0 {
-		meets_reqs = false
+		return false, nil
 	}
-	return meets_reqs, nil
+	return true, nil
 }
 
 func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
+	os.Chdir(abspath)
 	return util.RunExternalProgram(
 		"python3",
 		[]string{
@@ -246,7 +259,8 @@ func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 	)
 }
 
-func LanguageRequirements(abspath string, filenames []string, name string, version string) (bool, error) {
+func LanguageRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
 	meets_reqs := true
 	lang, err := ImageLanguage(filenames)
 	if err != nil {
@@ -254,17 +268,17 @@ func LanguageRequirements(abspath string, filenames []string, name string, versi
 	}
 	switch lang {
 	case "go":
-		meets_reqs, err = GolangRequirements(filenames)
+		meets_reqs, err = GolangRequirements(filenames, logger)
 		if err != nil {
 			return false, err
 		}
 	case "python":
-		meets_reqs, err = PythonRequirements(abspath, filenames, name, version)
+		meets_reqs, err = PythonRequirements(abspath, filenames, name, version, logger, pythonCodeStyleChecker)
 		if err != nil {
 			return false, err
 		}
 	default:
-		fmt.Printf("Programming Language %s not supported\n", lang)
+		logger.Infof("Programming Language %s not supported\n", lang)
 		meets_reqs = false
 	}
 
@@ -297,7 +311,7 @@ func hasMatchedFilename(names []string, match_name string) (bool, error) {
 	return false, nil
 }
 
-func BasicRequirements(filenames []string) (bool, error) {
+func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true
 	output := ""
 
@@ -305,7 +319,7 @@ func BasicRequirements(filenames []string) (bool, error) {
 		return false, err
 	} else if !has_ {
 		output = "Missing README.md\n"
-		fmt.Println(output)
+		logger.Infof(output)
 		meets_reqs = false
 	}
 
@@ -313,7 +327,7 @@ func BasicRequirements(filenames []string) (bool, error) {
 		return false, err
 	} else if !has_ {
 		output = "Missing Dockerfile\n"
-		fmt.Println(output)
+		logger.Infof(output)
 		meets_reqs = false
 	}
 
@@ -321,18 +335,19 @@ func BasicRequirements(filenames []string) (bool, error) {
 		return false, err
 	} else if !has_ {
 		// match case-insensitive 'test'?
-		fmt.Print("Missing a test file\n")
+		output = "Missing a test file\n"
+		logger.Infof(output)
 		meets_reqs = false
 	}
 
 	return meets_reqs, nil
 }
 
-func ContainerRequirements(abspath string, name string, version string) (bool, error) {
+func ContainerRequirements(abspath string, name string, version string, logger log.Logger) (bool, error) {
 	meets_reqs := true
 	project_files, err := os.Open(abspath)
 	if err != nil {
-		log.Fatal(err)
+		return false, err
 	}
 	defer project_files.Close()
 	filenames, err := project_files.Readdirnames(0)
@@ -344,7 +359,7 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 		return false, err
 	}
 	if !has_ {
-		fmt.Println("Missing Dockerfile")
+		logger.Infof("Missing Dockerfile")
 		meets_reqs = false
 
 	} else {
@@ -372,7 +387,7 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 			if has_, err := dockerfileHasLine(dockerfile, regexp); err != nil {
 				return false, err
 			} else if !has_ {
-				fmt.Println(loggerResp)
+				logger.Infof(loggerResp)
 				meets_reqs = has_
 			}
 		}
@@ -380,7 +395,7 @@ func ContainerRequirements(abspath string, name string, version string) (bool, e
 	return meets_reqs, nil
 }
 
-func PythonFileRequirements(filenames []string) (bool, error) {
+func PythonFileRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true
 	has_reqs_txt, err := hasFilename(filenames, "requirements.txt")
 	if err != nil {
@@ -392,31 +407,30 @@ func PythonFileRequirements(filenames []string) (bool, error) {
 	}
 	if !has_reqs_txt || !has_pyproject {
 		if !has_reqs_txt {
-			fmt.Println("Missing requirements.txt")
+			logger.Infof("Missing requirements.txt")
 		}
 		if !has_pyproject {
-			fmt.Println("Missing pyproject.toml")
+			logger.Infof("Missing pyproject.toml")
 		}
 		meets_reqs = false
 	}
 	return meets_reqs, nil
 }
 
-func GolangRequirements(filenames []string) (bool, error) {
+func GolangRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true
 	if has_, err := hasFilename(filenames, "go.mod"); err != nil {
 		return false, err
 	} else if !has_ {
-		fmt.Println("Missing go.mod")
+		logger.Infof("Missing go.mod")
 		meets_reqs = false
 	}
 	if has_, err := hasFilename(filenames, "go.sum"); err != nil {
 		return false, err
 	} else if !has_ {
-		fmt.Println("Missing go.sum")
+		logger.Infof("Missing go.sum")
 		meets_reqs = false
 	}
-	// TODO: formatted to gofmt?
 	return meets_reqs, nil
 }
 
@@ -431,16 +445,16 @@ func UserIsQuayRobot(username string) (bool, error) {
 	return false, nil
 }
 
-func LookupEnvVar(key string) verbose {
+func LookupEnvVar(key string, logger log.Logger) verbose {
 	val, ok := os.LookupEnv(key)
-	verbose := verbose{return_value: val}
+	var msg string
 	if !ok {
-		verbose.msg = fmt.Sprintf("%s not set", key)
+		msg = fmt.Sprintf("%s not set", key)
 	} else if len(val) == 0 {
-		verbose.msg = fmt.Sprintf("%s is empty", key)
+		msg = fmt.Sprintf("%s is empty", key)
 	}
-	fmt.Println(verbose.msg)
-	return verbose
+	logger.Infof(msg)
+	return verbose{return_value: val, msg: msg}
 }
 
 func FilterByIndex(list []Registry, remove map[string]Empty) []Registry {

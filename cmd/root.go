@@ -4,15 +4,17 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"fmt"
-	"log"
+	"io"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"go.arcalot.io/log"
 )
 
 var cfgFile string
+var verbosity bool
+var rootLogger log.Logger
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -24,9 +26,13 @@ examples and usage of using your application. For example:
 Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		log_level := log.LevelInfo
+		if verbosity {
+			log_level = log.LevelDebug
+		}
+		ConfigureLogger(&rootLogger, log_level, log.DestinationStdout, os.Stdout)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -34,7 +40,7 @@ to quickly create a Cobra application.`,
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
-		log.Fatal(err)
+		rootLogger.Errorf("root command failed", err)
 	}
 }
 
@@ -42,6 +48,17 @@ func init() {
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.carpenter.yaml)")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().BoolVarP(&verbosity, "verbosity", "v", false, "verbose debugging log messages")
+	ConfigureLogger(&rootLogger, log.LevelInfo, log.DestinationStdout, os.Stdout)
+}
+
+func ConfigureLogger(logger *log.Logger, level log.Level, dest log.Destination, w io.Writer) {
+	logConfig := log.Config{
+		Level:       level,
+		Destination: dest,
+		Stdout:      w,
+	}
+	*logger = log.New(logConfig)
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -53,7 +70,6 @@ func initConfig() {
 		// Find home directory.
 		home, err := os.UserHomeDir()
 		cobra.CheckErr(err)
-
 		viper.AddConfigPath(home)
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("/")
@@ -63,9 +79,9 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintf(os.Stderr, "Using config file:%s\n", viper.ConfigFileUsed())
+		rootLogger.Infof("Using config file:%s\n", viper.ConfigFileUsed())
 	} else {
-		fmt.Fprintf(os.Stderr, "Did not find .carpenter config file")
+		rootLogger.Errorf("Did not find .carpenter config file")
 		os.Exit(1)
 	}
 
