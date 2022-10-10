@@ -49,6 +49,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.carpenter.yaml)")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().BoolVarP(&verbosity, "verbosity", "v", false, "verbose debugging log messages")
+	ConfigureLogger(&rootLogger, log.LevelInfo, log.DestinationStdout, os.Stdout)
 }
 
 func ConfigureLogger(logger *log.Logger, level log.Level, dest log.Destination, w io.Writer) {

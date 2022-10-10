@@ -34,16 +34,24 @@ type config struct {
 }
 
 type Registry struct {
-	Url             string
-	Username_Envvar string
-	Password_Envvar string
-	Username        string `default:""`
-	Password        string `default:""`
+	Url              string
+	Username_Envvar  string
+	Password_Envvar  string
+	Namespace_Envvar string
+	Username         string `default:""`
+	Password         string `default:""`
+	Namespace        string `default:""`
 }
 
 type verbose struct {
 	msg          string
 	return_value string
+}
+
+func (s *Registry) SetDefaults() {
+	if len(s.Namespace) == 0 {
+		s.Namespace = s.Username
+	}
 }
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer) error
@@ -64,7 +72,7 @@ var buildCmd = &cobra.Command{
 		if err != nil {
 			rootLogger.Errorf("invalid container engine client (%w)", err)
 		}
-		conf, err := getConfig(nil)
+		conf, err := getConfig(rootLogger)
 		if err != nil {
 			rootLogger.Errorf("invalid carpenter config (%w)", err)
 		}
@@ -91,38 +99,39 @@ var buildCmd = &cobra.Command{
 
 func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string,
 	filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) error {
-	for _, registry := range conf.Registries {
-		meets_reqs := make([]bool, 3)
-		basic_reqs, err := BasicRequirements(filenames, logger)
-		if err != nil {
-			return err
+	meets_reqs := make([]bool, 3)
+	basic_reqs, err := BasicRequirements(filenames, logger)
+	if err != nil {
+		return err
+	}
+	meets_reqs[0] = basic_reqs
+	container_reqs, err := ContainerRequirements(abspath, conf.Image_Name, conf.Image_Tag, logger)
+	if err != nil {
+		return err
+	}
+	meets_reqs[1] = container_reqs
+	lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
+		pythonCodeStyleChecker)
+	if err != nil {
+		return err
+	}
+	meets_reqs[2] = lang_req
+	all_checks := AllTrue(meets_reqs)
+	if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+		logger); err != nil {
+		return err
+	}
+	if all_checks && build_img {
+		logger.Infof("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
+		for _, registry := range conf.Registries {
+			if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+				return err
+			}
+
 		}
-		meets_reqs[0] = basic_reqs
-		container_reqs, err := ContainerRequirements(abspath, conf.Image_Name, conf.Image_Tag, logger)
-		if err != nil {
-			return err
-		}
-		meets_reqs[1] = container_reqs
-		lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
-			pythonCodeStyleChecker)
-		if err != nil {
-			return err
-		}
-		meets_reqs[2] = lang_req
-		all_checks := AllTrue(meets_reqs)
-		if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
-			logger); err != nil {
-			return err
-		}
-		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
-			registry.Username, registry.Password, registry.Url, nil); err != nil {
-			return err
-		}
-		if all_checks && !build_img {
-			logger.Infof("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		} else {
-			logger.Infof("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		}
+	} else {
+		logger.Infof("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
 }
@@ -137,12 +146,13 @@ func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineCl
 	return nil
 }
 
-func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address string, logger log.Logger) error {
+func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address, registry_namespace string, logger log.Logger) error {
 	if all_checks && build_image && push_image {
-		logger.Infof("Pushing %s version %s to registry %s\n", name, version, registry_address)
+		destination := filepath.Join(registry_address, registry_namespace, name)
+		//logger.Infof("Pushing %s version %s to %s\n", name, version, destination)
+		logger.Infof("Pushing %s", destination)
 		image_name_tag := name + ":" + version
 
-		destination := filepath.Join(registry_address, username, name)
 		if robot, err := UserIsQuayRobot(username); err != nil {
 			return err
 		} else if robot {
@@ -173,11 +183,18 @@ func getConfig(logger log.Logger) (config, error) {
 	for i := range Registries {
 		username_envvar := Registries[i].Username_Envvar
 		password_envvar := Registries[i].Password_Envvar
+		namespace_envvar := Registries[i].Namespace_Envvar
 		username := LookupEnvVar(username_envvar, logger).return_value
 		password := LookupEnvVar(password_envvar, logger).return_value
+		namespace := LookupEnvVar(namespace_envvar, logger).return_value
 		if len(username) > 0 && len(password) > 0 {
 			Registries[i].Username = username
 			Registries[i].Password = password
+			if len(namespace) == 0 {
+				Registries[i].Namespace = Registries[i].Username
+			} else {
+				Registries[i].Namespace = namespace
+			}
 		} else {
 			logger.Infof("Missing credentials for %s\n", Registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
@@ -430,14 +447,14 @@ func UserIsQuayRobot(username string) (bool, error) {
 
 func LookupEnvVar(key string, logger log.Logger) verbose {
 	val, ok := os.LookupEnv(key)
-	verbose := verbose{return_value: val}
+	var msg string
 	if !ok {
-		verbose.msg = fmt.Sprintf("%s not set", key)
+		msg = fmt.Sprintf("%s not set", key)
 	} else if len(val) == 0 {
-		verbose.msg = fmt.Sprintf("%s is empty", key)
+		msg = fmt.Sprintf("%s is empty", key)
 	}
-	logger.Infof(verbose.msg)
-	return verbose
+	logger.Infof(msg)
+	return verbose{return_value: val, msg: msg}
 }
 
 func FilterByIndex(list []Registry, remove map[string]Empty) []Registry {

@@ -397,14 +397,15 @@ func TestPushImage(t *testing.T) {
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
 	rg1 := Registry{
-		Url:      "reg1.io",
-		Username: "user1",
-		Password: "secret1",
+		Url:       "reg1.io",
+		Username:  "user1",
+		Password:  "secret1",
+		Namespace: "allyourbases",
 	}
 	image_name := "usethe"
 	image_tag := "forks"
 
-	destination := fmt.Sprintf("%s/%s/%s:%s", rg1.Url, rg1.Username, image_name, image_tag)
+	destination := fmt.Sprintf("%s/%s/%s:%s", rg1.Url, rg1.Namespace, image_name, image_tag)
 	cec.EXPECT().
 		Tag(fmt.Sprintf("%s:%s", image_name, image_tag), destination).
 		Return(nil).
@@ -413,5 +414,6 @@ func TestPushImage(t *testing.T) {
 		Push(destination, rg1.Username, rg1.Password, rg1.Url).
 		Return(nil).
 		Times(1)
-	PushImage(true, true, true, cec, image_name, image_tag, rg1.Username, rg1.Password, rg1.Url, logger)
+	PushImage(true, true, true, cec, image_name, image_tag,
+		rg1.Username, rg1.Password, rg1.Url, rg1.Namespace, logger)
 }
