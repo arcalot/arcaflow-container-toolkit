@@ -131,7 +131,8 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 
 		}
 	} else {
-		logger.Infof("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
+		logger.Errorf("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
+		return fmt.Errorf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
 }
