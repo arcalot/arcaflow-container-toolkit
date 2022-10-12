@@ -71,28 +71,33 @@ var buildCmd = &cobra.Command{
 
 		if err != nil {
 			rootLogger.Errorf("invalid container engine client (%w)", err)
+			panic(err)
 		}
 		conf, err := getConfig(rootLogger)
 		if err != nil {
 			rootLogger.Errorf("invalid carpenter config (%w)", err)
+			panic(err)
 		}
 		abspath, err := filepath.Abs(conf.Project_Filepath)
 		if err != nil {
 			rootLogger.Errorf("invalid absolute path to project (%w)", err)
+			panic(err)
 		}
 		files, err := os.Open(abspath)
 		if err != nil {
 			rootLogger.Errorf("error opening project directory (%w)", err)
+			panic(err)
 		}
 		defer files.Close()
 		filenames, err := files.Readdirnames(0)
 		if err != nil {
 			rootLogger.Errorf("error reading project directory (%w)", err)
+			panic(err)
 		}
-
 		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger,
 			flake8PythonCodeStyle); err != nil {
 			rootLogger.Errorf("error in build command (%w)", err)
+			panic(err)
 		}
 	},
 }
@@ -121,17 +126,13 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 		logger); err != nil {
 		return err
 	}
-	if all_checks && build_img {
-		logger.Infof("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		for _, registry := range conf.Registries {
-			if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
-				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
-				return err
-			}
-
+	for _, registry := range conf.Registries {
+		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+			return err
 		}
-	} else {
-		logger.Errorf("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
+	}
+	if !all_checks {
 		return fmt.Errorf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
@@ -139,6 +140,7 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
 	if all_checks && build_img {
+		logger.Infof("Passed all requirements: %s %s\n", image_name, image_tag)
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
 		if err := cec.Build(abspath, image_name, []string{image_tag}, logger); err != nil {
 			return err
