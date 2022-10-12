@@ -54,7 +54,7 @@ func (s *Registry) SetDefaults() {
 	}
 }
 
-type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer) error
+type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error
 
 func init() {
 	rootCmd.AddCommand(buildCmd)
@@ -71,34 +71,42 @@ var buildCmd = &cobra.Command{
 
 		if err != nil {
 			rootLogger.Errorf("invalid container engine client (%w)", err)
+			panic(err)
 		}
 		conf, err := getConfig(rootLogger)
 		if err != nil {
 			rootLogger.Errorf("invalid carpenter config (%w)", err)
+			panic(err)
 		}
 		abspath, err := filepath.Abs(conf.Project_Filepath)
 		if err != nil {
 			rootLogger.Errorf("invalid absolute path to project (%w)", err)
+			panic(err)
 		}
 		files, err := os.Open(abspath)
 		if err != nil {
 			rootLogger.Errorf("error opening project directory (%w)", err)
+			panic(err)
 		}
-		defer files.Close()
 		filenames, err := files.Readdirnames(0)
 		if err != nil {
 			rootLogger.Errorf("error reading project directory (%w)", err)
+			panic(err)
 		}
-
+		err = files.Close()
+		if err != nil {
+			rootLogger.Errorf("error closing directory at %s (%w)", abspath, err)
+			panic(err)
+		}
 		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger,
 			flake8PythonCodeStyle); err != nil {
 			rootLogger.Errorf("error in build command (%w)", err)
+			panic(err)
 		}
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string,
-	filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) error {
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) error {
 	meets_reqs := make([]bool, 3)
 	basic_reqs, err := BasicRequirements(filenames, logger)
 	if err != nil {
@@ -121,17 +129,13 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 		logger); err != nil {
 		return err
 	}
-	if all_checks && build_img {
-		logger.Infof("Passed all requirements: %s %s\n", conf.Image_Name, conf.Image_Tag)
-		for _, registry := range conf.Registries {
-			if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
-				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
-				return err
-			}
-
+	for _, registry := range conf.Registries {
+		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+			return err
 		}
-	} else {
-		logger.Errorf("Failed requirements check, not building: %s %s\n", conf.Image_Name, conf.Image_Tag)
+	}
+	if !all_checks {
 		return fmt.Errorf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
@@ -139,8 +143,9 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
 	if all_checks && build_img {
+		logger.Infof("Passed all requirements: %s %s\n", image_name, image_tag)
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
-		if err := cec.Build(abspath, image_name, []string{image_tag}); err != nil {
+		if err := cec.Build(abspath, image_name, []string{image_tag}, logger); err != nil {
 			return err
 		}
 	}
@@ -154,11 +159,11 @@ func PushImage(all_checks, build_image, push_image bool, cec ce_client.Container
 			[]string{registry_address, registry_namespace, image_name_tag},
 			"/")
 		logger.Infof("Pushing %s to %s", name, destination)
-		err := cec.Tag(image_name_tag, destination)
+		err := cec.Tag(image_name_tag, destination, logger)
 		if err != nil {
 			return err
 		}
-		err = cec.Push(destination, username, password, registry_address)
+		err = cec.Push(destination, username, password, registry_address, logger)
 		if err != nil {
 			return err
 		}
@@ -170,7 +175,11 @@ func getConfig(logger log.Logger) (config, error) {
 	var Registries []Registry
 	var PlaceHolder struct{}
 
-	viper.UnmarshalKey("registries", &Registries)
+	err := viper.UnmarshalKey("registries", &Registries)
+	if err != nil {
+		logger.Errorf("error unmarshalling registries from config file (%w)", err)
+		panic(err)
+	}
 	misconfigured_registries := make(map[string]Empty)
 	for i := range Registries {
 		username_envvar := Registries[i].Username_Envvar
@@ -213,7 +222,7 @@ func getConfig(logger log.Logger) (config, error) {
 }
 
 func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
-	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 	meets_reqs := true
 	meets_reqs, err := PythonFileRequirements(filenames, logger)
 	if err != nil {
@@ -230,7 +239,7 @@ func PythonRequirements(abspath string, filenames []string, name string, version
 
 func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
 	stdout := &bytes.Buffer{}
-	if err := checkPythonCodeStyle(abspath, stdout); err != nil {
+	if err := checkPythonCodeStyle(abspath, stdout, logger); err != nil {
 		logger.Infof("Code style and quality check caused an error for %s version %s (%w)", name, version, err)
 		return false, err
 	}
@@ -241,8 +250,12 @@ func PythonCodeStyle(abspath string, name string, version string, checkPythonCod
 	return true, nil
 }
 
-func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
-	os.Chdir(abspath)
+func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
+	err := os.Chdir(abspath)
+	if err != nil {
+		logger.Errorf("error changing current working directory to %s (%w)", abspath, err)
+		panic(err)
+	}
 	return util.RunExternalProgram(
 		"python3",
 		[]string{
@@ -259,7 +272,7 @@ func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 }
 
 func LanguageRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
-	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer) error) (bool, error) {
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 	meets_reqs := true
 	lang, err := ImageLanguage(filenames)
 	if err != nil {

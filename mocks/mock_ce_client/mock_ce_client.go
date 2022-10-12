@@ -5,6 +5,7 @@
 package mocks
 
 import (
+	"go.arcalot.io/log"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,7 +35,7 @@ func (m *MockContainerEngineClient) EXPECT() *MockContainerEngineClientMockRecor
 }
 
 // Build mocks base method.
-func (m *MockContainerEngineClient) Build(filepath, name string, tags []string) error {
+func (m *MockContainerEngineClient) Build(filepath string, name string, tags []string, logger log.Logger) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", filepath, name, tags)
 	ret0, _ := ret[0].(error)
@@ -48,7 +49,7 @@ func (mr *MockContainerEngineClientMockRecorder) Build(filepath, name, tags inte
 }
 
 // Push mocks base method.
-func (m *MockContainerEngineClient) Push(destination, username, password, registry_address string) error {
+func (m *MockContainerEngineClient) Push(destination string, username string, password string, registry_address string, logger log.Logger) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Push", destination, username, password, registry_address)
 	ret0, _ := ret[0].(error)
@@ -62,7 +63,7 @@ func (mr *MockContainerEngineClientMockRecorder) Push(destination, username, pas
 }
 
 // Tag mocks base method.
-func (m *MockContainerEngineClient) Tag(image_tag, destination string) error {
+func (m *MockContainerEngineClient) Tag(image_tag string, destination string, logger log.Logger) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tag", image_tag, destination)
 	ret0, _ := ret[0].(error)
