@@ -150,26 +150,18 @@ func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineCl
 func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address, registry_namespace string, logger log.Logger) error {
 	if all_checks && build_image && push_image {
 		destination := filepath.Join(registry_address, registry_namespace, name)
-		//logger.Infof("Pushing %s version %s to %s\n", name, version, destination)
 		logger.Infof("Pushing %s", destination)
 		image_name_tag := name + ":" + version
+		destination = filepath.Join(registry_address, registry_namespace, image_name_tag)
 
-		if robot, err := UserIsQuayRobot(username); err != nil {
+		err := cec.Tag(image_name_tag, destination)
+		if err != nil {
 			return err
-		} else if robot {
-			robot_owner := strings.Split(username, "+")
-			destination = filepath.Join(registry_address, robot_owner[0], name)
-		}
-		destination = destination + ":" + version
-
-		err2 := cec.Tag(image_name_tag, destination)
-		if err2 != nil {
-			return err2
 		}
 
-		err3 := cec.Push(destination, username, password, registry_address)
-		if err3 != nil {
-			return err3
+		err = cec.Push(destination, username, password, registry_address)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -192,7 +184,14 @@ func getConfig(logger log.Logger) (config, error) {
 			Registries[i].Username = username
 			Registries[i].Password = password
 			if len(namespace) == 0 {
-				Registries[i].Namespace = Registries[i].Username
+				if robot, err := UserIsQuayRobot(username); err != nil {
+					return config{}, err
+				} else if robot {
+					robot_owner := strings.Split(username, "+")
+					Registries[i].Namespace = robot_owner[0]
+				} else {
+					Registries[i].Namespace = Registries[i].Username
+				}
 			} else {
 				Registries[i].Namespace = namespace
 			}
