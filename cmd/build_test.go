@@ -267,11 +267,11 @@ func TestGolangRequirements(t *testing.T) {
 	}
 }
 
-func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
+func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {
 	return nil
 }
 
-func textPythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
+func textPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {
 	_, err := stdout.WriteString("bad code")
 	if err != nil {
 		return err
@@ -282,7 +282,7 @@ func textPythonCodeStyle(abspath string, stdout *bytes.Buffer) error {
 func TestPythonCodeStyle(t *testing.T) {
 
 	testCases := map[string]struct {
-		fn             func(string, *bytes.Buffer) error
+		fn             func(string, *bytes.Buffer, arcalog.Logger) error
 		expectedResult bool
 	}{
 		"a": {
@@ -311,7 +311,8 @@ func TestPythonCodeStyle(t *testing.T) {
 
 func TestLanguageRequirements(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	act, err := LanguageRequirements(".", []string{"dummy_plugin.py"}, "dummy", "latest", logger, emptyPythonCodeStyle)
+	act, err := LanguageRequirements(".", []string{"dummy_plugin.py"}, "dummy",
+		"latest", logger, emptyPythonCodeStyle)
 	if err != nil {
 		log.Fatal(err)
 	}
