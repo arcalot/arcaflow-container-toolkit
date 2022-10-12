@@ -149,16 +149,15 @@ func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineCl
 
 func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version, username, password, registry_address, registry_namespace string, logger log.Logger) error {
 	if all_checks && build_image && push_image {
-		destination := filepath.Join(registry_address, registry_namespace, name)
-		logger.Infof("Pushing %s", destination)
 		image_name_tag := name + ":" + version
-		destination = filepath.Join(registry_address, registry_namespace, image_name_tag)
-
+		destination := strings.Join(
+			[]string{registry_address, registry_namespace, image_name_tag},
+			"/")
+		logger.Infof("Pushing %s to %s", name, destination)
 		err := cec.Tag(image_name_tag, destination)
 		if err != nil {
 			return err
 		}
-
 		err = cec.Push(destination, username, password, registry_address)
 		if err != nil {
 			return err
