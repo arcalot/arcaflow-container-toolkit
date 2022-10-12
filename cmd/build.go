@@ -154,11 +154,11 @@ func PushImage(all_checks, build_image, push_image bool, cec ce_client.Container
 			[]string{registry_address, registry_namespace, image_name_tag},
 			"/")
 		logger.Infof("Pushing %s to %s", name, destination)
-		err := cec.Tag(image_name_tag, destination)
+		err := cec.Tag(image_name_tag, destination, logger)
 		if err != nil {
 			return err
 		}
-		err = cec.Push(destination, username, password, registry_address, nil)
+		err = cec.Push(destination, username, password, registry_address, logger)
 		if err != nil {
 			return err
 		}

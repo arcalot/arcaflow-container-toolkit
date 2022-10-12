@@ -20,7 +20,7 @@ import (
 
 type ContainerEngineClient interface {
 	Build(filepath string, name string, tags []string, logger log.Logger) error
-	Tag(image_tag string, destination string) error
+	Tag(image_tag string, destination string, logger log.Logger) error
 	Push(destination string, username string, password string, registry_address string, logger log.Logger) error
 }
 
@@ -50,6 +50,7 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 	defer cancel()
 	tar, err := archive.TarWithOptions(filepath, &archive.TarOptions{})
 	if err != nil {
+		logger.Errorf("Error archiving %s (%w)", filepath, err)
 		return err
 	}
 	opts := types.ImageBuildOptions{
@@ -58,6 +59,7 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 	}
 	res, err := ce.client.ImageBuild(ctx, tar, opts)
 	if err != nil {
+		logger.Errorf("Error building %s (%w)", name, err)
 		return err
 	}
 	defer res.Body.Close()
@@ -118,11 +120,12 @@ func Show(rd io.Reader, logger log.Logger) error {
 	return nil
 }
 
-func (ce docker) Tag(image_tag string, destination string) error {
+func (ce docker) Tag(image_tag string, destination string, logger log.Logger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 	err := ce.client.ImageTag(ctx, image_tag, destination)
 	if err != nil {
+		logger.Errorf("Error tagging %s (%w)", destination, err)
 		return err
 	}
 	return nil

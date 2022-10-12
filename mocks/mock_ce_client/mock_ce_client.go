@@ -63,7 +63,7 @@ func (mr *MockContainerEngineClientMockRecorder) Push(destination, username, pas
 }
 
 // Tag mocks base method.
-func (m *MockContainerEngineClient) Tag(image_tag, destination string) error {
+func (m *MockContainerEngineClient) Tag(image_tag string, destination string, logger log.Logger) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Tag", image_tag, destination)
 	ret0, _ := ret[0].(error)
