@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.arcalot.io/log"
 	"io"
 	"os"
 	"strings"
@@ -18,9 +19,9 @@ import (
 )
 
 type ContainerEngineClient interface {
-	Build(filepath string, name string, tags []string) error
+	Build(filepath string, name string, tags []string, logger log.Logger) error
 	Tag(image_tag string, destination string) error
-	Push(destination string, username string, password string, registry_address string) error
+	Push(destination string, username string, password string, registry_address string, logger log.Logger) error
 }
 
 type docker struct {
@@ -43,7 +44,7 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	}
 }
 
-func (ce docker) Build(filepath string, name string, tags []string) error {
+func (ce docker) Build(filepath string, name string, tags []string, logger log.Logger) error {
 	image_tag := name + ":" + tags[0]
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
@@ -57,11 +58,10 @@ func (ce docker) Build(filepath string, name string, tags []string) error {
 	}
 	res, err := ce.client.ImageBuild(ctx, tar, opts)
 	if err != nil {
-		//log.Fatal(err)
 		return err
 	}
 	defer res.Body.Close()
-	err = Show(res.Body)
+	err = Show(res.Body, logger)
 	if err != nil {
 		return err
 	}
@@ -81,7 +81,7 @@ type StreamLine struct {
 	Stream string `json:"stream"`
 }
 
-func Show(rd io.Reader) error {
+func Show(rd io.Reader, logger log.Logger) error {
 	var lastLine string
 	var nextLine string
 	scanner := bufio.NewScanner(rd)
@@ -90,14 +90,23 @@ func Show(rd io.Reader) error {
 	for scanner.Scan() {
 		lastLine = scanner.Text()
 		nextLine = scanner.Text()
-		json.Unmarshal([]byte(nextLine), &line)
+		err := json.Unmarshal([]byte(nextLine), &line)
+		if err != nil {
+			logger.Errorf("Error unmarshalling container engine stream line %s (%w)", lastLine, err)
+			return err
+		}
 		if _, err := os.Stdout.Write([]byte(line.Stream)); err != nil {
+			logger.Errorf("Error writing container engine stream to stdout (%w)", err)
 			return err
 		}
 	}
 
 	errLine := &ErrorLine{}
-	json.Unmarshal([]byte(lastLine), errLine)
+	err := json.Unmarshal([]byte(lastLine), errLine)
+	if err != nil {
+		logger.Errorf("Error unmarshalling container engine stream line %s (%w)", lastLine, err)
+		return err
+	}
 	if errLine.Error != "" {
 		return errors.New(errLine.Error)
 	}
@@ -119,7 +128,7 @@ func (ce docker) Tag(image_tag string, destination string) error {
 	return nil
 }
 
-func (ce docker) Push(destination string, username string, password string, registry_address string) error {
+func (ce docker) Push(destination string, username string, password string, registry_address string, logger log.Logger) error {
 	authConfig := types.AuthConfig{
 		Username:      username,
 		Password:      password,
@@ -132,10 +141,11 @@ func (ce docker) Push(destination string, username string, password string, regi
 	defer cancel()
 	rdr, err := ce.client.ImagePush(ctx, destination, opts)
 	if err != nil {
+		logger.Errorf("Error pushing %s (%w)", destination, err)
 		return err
 	}
 	defer rdr.Close()
-	err = Show(rdr)
+	err = Show(rdr, logger)
 	if err != nil {
 		return err
 	}

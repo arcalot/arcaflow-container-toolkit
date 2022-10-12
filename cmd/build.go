@@ -140,7 +140,7 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
 	if all_checks && build_img {
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
-		if err := cec.Build(abspath, image_name, []string{image_tag}); err != nil {
+		if err := cec.Build(abspath, image_name, []string{image_tag}, logger); err != nil {
 			return err
 		}
 	}
@@ -158,7 +158,7 @@ func PushImage(all_checks, build_image, push_image bool, cec ce_client.Container
 		if err != nil {
 			return err
 		}
-		err = cec.Push(destination, username, password, registry_address)
+		err = cec.Push(destination, username, password, registry_address, nil)
 		if err != nil {
 			return err
 		}
