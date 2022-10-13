@@ -177,8 +177,7 @@ func getConfig(logger log.Logger) (config, error) {
 
 	err := viper.UnmarshalKey("registries", &Registries)
 	if err != nil {
-		logger.Errorf("error unmarshalling registries from config file (%w)", err)
-		panic(err)
+		return config{}, fmt.Errorf("error unmarshalling registries from config file (%w)", err)
 	}
 	misconfigured_registries := make(map[string]Empty)
 	for i := range Registries {
@@ -216,7 +215,7 @@ func getConfig(logger log.Logger) (config, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		return config{}, err
+		return config{}, fmt.Errorf("error setting carpenter config defaults (%w)", err)
 	}
 	return conf, nil
 }
@@ -240,8 +239,7 @@ func PythonRequirements(abspath string, filenames []string, name string, version
 func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
 	stdout := &bytes.Buffer{}
 	if err := checkPythonCodeStyle(abspath, stdout, logger); err != nil {
-		logger.Infof("Code style and quality check caused an error for %s version %s (%w)", name, version, err)
-		return false, err
+		return false, fmt.Errorf("python code style and quality check caused an error for %s version %s (%w)", name, version, err)
 	}
 	// fail if code style checks returns anything besides whitespace to stdout
 	if len(stdout.String()) > 0 {
@@ -301,7 +299,7 @@ func hasFilename(names []string, filename string) (bool, error) {
 	for _, name := range names {
 		matched, err := regexp.MatchString(filename, name)
 		if err != nil {
-			return false, err
+			return false, fmt.Errorf("error when looking for %s and found %s (%w)", filename, name, err)
 		}
 		if matched {
 			return true, nil
