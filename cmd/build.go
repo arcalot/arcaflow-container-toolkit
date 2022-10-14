@@ -6,6 +6,7 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	golog "log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -98,47 +99,51 @@ var buildCmd = &cobra.Command{
 			rootLogger.Errorf("error closing directory at %s (%w)", abspath, err)
 			panic(err)
 		}
-		if err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames, rootLogger,
-			flake8PythonCodeStyle); err != nil {
-			rootLogger.Errorf("error in build command (%w)", err)
+		passed_reqs, err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames,
+			rootLogger,
+			flake8PythonCodeStyle)
+		if err != nil {
 			panic(err)
+		}
+		if !passed_reqs {
+			golog.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
 		}
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) error {
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string, filenames []string, logger log.Logger, pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 	meets_reqs := make([]bool, 3)
 	basic_reqs, err := BasicRequirements(filenames, logger)
 	if err != nil {
-		return err
+		return false, err
 	}
 	meets_reqs[0] = basic_reqs
 	container_reqs, err := ContainerRequirements(abspath, conf.Image_Name, conf.Image_Tag, logger)
 	if err != nil {
-		return err
+		return false, err
 	}
 	meets_reqs[1] = container_reqs
 	lang_req, err := LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
 		pythonCodeStyleChecker)
 	if err != nil {
-		return err
+		return false, err
 	}
 	meets_reqs[2] = lang_req
 	all_checks := AllTrue(meets_reqs)
+	if !all_checks {
+		return false, nil
+	}
 	if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
 		logger); err != nil {
-		return err
+		return false, err
 	}
 	for _, registry := range conf.Registries {
 		if err := PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
 			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
-			return err
+			logger.Errorf("(%w)", err)
 		}
 	}
-	if !all_checks {
-		return fmt.Errorf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
-	}
-	return nil
+	return all_checks, nil
 }
 
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
@@ -393,8 +398,8 @@ func ContainerRequirements(abspath string, name string, version string, logger l
 			"LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\"": "Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z",
 		}
 
-		for regexp, loggerResp := range m {
-			if has_, err := dockerfileHasLine(dockerfile, regexp); err != nil {
+		for regexp_, loggerResp := range m {
+			if has_, err := dockerfileHasLine(dockerfile, regexp_); err != nil {
 				return false, err
 			} else if !has_ {
 				logger.Infof(loggerResp)

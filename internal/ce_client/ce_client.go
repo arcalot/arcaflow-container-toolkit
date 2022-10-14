@@ -61,9 +61,9 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 		return fmt.Errorf("error building %s (%w)", name, err)
 	}
 	defer res.Body.Close()
-	err = Show(res.Body, logger)
+	err = Show(res.Body)
 	if err != nil {
-		return fmt.Errorf("error for %s in build stream (%w)", name, err)
+		return fmt.Errorf("error for %s found by container engine during build (%w)", name, err)
 	}
 	return nil
 }
@@ -81,7 +81,7 @@ type StreamLine struct {
 	Stream string `json:"stream"`
 }
 
-func Show(rd io.Reader, logger log.Logger) error {
+func Show(rd io.Reader) error {
 	var lastLine string
 	var nextLine string
 	scanner := bufio.NewScanner(rd)
@@ -141,9 +141,9 @@ func (ce docker) Push(destination string, username string, password string, regi
 		return fmt.Errorf("error pushing %s (%w)", destination, err)
 	}
 	defer rdr.Close()
-	err = Show(rdr, logger)
+	err = Show(rdr)
 	if err != nil {
-		return fmt.Errorf("error for %s push stream (%w)", destination, err)
+		return fmt.Errorf("error in %s found by container engine during push (%w)", destination, err)
 	}
 	return nil
 }
