@@ -244,11 +244,13 @@ func PythonRequirements(abspath string, filenames []string, name string, version
 func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
 	stdout := &bytes.Buffer{}
 	if err := checkPythonCodeStyle(abspath, stdout, logger); err != nil {
-		return false, fmt.Errorf("python code style and quality check caused an error for %s version %s (%w)", name, version, err)
-	}
-	// fail if code style checks returns anything besides whitespace to stdout
-	if len(stdout.String()) > 0 {
-		return false, nil
+		if len(stdout.String()) > 0 {
+			logger.Infof("python code style and quality check found these issues for %s version %s", name, version)
+			logger.Infof("(%w)", stdout.String())
+			return false, nil
+		} else {
+			return false, fmt.Errorf("error in executing python code style check for %s (%w)", name, err)
+		}
 	}
 	return true, nil
 }
