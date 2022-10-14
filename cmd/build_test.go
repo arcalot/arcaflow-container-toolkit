@@ -276,7 +276,7 @@ func textPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Lo
 	if err != nil {
 		return err
 	}
-	return nil
+	return fmt.Errorf("code style error")
 }
 
 func TestPythonCodeStyle(t *testing.T) {
