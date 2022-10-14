@@ -32,9 +32,9 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	choice = strings.ToLower(choice)
 	switch choice {
 	case "podman":
-		return nil, fmt.Errorf("Podman is not supported yet.")
+		return nil, fmt.Errorf("podman is not supported yet.")
 	case "docker-cli":
-		return nil, fmt.Errorf("Docker CLI is not supported yet.")
+		return nil, fmt.Errorf("docker CLI is not supported yet.")
 	default: // docker
 		container_cli, err := client.NewClientWithOpts(client.FromEnv)
 		if err != nil {
@@ -50,8 +50,7 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 	defer cancel()
 	tar, err := archive.TarWithOptions(filepath, &archive.TarOptions{})
 	if err != nil {
-		logger.Errorf("Error archiving %s (%w)", filepath, err)
-		return err
+		return fmt.Errorf("error archiving %s (%w)", filepath, err)
 	}
 	opts := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
@@ -59,13 +58,12 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 	}
 	res, err := ce.client.ImageBuild(ctx, tar, opts)
 	if err != nil {
-		logger.Errorf("Error building %s (%w)", name, err)
-		return err
+		return fmt.Errorf("error building %s (%w)", name, err)
 	}
 	defer res.Body.Close()
-	err = Show(res.Body, logger)
+	err = Show(res.Body)
 	if err != nil {
-		return err
+		return fmt.Errorf("error for %s found by container engine during build (%w)", name, err)
 	}
 	return nil
 }
@@ -83,7 +81,7 @@ type StreamLine struct {
 	Stream string `json:"stream"`
 }
 
-func Show(rd io.Reader, logger log.Logger) error {
+func Show(rd io.Reader) error {
 	var lastLine string
 	var nextLine string
 	scanner := bufio.NewScanner(rd)
@@ -94,27 +92,24 @@ func Show(rd io.Reader, logger log.Logger) error {
 		nextLine = scanner.Text()
 		err := json.Unmarshal([]byte(nextLine), &line)
 		if err != nil {
-			logger.Errorf("Error unmarshalling container engine stream line %s (%w)", lastLine, err)
-			return err
+			return fmt.Errorf("error unmarshalling container engine stream line %s (%w)", lastLine, err)
 		}
 		if _, err := os.Stdout.Write([]byte(line.Stream)); err != nil {
-			logger.Errorf("Error writing container engine stream to stdout (%w)", err)
-			return err
+			return fmt.Errorf("error writing container engine stream to stdout (%w)", err)
 		}
 	}
 
 	errLine := &ErrorLine{}
 	err := json.Unmarshal([]byte(lastLine), errLine)
 	if err != nil {
-		logger.Errorf("Error unmarshalling container engine stream line %s (%w)", lastLine, err)
-		return err
+		return fmt.Errorf("error unmarshalling container engine stream line %s (%w)", lastLine, err)
 	}
 	if errLine.Error != "" {
 		return errors.New(errLine.Error)
 	}
 
 	if err := scanner.Err(); err != nil {
-		return err
+		return fmt.Errorf("error in scanner (%w)", err)
 	}
 
 	return nil
@@ -125,8 +120,7 @@ func (ce docker) Tag(image_tag string, destination string, logger log.Logger) er
 	defer cancel()
 	err := ce.client.ImageTag(ctx, image_tag, destination)
 	if err != nil {
-		logger.Errorf("Error tagging %s (%w)", destination, err)
-		return err
+		return fmt.Errorf("error tagging %s (%w)", destination, err)
 	}
 	return nil
 }
@@ -144,13 +138,12 @@ func (ce docker) Push(destination string, username string, password string, regi
 	defer cancel()
 	rdr, err := ce.client.ImagePush(ctx, destination, opts)
 	if err != nil {
-		logger.Errorf("Error pushing %s (%w)", destination, err)
-		return err
+		return fmt.Errorf("error pushing %s (%w)", destination, err)
 	}
 	defer rdr.Close()
-	err = Show(rdr, logger)
+	err = Show(rdr)
 	if err != nil {
-		return err
+		return fmt.Errorf("error in %s found by container engine during push (%w)", destination, err)
 	}
 	return nil
 }
