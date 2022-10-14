@@ -143,7 +143,7 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 			logger.Errorf("(%w)", err)
 		}
 	}
-	return all_checks, nil
+	return true, nil
 }
 
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string, image_tag string, logger log.Logger) error {
@@ -313,19 +313,6 @@ func hasFilename(names []string, filename string) (bool, error) {
 	return false, nil
 }
 
-func hasMatchedFilename(names []string, match_name string) (bool, error) {
-	for _, name := range names {
-		matched, err := regexp.MatchString(match_name, name)
-		if err != nil {
-			return false, err
-		}
-		if matched {
-			return true, nil
-		}
-	}
-	return false, nil
-}
-
 func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true
 	output := ""
@@ -346,7 +333,7 @@ func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 		meets_reqs = false
 	}
 
-	if has_, err := hasMatchedFilename(filenames, "(?i).*test.*"); err != nil {
+	if has_, err := hasFilename(filenames, "(?i).*test.*"); err != nil {
 		return false, err
 	} else if !has_ {
 		// match case-insensitive 'test'?
