@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"go.arcalot.io/log"
 	"io"
 	"os"
 	"strings"
@@ -19,9 +18,9 @@ import (
 )
 
 type ContainerEngineClient interface {
-	Build(filepath string, name string, tags []string, logger log.Logger) error
-	Tag(image_tag string, destination string, logger log.Logger) error
-	Push(destination string, username string, password string, registry_address string, logger log.Logger) error
+	Build(filepath string, name string, tags []string) error
+	Tag(image_tag string, destination string) error
+	Push(destination string, username string, password string, registry_address string) error
 }
 
 type docker struct {
@@ -32,9 +31,9 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	choice = strings.ToLower(choice)
 	switch choice {
 	case "podman":
-		return nil, fmt.Errorf("podman is not supported yet.")
+		return nil, fmt.Errorf("podman is not supported yet")
 	case "docker-cli":
-		return nil, fmt.Errorf("docker CLI is not supported yet.")
+		return nil, fmt.Errorf("docker CLI is not supported yet")
 	default: // docker
 		container_cli, err := client.NewClientWithOpts(client.FromEnv)
 		if err != nil {
@@ -44,9 +43,9 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	}
 }
 
-func (ce docker) Build(filepath string, name string, tags []string, logger log.Logger) error {
+func (ce docker) Build(filepath string, name string, tags []string) error {
 	image_tag := name + ":" + tags[0]
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	defer cancel()
 	tar, err := archive.TarWithOptions(filepath, &archive.TarOptions{})
 	if err != nil {
@@ -60,10 +59,15 @@ func (ce docker) Build(filepath string, name string, tags []string, logger log.L
 	if err != nil {
 		return fmt.Errorf("error building %s (%w)", name, err)
 	}
-	defer res.Body.Close()
-	err = Show(res.Body)
-	if err != nil {
-		return fmt.Errorf("error for %s found by container engine during build (%w)", name, err)
+	if res.Body != nil {
+		err := Show(res.Body)
+		if err != nil {
+			return fmt.Errorf("error for %s found by container engine during build (%w)", name, err)
+		}
+		err = res.Body.Close()
+		if err != nil {
+			return fmt.Errorf("error closing image build response (%w)", err)
+		}
 	}
 	return nil
 }
@@ -115,7 +119,7 @@ func Show(rd io.Reader) error {
 	return nil
 }
 
-func (ce docker) Tag(image_tag string, destination string, logger log.Logger) error {
+func (ce docker) Tag(image_tag string, destination string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 	err := ce.client.ImageTag(ctx, image_tag, destination)
@@ -125,7 +129,7 @@ func (ce docker) Tag(image_tag string, destination string, logger log.Logger) er
 	return nil
 }
 
-func (ce docker) Push(destination string, username string, password string, registry_address string, logger log.Logger) error {
+func (ce docker) Push(destination string, username string, password string, registry_address string) error {
 	authConfig := types.AuthConfig{
 		Username:      username,
 		Password:      password,
@@ -140,10 +144,15 @@ func (ce docker) Push(destination string, username string, password string, regi
 	if err != nil {
 		return fmt.Errorf("error pushing %s (%w)", destination, err)
 	}
-	defer rdr.Close()
-	err = Show(rdr)
-	if err != nil {
-		return fmt.Errorf("error in %s found by container engine during push (%w)", destination, err)
+	if rdr != nil {
+		err := Show(rdr)
+		if err != nil {
+			return fmt.Errorf("error for %s found by container engine during push (%w)", destination, err)
+		}
+		err = rdr.Close()
+		if err != nil {
+			return fmt.Errorf("error closing image push reader (%w)", err)
+		}
 	}
 	return nil
 }
