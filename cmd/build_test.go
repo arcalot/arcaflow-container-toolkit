@@ -6,11 +6,12 @@ import (
 	"log"
 	"os"
 
+	"testing"
+
 	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	arcalog "go.arcalot.io/log"
-	"testing"
 )
 
 func IntMin(a, b int) int {
