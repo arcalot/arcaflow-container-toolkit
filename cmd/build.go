@@ -416,13 +416,8 @@ func PythonFileRequirements(filenames []string, logger log.Logger) (bool, error)
 	if err != nil {
 		return false, err
 	}
-	if !has_reqs_txt {
-		logger.Infof("Missing requirements.txt")
-	}
-	if !has_pyproject {
-		logger.Infof("Missing pyproject.toml")
-	}
 	if !has_reqs_txt && !has_pyproject {
+		logger.Infof("Missing a dependency manager: either add requirements.txt or pyproject.toml")
 		meets_reqs = false
 	}
 	return meets_reqs, nil
