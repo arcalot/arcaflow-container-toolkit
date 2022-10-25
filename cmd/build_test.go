@@ -111,7 +111,7 @@ func TestImageLanguage(t *testing.T) {
 }
 
 func TestPythonFileRequirements(t *testing.T) {
-	min_correct := []string{"requirements.txt", "app.py", "pyproject.toml"}
+	min_correct := []string{"requirements.txt", "app.py", "main.py", "pyproject.toml"}
 	testCases := map[string]struct {
 		filenames      []string
 		expectedResult bool
@@ -122,10 +122,18 @@ func TestPythonFileRequirements(t *testing.T) {
 		},
 		"b": {
 			min_correct[:1],
-			false,
+			true,
 		},
 		"c": {
 			min_correct[2:],
+			true,
+		},
+		"d": {
+			min_correct[1:3],
+			false,
+		},
+		"e": {
+			[]string{},
 			false,
 		},
 	}
