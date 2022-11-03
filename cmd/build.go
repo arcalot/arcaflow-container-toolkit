@@ -6,54 +6,21 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	golog "log"
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_client"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/util"
-	"github.com/creasty/defaults"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"go.arcalot.io/log"
 )
 
 var Push bool
 var Build bool
-
-type Empty struct{}
-
-type config struct {
-	Revision         string `yaml:"revision"`
-	Image_Name       string `default:"all"`
-	Project_Filepath string
-	Image_Tag        string `default:"latest"`
-	Registries       []Registry
-}
-
-type Registry struct {
-	Url              string
-	Username_Envvar  string
-	Password_Envvar  string
-	Namespace_Envvar string
-	Username         string `default:""`
-	Password         string `default:""`
-	Namespace        string `default:""`
-}
-
-type verbose struct {
-	msg          string
-	return_value string
-}
-
-func (s *Registry) SetDefaults() {
-	if len(s.Namespace) == 0 {
-		s.Namespace = s.Username
-	}
-}
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error
 
@@ -74,7 +41,7 @@ var buildCmd = &cobra.Command{
 			rootLogger.Errorf("invalid container engine client (%w)", err)
 			panic(err)
 		}
-		conf, err := getConfig(rootLogger)
+		conf, err := dto.Unmarshal(rootLogger)
 		if err != nil {
 			rootLogger.Errorf("invalid carpenter config (%w)", err)
 			panic(err)
@@ -111,7 +78,7 @@ var buildCmd = &cobra.Command{
 	},
 }
 
-func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf config, abspath string,
+func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf dto.Carpenter, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 
@@ -181,55 +148,6 @@ func PushImage(all_checks, build_image, push_image bool, cec ce_client.Container
 		}
 	}
 	return nil
-}
-
-func getConfig(logger log.Logger) (config, error) {
-	var Registries []Registry
-	var PlaceHolder struct{}
-
-	err := viper.UnmarshalKey("registries", &Registries)
-	if err != nil {
-		return config{}, fmt.Errorf("error unmarshalling registries from config file (%w)", err)
-	}
-	misconfigured_registries := make(map[string]Empty)
-	for i := range Registries {
-		username_envvar := Registries[i].Username_Envvar
-		password_envvar := Registries[i].Password_Envvar
-		namespace_envvar := Registries[i].Namespace_Envvar
-		username := LookupEnvVar(username_envvar, logger).return_value
-		password := LookupEnvVar(password_envvar, logger).return_value
-		namespace := LookupEnvVar(namespace_envvar, logger).return_value
-		if len(username) > 0 && len(password) > 0 {
-			Registries[i].Username = username
-			Registries[i].Password = password
-			if len(namespace) == 0 {
-				if robot, err := UserIsQuayRobot(username); err != nil {
-					return config{}, err
-				} else if robot {
-					robot_owner := strings.Split(username, "+")
-					Registries[i].Namespace = robot_owner[0]
-				} else {
-					Registries[i].Namespace = Registries[i].Username
-				}
-			} else {
-				Registries[i].Namespace = namespace
-			}
-		} else {
-			logger.Infof("Missing credentials for %s\n", Registries[i].Url)
-			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
-		}
-	}
-	filteredRegistries := FilterByIndex(Registries, misconfigured_registries)
-	conf := config{
-		Revision:         viper.GetString("revision"),
-		Image_Name:       viper.GetString("image_name"),
-		Project_Filepath: viper.GetString("project_filepath"),
-		Image_Tag:        viper.GetString("image_tag"),
-		Registries:       filteredRegistries}
-	if err := defaults.Set(&conf); err != nil {
-		return config{}, fmt.Errorf("error setting carpenter config defaults (%w)", err)
-	}
-	return conf, nil
 }
 
 func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
@@ -438,40 +356,6 @@ func GolangRequirements(filenames []string, logger log.Logger) (bool, error) {
 		meets_reqs = false
 	}
 	return meets_reqs, nil
-}
-
-func UserIsQuayRobot(username string) (bool, error) {
-	matched, err := regexp.MatchString("^[a-z][a-z0-9_]{1,254}\\+[a-z][a-z0-9_]{1,254}$", username)
-	if err != nil {
-		return false, err
-	}
-	if matched {
-		return true, nil
-	}
-	return false, nil
-}
-
-func LookupEnvVar(key string, logger log.Logger) verbose {
-	val, ok := os.LookupEnv(key)
-	var msg string
-	if !ok {
-		msg = fmt.Sprintf("%s not set", key)
-	} else if len(val) == 0 {
-		msg = fmt.Sprintf("%s is empty", key)
-	}
-	logger.Infof(msg)
-	return verbose{return_value: val, msg: msg}
-}
-
-func FilterByIndex(list []Registry, remove map[string]Empty) []Registry {
-	list2 := make([]Registry, 0, 5)
-	for i := range list {
-		_, ok := remove[strconv.FormatInt(int64(i), 10)]
-		if !ok {
-			list2 = append(list2, list[i])
-		}
-	}
-	return list2
 }
 
 func AllTrue(checks []bool) bool {

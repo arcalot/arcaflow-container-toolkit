@@ -3,9 +3,8 @@ package cmd
 import (
 	"bytes"
 	"fmt"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	"log"
-	"os"
-
 	"testing"
 
 	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
@@ -37,42 +36,6 @@ func TestAllTrue(t *testing.T) {
 
 	a[1] = true
 	assert.True(t, AllTrue(a))
-}
-
-func TestUserIsQuayRobot(t *testing.T) {
-	testCases := map[string]struct {
-		username       string
-		expectedResult bool
-	}{
-		"a": {
-			"river+robot",
-			true,
-		},
-		"b": {
-			"river+",
-			false,
-		},
-		"c": {
-			"river",
-			false,
-		},
-		"d": {
-			"+robot",
-			false,
-		},
-	}
-
-	for name, tc := range testCases {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			act, err := UserIsQuayRobot(tc.username)
-			if err != nil {
-				log.Fatal(err)
-			}
-			assert.Equal(t, tc.expectedResult, act)
-		})
-	}
 }
 
 func TestImageLanguage(t *testing.T) {
@@ -194,24 +157,6 @@ func TestBasicRequirements(t *testing.T) {
 	}
 }
 
-func TestFilterByIndex(t *testing.T) {
-	a := Registry{Url: "a"}
-	b := Registry{Url: "b"}
-	c := Registry{Url: "c"}
-	d := Registry{Url: "d"}
-	e := Registry{Url: "e"}
-	var PlaceHolder struct{}
-	list := []Registry{a, b, c, d, e}
-	remove := map[string]Empty{
-		"1": PlaceHolder,
-		"3": PlaceHolder,
-	}
-	actualList := FilterByIndex(list, remove)
-	assert.Equal(t, actualList[0], a)
-	assert.Equal(t, actualList[1], c)
-	assert.Equal(t, actualList[2], e)
-}
-
 func TestContainerRequirements(t *testing.T) {
 	testCases := map[string]struct {
 		path           string
@@ -328,34 +273,6 @@ func TestLanguageRequirements(t *testing.T) {
 	assert.False(t, act)
 }
 
-func TestLookupEnvVar(t *testing.T) {
-	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	// these debug messages shouldn't be hard coded into this test
-	envvar_key := "i_hope_this_isnt_used"
-	envvar_val := ""
-	type verbose struct {
-		msg          string
-		return_value string
-	}
-
-	v := LookupEnvVar(envvar_key, logger)
-	assert.Equal(t, v.msg, fmt.Sprintf("%s not set", envvar_key))
-	assert.Equal(t, v.return_value, "")
-
-	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key, logger)
-	assert.Equal(t, v.msg, fmt.Sprintf("%s is empty", envvar_key))
-	assert.Equal(t, v.return_value, "")
-
-	envvar_val = "robot"
-	os.Setenv(envvar_key, envvar_val)
-	v = LookupEnvVar(envvar_key, logger)
-	assert.Equal(t, v.msg, "")
-	assert.Equal(t, v.return_value, envvar_val)
-
-	os.Unsetenv(envvar_key)
-}
-
 func TestBuildImage(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
@@ -373,22 +290,22 @@ func TestBuildCmdMain(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
-	rg1 := Registry{
+	rg1 := dto.Registry{
 		Url:      "reg1.io",
 		Username: "user1",
 		Password: "secret1",
 	}
-	rg2 := Registry{
+	rg2 := dto.Registry{
 		Url:      "reg2.io",
 		Username: "user2",
 		Password: "secret2",
 	}
-	conf := config{
+	conf := dto.Carpenter{
 		Revision:         "20220928",
 		Image_Name:       "dummy",
 		Image_Tag:        "latest",
 		Project_Filepath: ".",
-		Registries:       []Registry{rg1, rg2},
+		Registries:       []dto.Registry{rg1, rg2},
 	}
 	python_filenames := []string{
 		"plugin.py",
@@ -406,7 +323,7 @@ func TestPushImage(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineClient(ctrl)
-	rg1 := Registry{
+	rg1 := dto.Registry{
 		Url:       "reg1.io",
 		Username:  "user1",
 		Password:  "secret1",
