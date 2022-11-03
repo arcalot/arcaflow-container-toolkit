@@ -3,13 +3,10 @@ package dto
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"github.com/stretchr/testify/assert"
 	"go.arcalot.io/log"
-	log2 "log"
 	"regexp"
 	"strconv"
 	"strings"
-	"testing"
 )
 
 type Registry struct {
@@ -25,12 +22,6 @@ type Registry struct {
 type Registries []Registry
 
 type Empty struct{}
-
-func (s *Registry) SetDefaults() {
-	if len(s.Namespace) == 0 {
-		s.Namespace = s.Username
-	}
-}
 
 func FilterByIndex(list []Registry, remove map[string]Empty) []Registry {
 	list2 := make([]Registry, 0, 5)
@@ -60,7 +51,6 @@ func UnmarshalRegistries(logger log.Logger) ([]Registry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error unmarshalling registries from Carpenter file (%w)", err)
 	}
-
 	return registries.Parse(logger)
 }
 
@@ -96,40 +86,4 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 	}
 	filteredRegistries := FilterByIndex(registries, misconfigured_registries)
 	return filteredRegistries, nil
-}
-
-func TestUserIsQuayRobot(t *testing.T) {
-	testCases := map[string]struct {
-		username       string
-		expectedResult bool
-	}{
-		"a": {
-			"river+robot",
-			true,
-		},
-		"b": {
-			"river+",
-			false,
-		},
-		"c": {
-			"river",
-			false,
-		},
-		"d": {
-			"+robot",
-			false,
-		},
-	}
-
-	for name, tc := range testCases {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			act, err := UserIsQuayRobot(tc.username)
-			if err != nil {
-				log2.Fatal(err)
-			}
-			assert.Equal(t, tc.expectedResult, act)
-		})
-	}
 }

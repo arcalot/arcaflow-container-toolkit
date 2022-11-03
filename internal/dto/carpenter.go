@@ -20,7 +20,6 @@ func Unmarshal(logger log.Logger) (Carpenter, error) {
 	if err != nil {
 		return Carpenter{}, err
 	}
-
 	conf := Carpenter{
 		Revision:         viper.GetString("revision"),
 		Image_Name:       viper.GetString("image_name"),

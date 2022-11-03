@@ -1,0 +1,5 @@
+{"stream":"Step 2/22 : RUN dnf -y module install python39 && dnf -y install python39 python39-pip\n"}
+{"stream":" ---\u003e Using cache\n"}
+{"stream":" ---\u003e old-cache-0\n"}
+{"aux":{"ID":"dummy"}}
+{"stream":"Successfully built image\n"}

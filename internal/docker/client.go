@@ -47,7 +47,7 @@ func (ce CEClient) Build(filepath string, name string, tags []string) error {
 		return fmt.Errorf("error building %s (%w)", name, err)
 	}
 	if res.Body != nil {
-		err := Show(res.Body)
+		err := Show(res.Body, os.Stdout)
 		if err != nil {
 			return fmt.Errorf("error for %s found by container engine during build (%w)", name, err)
 		}
@@ -59,7 +59,7 @@ func (ce CEClient) Build(filepath string, name string, tags []string) error {
 	return nil
 }
 
-func Show(rd io.Reader) error {
+func Show(rd io.Reader, writer io.Writer) error {
 	var lastLine string
 	var nextLine string
 	scanner := bufio.NewScanner(rd)
@@ -72,9 +72,10 @@ func Show(rd io.Reader) error {
 		if err != nil {
 			return fmt.Errorf("error unmarshalling container engine stream line %s (%w)", lastLine, err)
 		}
-		if _, err := os.Stdout.Write([]byte(line.Stream)); err != nil {
-			return fmt.Errorf("error writing container engine stream to stdout (%w)", err)
+		if _, err := writer.Write([]byte(line.Stream)); err != nil {
+			return fmt.Errorf("error writing json stream (%w)", err)
 		}
+		line = &StreamLine{}
 	}
 
 	errLine := &ErrorLine{}
@@ -97,6 +98,7 @@ func (ce CEClient) Tag(image_tag string, destination string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 	err := ce.client.ImageTag(ctx, image_tag, destination)
+
 	if err != nil {
 		return fmt.Errorf("error tagging %s (%w)", destination, err)
 	}
@@ -115,11 +117,12 @@ func (ce CEClient) Push(destination string, username string, password string, re
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 	rdr, err := ce.client.ImagePush(ctx, destination, opts)
+
 	if err != nil {
 		return fmt.Errorf("error pushing %s (%w)", destination, err)
 	}
 	if rdr != nil {
-		err := Show(rdr)
+		err := Show(rdr, os.Stdout)
 		if err != nil {
 			return fmt.Errorf("error for %s found by container engine during push (%w)", destination, err)
 		}

@@ -1,0 +1,4 @@
+Step 2/22 : RUN dnf -y module install python39 && dnf -y install python39 python39-pip
+ ---> Using cache
+ ---> old-cache-0
+Successfully built image

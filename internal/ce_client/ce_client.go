@@ -18,8 +18,6 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	switch choice {
 	case "podman":
 		return nil, fmt.Errorf("podman is not supported yet")
-	case "docker-cli":
-		return nil, fmt.Errorf("docker CLI is not supported yet")
 	default: // docker
 		return docker.NewCEClient()
 	}
