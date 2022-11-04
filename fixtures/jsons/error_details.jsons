@@ -1,6 +1,5 @@
-{"stream":"Step 2/22 : RUN dnf -y module install python39 && dnf -y install python39 python39-pip\n"}
 {"stream":" ---\u003e Using cache\n"}
-{"stream":" ---\u003e old-cache-0\n"}
-{"aux":{"ID":"dummy"}}
-{"stream":"Successfully built image\n"}
+{"stream":" ---\u003e c4e119352343\n"}
+{"stream":"Step 9/23 : COPY abc ."}
+{"stream":"\n"}
 {"errorDetail":{"message":"COPY failed: file not found in build context or excluded by .dockerignore: stat abc: file does not exist"},"error":"COPY failed: file not found in build context or excluded by .dockerignore: stat abc: file does not exist"}

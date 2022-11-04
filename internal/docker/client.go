@@ -5,16 +5,60 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 )
+
+type ErrWithStack struct {
+	message string
+	stack   string
+}
+
+func (err ErrWithStack) Error() string {
+	return err.message
+}
+
+func NewErrWithStack(msg string) *ErrWithStack {
+	return &ErrWithStack{
+		message: msg,
+		stack:   string(debug.Stack()),
+	}
+}
+
+type MalformedErrorDetails struct {
+	messge string
+}
+
+func (err MalformedErrorDetails) Error() string {
+	return err.messge
+}
+
+func NewMalformedErrorDetails(msg string) *MalformedErrorDetails {
+	return &MalformedErrorDetails{
+		messge: msg,
+	}
+}
+
+type ErrorDetails struct {
+	messge string
+}
+
+func (err ErrorDetails) Error() string {
+	return err.messge
+}
+
+func NewErrorDetails(msg string) *ErrorDetails {
+	return &ErrorDetails{
+		messge: msg,
+	}
+}
 
 type CEClient struct {
 	client DockerClient
@@ -70,7 +114,7 @@ func Show(rd io.Reader, writer io.Writer) error {
 		nextLine = scanner.Text()
 		err := json.Unmarshal([]byte(nextLine), &line)
 		if err != nil {
-			return fmt.Errorf("error unmarshalling container engine stream line %s (%w)", lastLine, err)
+			return fmt.Errorf("error unmarshalling jsons stream %s (%w)", lastLine, err)
 		}
 		if _, err := writer.Write([]byte(line.Stream)); err != nil {
 			return fmt.Errorf("error writing json stream (%w)", err)
@@ -81,14 +125,19 @@ func Show(rd io.Reader, writer io.Writer) error {
 	errLine := &ErrorLine{}
 	err := json.Unmarshal([]byte(lastLine), errLine)
 	if err != nil {
-		return fmt.Errorf("error unmarshalling container engine stream line %s (%w)", lastLine, err)
+		return NewMalformedErrorDetails(
+			fmt.Sprintf(
+				"error unmarshalling error details from jsons stream producer  %s (%v)",
+				lastLine, err))
 	}
+
 	if errLine.Error != "" {
-		return errors.New(errLine.Error)
+		return NewErrorDetails(
+			fmt.Sprintf("error details from jsons stream producer (%s)", errLine.Error))
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("error in scanner (%w)", err)
+		return fmt.Errorf("error scanning jsons stream (%w)", err)
 	}
 
 	return nil

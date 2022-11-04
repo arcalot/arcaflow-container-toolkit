@@ -39,38 +39,39 @@ var buildCmd = &cobra.Command{
 
 		if err != nil {
 			rootLogger.Errorf("invalid container engine client (%w)", err)
-			panic(err)
+			os.Exit(1)
 		}
 		conf, err := dto.Unmarshal(rootLogger)
 		if err != nil {
 			rootLogger.Errorf("invalid carpenter config (%w)", err)
-			panic(err)
+			os.Exit(1)
 		}
 		abspath, err := filepath.Abs(conf.Project_Filepath)
 		if err != nil {
 			rootLogger.Errorf("invalid absolute path to project (%w)", err)
-			panic(err)
+			os.Exit(1)
 		}
 		files, err := os.Open(abspath)
 		if err != nil {
 			rootLogger.Errorf("error opening project directory (%w)", err)
-			panic(err)
+			os.Exit(1)
 		}
 		filenames, err := files.Readdirnames(0)
 		if err != nil {
 			rootLogger.Errorf("error reading project directory (%w)", err)
-			panic(err)
+			os.Exit(1)
 		}
 		err = files.Close()
 		if err != nil {
 			rootLogger.Errorf("error closing directory at %s (%w)", abspath, err)
-			panic(err)
+			os.Exit(1)
 		}
 		passed_reqs, err := BuildCmdMain(Build, Push, cec, conf, abspath, filenames,
 			rootLogger,
 			flake8PythonCodeStyle)
 		if err != nil {
-			panic(err)
+			rootLogger.Errorf("error during carpentry (%w)", err)
+			os.Exit(1)
 		}
 		if !passed_reqs {
 			golog.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)

@@ -271,6 +271,20 @@ func TestLanguageRequirements(t *testing.T) {
 		log.Fatal(err)
 	}
 	assert.False(t, act)
+
+	act, err = LanguageRequirements(".", []string{"dummy_plugin.rs"}, "dummy",
+		"latest", logger, emptyPythonCodeStyle)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.False(t, act)
+
+	act, err = LanguageRequirements(".", []string{"dummy_plugin.go"}, "dummy",
+		"latest", logger, emptyPythonCodeStyle)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.False(t, act)
 }
 
 func TestBuildImage(t *testing.T) {

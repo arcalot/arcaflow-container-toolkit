@@ -83,4 +83,24 @@ func TestClient_Show(t *testing.T) {
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
 	buf = new(bytes.Buffer)
 	assert.Error(t, Show(rdr_jsons, buf))
+
+	bad_jsons, err = os.ReadFile("../../fixtures/jsons/malformed_docker_error_details.jsons")
+	if err != nil {
+		panic(err)
+	}
+	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
+	buf = new(bytes.Buffer)
+	err = Show(rdr_jsons, buf)
+	var mer *MalformedErrorDetails
+	assert.IsType(t, mer, err)
+
+	bad_jsons, err = os.ReadFile("../../fixtures/jsons/error_details.jsons")
+	if err != nil {
+		panic(err)
+	}
+	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
+	buf = new(bytes.Buffer)
+	err = Show(rdr_jsons, buf)
+	var erd *ErrorDetails
+	assert.IsType(t, erd, err)
 }

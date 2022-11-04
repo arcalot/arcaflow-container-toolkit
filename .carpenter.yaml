@@ -1,7 +1,8 @@
 revision: 20220824
 image_name: arcaflow-plugin-template-python
-image_tag: '0.0.1'
-project_filepath: /github/workspace
+image_tag: '0.1.0'
+#project_filepath: /github/workspace
+project_filepath: ../arcaflow-plugin-template-python
 registries:
   - url: ghcr.io
     username_envvar: "GITHUB_USERNAME"
