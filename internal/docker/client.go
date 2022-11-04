@@ -8,29 +8,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"runtime/debug"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 )
-
-type ErrWithStack struct {
-	message string
-	stack   string
-}
-
-func (err ErrWithStack) Error() string {
-	return err.message
-}
-
-func NewErrWithStack(msg string) *ErrWithStack {
-	return &ErrWithStack{
-		message: msg,
-		stack:   string(debug.Stack()),
-	}
-}
 
 type MalformedErrorDetails struct {
 	messge string
