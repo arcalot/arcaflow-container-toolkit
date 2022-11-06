@@ -15,34 +15,6 @@ import (
 	"github.com/docker/docker/pkg/archive"
 )
 
-type MalformedErrorDetails struct {
-	messge string
-}
-
-func (err MalformedErrorDetails) Error() string {
-	return err.messge
-}
-
-func NewMalformedErrorDetails(msg string) *MalformedErrorDetails {
-	return &MalformedErrorDetails{
-		messge: msg,
-	}
-}
-
-type ErrorDetails struct {
-	messge string
-}
-
-func (err ErrorDetails) Error() string {
-	return err.messge
-}
-
-func NewErrorDetails(msg string) *ErrorDetails {
-	return &ErrorDetails{
-		messge: msg,
-	}
-}
-
 type CEClient struct {
 	client DockerClient
 }

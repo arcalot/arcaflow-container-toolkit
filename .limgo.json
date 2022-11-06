@@ -1,5 +1,9 @@
 {
   "statistic": {
-    "excludes": [ "mocks/.*"  ]
+    "excludes": [
+      "mocks/.*",
+      "internal/docker/dto.go",
+      "internal/carpenter/dto.go"
+    ]
   }
 }

@@ -6,6 +6,7 @@ package cmd
 import (
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpenter"
 	"github.com/spf13/cobra"
+	"os"
 )
 
 var Push bool
@@ -21,6 +22,10 @@ var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		carpenter.CliCarpentry(Build, Push, rootLogger)
+		err := carpenter.CliCarpentry(Build, Push, rootLogger, "docker")
+		if err != nil {
+			rootLogger.Errorf("build command failed (%w)", err)
+			os.Exit(1)
+		}
 	},
 }

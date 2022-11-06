@@ -104,3 +104,13 @@ func TestClient_Show(t *testing.T) {
 	var erd *ErrorDetails
 	assert.IsType(t, erd, err)
 }
+
+func TestNewCEClient(t *testing.T) {
+	cec, err := NewCEClient()
+	var cec_t *CEClient
+	if err != nil {
+		assert.Nil(t, cec)
+	} else {
+		assert.IsType(t, cec_t, cec)
+	}
+}
