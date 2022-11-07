@@ -8,20 +8,6 @@ import (
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error
 
-func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
-	stdout := &bytes.Buffer{}
-	if err := checkPythonCodeStyle(abspath, stdout, logger); err != nil {
-		if len(stdout.String()) > 0 {
-			logger.Infof("python code style and quality check found these issues for %s version %s", name, version)
-			logger.Infof("(%w)", stdout.String())
-			return false, nil
-		} else {
-			return false, fmt.Errorf("error in executing python code style check for %s (%w)", name, err)
-		}
-	}
-	return true, nil
-}
-
 func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 	meets_reqs := true
@@ -36,6 +22,20 @@ func PythonRequirements(abspath string, filenames []string, name string, version
 		meets_reqs = false
 	}
 	return meets_reqs, nil
+}
+
+func PythonCodeStyle(abspath string, name string, version string, checkPythonCodeStyle ExternalProgramOnFile, logger log.Logger) (bool, error) {
+	stdout := &bytes.Buffer{}
+	if err := checkPythonCodeStyle(abspath, stdout, logger); err != nil {
+		if len(stdout.String()) > 0 {
+			logger.Infof("python code style and quality check found these issues for %s version %s", name, version)
+			logger.Infof("(%w)", stdout.String())
+			return false, nil
+		} else {
+			return false, fmt.Errorf("error in executing python code style check for %s (%w)", name, err)
+		}
+	}
+	return true, nil
 }
 
 func PythonFileRequirements(filenames []string, logger log.Logger) (bool, error) {

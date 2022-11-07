@@ -90,9 +90,8 @@ func TestClient_Show(t *testing.T) {
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
 	buf = new(bytes.Buffer)
-	err = Show(rdr_jsons, buf)
-	var mer *MalformedErrorDetails
-	assert.IsType(t, mer, err)
+	//err = Show(rdr_jsons, buf)
+	assert.Error(t, Show(rdr_jsons, buf))
 
 	bad_jsons, err = os.ReadFile("../../fixtures/jsons/error_details.jsons")
 	if err != nil {
@@ -101,8 +100,7 @@ func TestClient_Show(t *testing.T) {
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
 	buf = new(bytes.Buffer)
 	err = Show(rdr_jsons, buf)
-	var erd *ErrorDetails
-	assert.IsType(t, erd, err)
+	assert.Error(t, Show(rdr_jsons, buf))
 }
 
 func TestNewCEClient(t *testing.T) {

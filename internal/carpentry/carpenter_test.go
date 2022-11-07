@@ -8,10 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	arcalog "go.arcalot.io/log"
-	"io/fs"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"testing"
 )
@@ -74,9 +72,7 @@ func TestAllTrue(t *testing.T) {
 
 func TestCliCarpentry(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	err := CliCarpentry(true, true, logger, "podman")
-	var ecec *ErrorCEC
-	assert.IsType(t, ecec, err)
+	assert.Error(t, CliCarpentry(true, true, logger, "podman"))
 }
 
 func TestFlake8(t *testing.T) {
@@ -88,23 +84,17 @@ func TestFlake8(t *testing.T) {
 		Stdout:      os.Stdout,
 	})
 	err := flake8PythonCodeStyle("/githug/workplace", stdout, logger)
-	var path_e_t *fs.PathError
-	assert.IsType(t, path_e_t, err)
+	assert.Error(t, err)
 
 	afp, patherr := filepath.Abs("../../fixtures/pep8_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	fmt.Println(afp)
-	err = flake8PythonCodeStyle(afp, stdout, logger)
-	assert.Nil(t, err)
+	assert.Nil(t, flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 
 	afp, patherr = filepath.Abs("../../fixtures/pep8_non_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	stdout = &bytes.Buffer{}
-	err = flake8PythonCodeStyle(afp, stdout, logger)
-	var exec_exit_e_t *exec.ExitError
-	assert.IsType(t, err, exec_exit_e_t)
+	assert.Error(t, flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 }

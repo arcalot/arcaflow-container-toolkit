@@ -2,6 +2,7 @@ package carpentry
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_client"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/images"
@@ -63,37 +64,33 @@ func AllTrue(checks []bool) bool {
 func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) error {
 	conf, err := dto.Unmarshal(logger)
 	if err != nil {
-		return NewErrorfCarpenterConfig(err)
+		return fmt.Errorf("error in carpentry configuration file (%w)", err)
 	}
 	abspath, err := filepath.Abs(conf.Project_Filepath)
 	if err != nil {
-		return NewErrorfFilepathAbsolute(err)
+		return fmt.Errorf("invalid absolute path to project (%w)", err)
 	}
 	files, err := os.Open(abspath)
 	if err != nil {
-		logger.Errorf("error opening project directory (%w)", err)
-		return err
+		return fmt.Errorf("error opening project directory (%w)", err)
 	}
 	filenames, err := files.Readdirnames(0)
 	if err != nil {
-		logger.Errorf("error reading project directory (%w)", err)
-		return err
+		return fmt.Errorf("error reading project directory (%w)", err)
 	}
 	err = files.Close()
 	if err != nil {
-		logger.Errorf("error closing directory at %s (%w)", abspath, err)
-		return err
+		return fmt.Errorf("error closing directory at %s (%w)", abspath, err)
 	}
 	cec, err := ce_client.NewCeClient(cec_choice)
 	if err != nil {
-		return NewErrorfCEC(err)
+		return fmt.Errorf("invalid container engine client %s", err)
 	}
 	passed_reqs, err := Carpentry(build, push, cec, conf, abspath, filenames,
 		logger,
 		flake8PythonCodeStyle)
 	if err != nil {
-		logger.Errorf("error during carpentry (%w)", err)
-		return err
+		return fmt.Errorf("error during carpentry (%w)", err)
 	}
 	if !passed_reqs {
 		log2.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)

@@ -90,7 +90,48 @@ func TestPythonFileRequirements(t *testing.T) {
 			}
 			assert.Equal(t, tc.expectedResult, act)
 		})
+	}
+}
 
+func TestPythonRequirements(t *testing.T) {
+	min_correct := []string{"requirements.txt", "app.py", "main.py", "pyproject.toml"}
+	testCases := map[string]struct {
+		abspath        string
+		filenames      []string
+		name           string
+		version        string
+		fn             func(string, *bytes.Buffer, arcalog.Logger) error
+		expectedResult bool
+	}{
+		"a": {
+			".",
+			min_correct,
+			"dummy",
+			"latest",
+			emptyPythonCodeStyle,
+			true,
+		},
+		"b": {
+			".",
+			min_correct,
+			"dummy",
+			"latest",
+			textPythonCodeStyle,
+			false,
+		},
 	}
 
+	for name, tc := range testCases {
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
+			//act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
+			act, err := PythonRequirements(tc.abspath, tc.filenames, tc.name, tc.version, logger, tc.fn)
+			if err != nil {
+				log.Fatal(err)
+			}
+			assert.Equal(t, tc.expectedResult, act)
+		})
+	}
 }

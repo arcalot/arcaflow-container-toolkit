@@ -80,15 +80,13 @@ func Show(rd io.Reader, writer io.Writer) error {
 	errLine := &ErrorLine{}
 	err := json.Unmarshal([]byte(lastLine), errLine)
 	if err != nil {
-		return NewMalformedErrorDetails(
-			fmt.Sprintf(
-				"error unmarshalling error details from jsons stream producer  %s (%v)",
-				lastLine, err))
+		return fmt.Errorf(
+			"error unmarshalling error details from jsons stream producer  %s (%v)",
+			lastLine, err)
 	}
 
 	if errLine.Error != "" {
-		return NewErrorDetails(
-			fmt.Sprintf("error details from jsons stream producer (%s)", errLine.Error))
+		return fmt.Errorf("error details from jsons stream producer (%s)", errLine.Error)
 	}
 
 	if err := scanner.Err(); err != nil {
