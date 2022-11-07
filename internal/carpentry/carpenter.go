@@ -1,0 +1,122 @@
+package carpentry
+
+import (
+	"bytes"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_client"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/images"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/util"
+	"go.arcalot.io/log"
+	log2 "log"
+	"os"
+	"path/filepath"
+)
+
+func Carpentry(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf dto.Carpenter, abspath string,
+	filenames []string, logger log.Logger,
+	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
+
+	meets_reqs := make([]bool, 3)
+	basic_reqs, err := requirements.BasicRequirements(filenames, logger)
+	if err != nil {
+		return false, err
+	}
+	meets_reqs[0] = basic_reqs
+	container_reqs, err := requirements.ContainerfileRequirements(abspath, logger)
+	if err != nil {
+		return false, err
+	}
+	meets_reqs[1] = container_reqs
+	lang_req, err := requirements.LanguageRequirements(abspath, filenames, conf.Image_Name, conf.Image_Tag, logger,
+		pythonCodeStyleChecker)
+	if err != nil {
+		return false, err
+	}
+	meets_reqs[2] = lang_req
+	all_checks := AllTrue(meets_reqs)
+	if !all_checks {
+		return false, nil
+	}
+	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+		logger); err != nil {
+		return false, err
+	}
+	for _, registry := range conf.Registries {
+		if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+			logger.Errorf("(%w)", err)
+		}
+	}
+	return true, nil
+}
+
+func AllTrue(checks []bool) bool {
+	for _, v := range checks {
+		if !v {
+			return false
+		}
+	}
+	return true
+}
+
+func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) error {
+	conf, err := dto.Unmarshal(logger)
+	if err != nil {
+		return NewErrorfCarpenterConfig(err)
+	}
+	abspath, err := filepath.Abs(conf.Project_Filepath)
+	if err != nil {
+		return NewErrorfFilepathAbsolute(err)
+	}
+	files, err := os.Open(abspath)
+	if err != nil {
+		logger.Errorf("error opening project directory (%w)", err)
+		return err
+	}
+	filenames, err := files.Readdirnames(0)
+	if err != nil {
+		logger.Errorf("error reading project directory (%w)", err)
+		return err
+	}
+	err = files.Close()
+	if err != nil {
+		logger.Errorf("error closing directory at %s (%w)", abspath, err)
+		return err
+	}
+	cec, err := ce_client.NewCeClient(cec_choice)
+	if err != nil {
+		return NewErrorfCEC(err)
+	}
+	passed_reqs, err := Carpentry(build, push, cec, conf, abspath, filenames,
+		logger,
+		flake8PythonCodeStyle)
+	if err != nil {
+		logger.Errorf("error during carpentry (%w)", err)
+		return err
+	}
+	if !passed_reqs {
+		log2.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
+	}
+	return nil
+}
+
+func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
+	err := os.Chdir(abspath)
+	if err != nil {
+		return err
+	}
+	return util.RunExternalProgram(
+		"python3",
+		[]string{
+			"-m",
+			"flake8",
+			"--show-source",
+			abspath,
+		},
+		nil,
+		nil,
+		stdout,
+		stdout,
+	)
+}

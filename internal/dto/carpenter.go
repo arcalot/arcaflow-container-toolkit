@@ -27,7 +27,7 @@ func Unmarshal(logger log.Logger) (Carpenter, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		return Carpenter{}, fmt.Errorf("error setting carpenter Carpenter defaults (%w)", err)
+		return Carpenter{}, fmt.Errorf("error setting carpentry Carpenter defaults (%w)", err)
 	}
 	return conf, nil
 }

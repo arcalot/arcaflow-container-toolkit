@@ -4,7 +4,7 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpenter"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpentry"
 	"github.com/spf13/cobra"
 	"os"
 )
@@ -22,7 +22,7 @@ var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := carpenter.CliCarpentry(Build, Push, rootLogger, "docker")
+		err := carpentry.CliCarpentry(Build, Push, rootLogger, "docker")
 		if err != nil {
 			rootLogger.Errorf("build command failed (%w)", err)
 			os.Exit(1)
