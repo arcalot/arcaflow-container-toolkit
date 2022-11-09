@@ -34,7 +34,7 @@ func (m *MockContainerEngineClient) EXPECT() *MockContainerEngineClientMockRecor
 }
 
 // Build mocks base method.
-func (m *MockContainerEngineClient) Build(filepath, name string, tags []string) error {
+func (m *MockContainerEngineClient) Build(filepath, name string, tags []string, quay_exp string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", filepath, name, tags)
 	ret0, _ := ret[0].(error)

@@ -365,7 +365,7 @@ func TestBuildImage(t *testing.T) {
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
 		Times(1)
-	BuildImage(true, true, cec, "use", "the", "forks", logger)
+	BuildImage(true, true, cec, "use", "the", "forks", "never", logger)
 }
 
 func TestBuildCmdMain(t *testing.T) {
