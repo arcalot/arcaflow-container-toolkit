@@ -17,7 +17,7 @@ jobs:
         run: | 
           curl -LO httpsL//go.dev.dl/go1.18.1.linux-amd64.tar.gz
           tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
-          export GOROOT=/usr/loca/go
+          export GOROOT=/usr/local/go
           export GOPATH=$HOME/go
           export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
           source ~/.bashrc
