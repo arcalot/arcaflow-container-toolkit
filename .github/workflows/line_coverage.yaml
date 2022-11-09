@@ -13,28 +13,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: install golang
-        run: | 
-          curl -LO https://go.dev.dl/go1.18.1.linux-amd64.tar.gz
-          tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
-          export GOROOT=/usr/local/go
-          export GOPATH=$HOME/go
-          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
-          source ~/.bashrc
-          go version
-#      - name: build carpenter
-#        run: go build carpenter.go
-#      - name: install coverage calculator
-#        run: go install github.com/GoTestTools/limgo/cmd/limgo@latest
-#      - name: make coverage data
-#        run: |
-#          go test ./... -coverprofile=cov.out
-#          limgo -coverfile=cov.out -config=.limgo.json -outfile=limgo_cov.txt
-#          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
-#      - name: upload coverage results
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: coverage
-#          path: limgo_cov.txt
-#          if-no-files-found: error
+      - name: build carpenter image
+        run: |
+          docker build --tag carpenter .
+          docker create --name test carpenter
+          docker cp test:/limgo_cov.txt .
+          docker rm test
+          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
+      - name: upload coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: limgo_cov.txt
+          if-no-files-found: error
 
