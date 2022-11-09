@@ -13,12 +13,15 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-      - name: show golangs
-        run: apt list --all-versions golang-go
-      - name: show golangs 2
-        run: apt list --all-versions go
-#      - name: install golang
-#        run: sudo apt-get install -y golang-go
+      - name: install golang
+        run: | 
+          curl -LO httpsL//go.dev.dl/go1.18.1.linux-amd64.tar.gz
+          tar -C /usr/local -xzf go1.18.1.linux-amd64.tar.gz
+          export GOROOT=/usr/loca/go
+          export GOPATH=$HOME/go
+          export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+          source ~/.bashrc
+          go version
 #      - name: build carpenter
 #        run: go build carpenter.go
 #      - name: install coverage calculator
