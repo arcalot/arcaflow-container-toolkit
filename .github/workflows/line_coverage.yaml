@@ -14,22 +14,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: show golangs
-        run: apt list --all-versions golang
-      - name: install golang
-        run: sudo apt-get install -y golang
-      - name: build carpenter
-        run: go build carpenter.go
-      - name: install coverage calculator
-        run: go install github.com/GoTestTools/limgo/cmd/limgo@latest
-      - name: make coverage data
-        run: |
-          go test ./... -coverprofile=cov.out
-          limgo -coverfile=cov.out -config=.limgo.json -outfile=limgo_cov.txt 
-          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
-      - name: upload coverage results
-        uses: actions/upload-artifact@v3
-        with:
-          name: coverage
-          path: limgo_cov.txt
-          if-no-files-found: error
+        run: apt list --all-versions golang-go
+      - name: show golangs 2
+        run: apt list --all-versions go
+#      - name: install golang
+#        run: sudo apt-get install -y golang-go
+#      - name: build carpenter
+#        run: go build carpenter.go
+#      - name: install coverage calculator
+#        run: go install github.com/GoTestTools/limgo/cmd/limgo@latest
+#      - name: make coverage data
+#        run: |
+#          go test ./... -coverprofile=cov.out
+#          limgo -coverfile=cov.out -config=.limgo.json -outfile=limgo_cov.txt
+#          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
+#      - name: upload coverage results
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage
+#          path: limgo_cov.txt
+#          if-no-files-found: error
 
