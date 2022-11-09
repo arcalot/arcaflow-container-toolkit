@@ -22,29 +22,16 @@ func HasFilename(names []string, filename string) (bool, error) {
 
 func LanguageRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
-	//meets_reqs := true
 	lang, err := ImageLanguage(filenames)
 	if err != nil {
 		return false, err
 	}
 	switch lang {
 	case "go":
-		//meets_reqs, err = GolangRequirements(filenames, logger)
-		//if err != nil {
-		//	return false, err
-		//}
 		return GolangRequirements(filenames, logger)
 	case "python":
-		//meets_reqs, err = PythonRequirements(abspath, filenames, name, version, logger, pythonCodeStyleChecker)
-		//if err != nil {
-		//	return false, err
-		//}
 		return PythonRequirements(abspath, filenames, name, version, logger, pythonCodeStyleChecker)
 	default:
-		logger.Infof("Programming Language %s not supported\n", lang)
-		//meets_reqs = false
-		return false, nil
+		return false, fmt.Errorf("Programming Language %s not supported\n", lang)
 	}
-
-	//return meets_reqs, nil
 }

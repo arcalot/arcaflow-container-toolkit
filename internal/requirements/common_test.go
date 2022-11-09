@@ -16,12 +16,9 @@ func TestLanguageRequirements(t *testing.T) {
 	}
 	assert.False(t, act)
 
-	act, err = LanguageRequirements(".", []string{"dummy_plugin.rs"}, "dummy",
+	_, err = LanguageRequirements(".", []string{"dummy_plugin.rs"}, "dummy",
 		"latest", logger, emptyPythonCodeStyle)
-	if err != nil {
-		log2.Fatal(err)
-	}
-	assert.False(t, act)
+	assert.Error(t, err)
 
 	act, err = LanguageRequirements(".", []string{"dummy_plugin.go"}, "dummy",
 		"latest", logger, emptyPythonCodeStyle)

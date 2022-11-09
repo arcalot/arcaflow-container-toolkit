@@ -10,7 +10,6 @@ type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer
 
 func PythonRequirements(abspath string, filenames []string, name string, version string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
-	meets_reqs := true
 	meets_reqs, err := PythonFileRequirements(filenames, logger)
 	if err != nil {
 		return false, err

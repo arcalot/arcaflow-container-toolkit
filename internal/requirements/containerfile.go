@@ -61,12 +61,12 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 
 func ImageLanguage(filenames []string) (string, error) {
 	ext2Lang := map[string]string{"go": "go", "py": "python"}
+	cr, err := regexp.Compile("(?i).*plugin.*")
+	if err != nil {
+		return "", err
+	}
 	for _, name := range filenames {
-		matched, err := regexp.MatchString("(?i).*plugin.*", name)
-		if err != nil {
-			return "", err
-		}
-		if matched {
+		if cr.MatchString(name) {
 			ext := filepath.Ext(name)
 			lang, ok := ext2Lang[ext[1:]]
 			if ok {
@@ -74,7 +74,6 @@ func ImageLanguage(filenames []string) (string, error) {
 			}
 		}
 	}
-	// this seems like a bad way to finish this function
 	return "", nil
 }
 
