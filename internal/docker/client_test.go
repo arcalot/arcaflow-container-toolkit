@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 	"testing"
@@ -27,7 +28,7 @@ func TestClient_BuildImage(t *testing.T) {
 		client: dockerClientMock,
 	}
 
-	client.Build("some", "path", []string{"tag1", "tag2"})
+	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"}))
 }
 
 func TestClient_ImageTag(t *testing.T) {
@@ -43,7 +44,7 @@ func TestClient_ImageTag(t *testing.T) {
 		client: dockerClientMock,
 	}
 
-	client.Tag("some:path", "sky.io")
+	assert.Error(t, client.Tag("some:path", "sky.io"))
 }
 
 func TestClient_ImagePush(t *testing.T) {
@@ -59,7 +60,7 @@ func TestClient_ImagePush(t *testing.T) {
 		client: dockerClientMock,
 	}
 
-	client.Push("some:path", "user", "pass", "sky.io")
+	assert.Error(t, client.Push("some:path", "user", "pass", "sky.io"))
 }
 
 func TestClient_Show(t *testing.T) {
@@ -73,7 +74,10 @@ func TestClient_Show(t *testing.T) {
 	}
 	rdr_jsons := io.NopCloser(strings.NewReader(string(stream_jsons)))
 	buf := new(bytes.Buffer)
-	Show(rdr_jsons, buf)
+	err = Show(rdr_jsons, buf)
+	if err != nil {
+		log.Fatal(err)
+	}
 	assert.Equal(t, string(stream_txt), buf.String())
 
 	bad_jsons, err := os.ReadFile("../../fixtures/jsons/bad.jsons")
@@ -81,26 +85,21 @@ func TestClient_Show(t *testing.T) {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	buf = new(bytes.Buffer)
-	assert.Error(t, Show(rdr_jsons, buf))
+	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
 
 	bad_jsons, err = os.ReadFile("../../fixtures/jsons/malformed_docker_error_details.jsons")
 	if err != nil {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	buf = new(bytes.Buffer)
-	//err = Show(rdr_jsons, buf)
-	assert.Error(t, Show(rdr_jsons, buf))
+	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
 
 	bad_jsons, err = os.ReadFile("../../fixtures/jsons/error_details.jsons")
 	if err != nil {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	buf = new(bytes.Buffer)
-	err = Show(rdr_jsons, buf)
-	assert.Error(t, Show(rdr_jsons, buf))
+	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
 }
 
 func TestNewCEClient(t *testing.T) {

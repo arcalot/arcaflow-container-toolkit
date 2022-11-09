@@ -2,9 +2,8 @@ package carpentry
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
-	"github.com/arcalot/arcaflow-plugin-image-builder/mocks/mock_ce_client"
+	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_client"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	arcalog "go.arcalot.io/log"
@@ -16,14 +15,6 @@ import (
 
 func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {
 	return nil
-}
-
-func textPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {
-	_, err := stdout.WriteString("bad code")
-	if err != nil {
-		return err
-	}
-	return fmt.Errorf("code style error")
 }
 
 func TestBuildCmdMain(t *testing.T) {
@@ -54,9 +45,11 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	Carpentry(
+	passed, err := Carpentry(
 		true, true, cec, conf, ".",
 		python_filenames, logger, emptyPythonCodeStyle)
+	assert.False(t, passed)
+	assert.NoError(t, err)
 }
 
 func TestAllTrue(t *testing.T) {
@@ -77,7 +70,6 @@ func TestCliCarpentry(t *testing.T) {
 
 func TestFlake8(t *testing.T) {
 	stdout := &bytes.Buffer{}
-	//logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	logger := arcalog.New(arcalog.Config{
 		Level:       arcalog.LevelInfo,
 		Destination: arcalog.DestinationStdout,

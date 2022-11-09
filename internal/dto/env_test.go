@@ -13,10 +13,6 @@ func TestLookupEnvVar(t *testing.T) {
 	// these debug messages shouldn't be hard coded into this test
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
-	type verbose struct {
-		msg          string
-		return_value string
-	}
 
 	v := LookupEnvVar(envvar_key, logger)
 	assert.Equal(t, v.msg, fmt.Sprintf("%s not set", envvar_key))

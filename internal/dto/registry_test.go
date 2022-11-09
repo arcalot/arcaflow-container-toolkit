@@ -65,39 +65,15 @@ func TestUserIsQuayRobot(t *testing.T) {
 func TestRegistries_Parse(t *testing.T) {
 
 	envvars := map[string]string{
-		//"reg1_username_ev":  "reg1_username",
-		"reg1_username": "reg1_username",
-		//"reg1_password_ev":  "reg1_password",
-		"reg1_password": "reg1_password",
-		//"reg1_namespace_ev": "reg1_namespace",
+		"reg1_username":  "reg1_username",
+		"reg1_password":  "reg1_password",
 		"reg1_namespace": "",
-		//"reg2_username_ev":  "reg2_username",
-		"reg2_username": "reg2_username+robot",
-		//"reg2_password_ev":  "reg2_password",
-		"reg2_password": "reg2_password",
-		//"reg2_namespace_ev": "reg2_namespace",
+		"reg2_username":  "reg2_username+robot",
+		"reg2_password":  "reg2_password",
 		"reg2_namespace": "",
 	}
-	//reg1_username_ev := "reg1_username_ev"
-	//reg1_username := "reg1_username"
-	//reg1_username, _ := envvars["reg1_username"]
-	//reg1_password, _ := envvars["reg1_password"]
-	//reg1_namespace, _ := envvars["reg1_namespace"]
-	//reg2_username, _ := envvars["reg2_username"]
-	//reg2_password, _ := envvars["reg2_password"]
-	reg2_namespace, _ := envvars["reg2_namespace"]
 
-	//reg1_password_ev := "reg1_password_ev"
-	//reg1_password := "reg1_password"
-	//reg1_namespace_ev := "reg1_namespace_ev"
-	//reg1_namespace := "reg1_namespace"
-
-	//reg2_username_ev := "reg2_username_ev"
-	//reg2_username := "reg2_username"
-	//reg2_password_ev := "reg2_password_ev"
-	//reg2_password := "reg2_password"
-	//reg2_namespace_ev := "reg2_namespace_ev"
-	//reg2_namespace := "reg2"
+	reg2_namespace := envvars["reg2_namespace"]
 
 	a := Registry{
 		Url:              "a",
@@ -118,27 +94,24 @@ func TestRegistries_Parse(t *testing.T) {
 
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	rs := Registries{a, b}
-	//fmt.Println(rs.Parse(logger))
 	rs2, err := rs.Parse(logger)
 	if err != nil {
 		panic(err)
 	}
 
-	v, _ := envvars["reg1_username"]
+	v := envvars["reg1_username"]
 	assert.Equal(t, v, rs2[0].Username)
-	v, _ = envvars["reg1_password"]
+	v = envvars["reg1_password"]
 	assert.Equal(t, v, rs2[0].Password)
-	//v, _ = envvars["reg1_namespace"]
 	assert.Equal(t, "reg1_username", rs2[0].Namespace)
 
-	v, _ = envvars["reg2_username"]
+	v = envvars["reg2_username"]
 	assert.Equal(t, v, rs2[1].Username)
-	v, _ = envvars["reg2_password"]
+	v = envvars["reg2_password"]
 	assert.Equal(t, v, rs2[1].Password)
-	//v, _ = envvars["reg2_namespace"]
 	assert.Equal(t, "reg2_username", rs2[1].Namespace)
 
-	for envvar_key, _ := range envvars {
+	for envvar_key := range envvars {
 		os.Unsetenv(envvar_key)
 	}
 }
