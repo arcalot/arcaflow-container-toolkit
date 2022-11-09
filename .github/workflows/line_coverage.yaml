@@ -13,10 +13,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      - name: show golangs
+        run: apt list --all-versions golang >> $GITHUB_STEP_SUMMARY
       - name: install golang
-        run: |
-          curl -sSL https://git.io/g-install | sh -s
-          g install 1.18
+        run: sudo apt-get install -y golang
       - name: build carpenter
         run: go build carpenter.go
       - name: install coverage calculator
