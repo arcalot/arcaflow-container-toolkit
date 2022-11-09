@@ -14,7 +14,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: install golang
-        run: sudo apt-get -y install golang-go=1.18
+        run: |
+          curl -sSL https://git.io/g-install | sh -s
+          g install 1.18
       - name: build carpenter
         run: go build carpenter.go
       - name: install coverage calculator
