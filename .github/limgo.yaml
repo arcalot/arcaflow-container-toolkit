@@ -1,0 +1,39 @@
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo
+        uses: actions/checkout@v2.3.4
+
+      # Checkout your project with git
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Install Go on the VM running the action
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      # Option 1:
+      # install using go install
+      - name: Set up limgo - option 1
+        run: go install github.com/GoTestTools/limgo@latest
+
+      # Option 2:
+      # install via GitHub Action
+      - name: Set up limgo - option 2
+        uses: GoTestTools/limgo-action@v1.0.1
+        with:
+          version: "v0.0.3-beta"
+          install-only: true
+
+      # Run tests with coverprofile
+      - name: Run tests
+        run: |
+          go test ./... -coverprofile=test.cov
+
+      # Pass the coverprofile to limgo for coverage evaluation
+      - name: Check test coverage
+        run: |
+          limgo -covfile=test.cov -v=2
