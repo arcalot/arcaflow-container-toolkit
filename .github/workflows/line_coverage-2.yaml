@@ -13,18 +13,22 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: download golang 1.18
+      - name: remove old golang
         run: |
-          rm -rf /usr/local/go
+          sudo rm -rf /usr/local/go
           sudo rm -f /usr/bin/go
-          curl -OL https://go.dev/dl/go1.18.1.linux-amd64.tar.gz
-#          sha256sum go1.18.1.linux-amd64.tar.gz
-          sudo tar -C /usr/local -xvf go1.18.1.linux-amd64.tar.gz
-#          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-#          which go
-#          source ~/.profile
-          which go
-          go version
+      - name: download golang 1.18
+        run: curl -OL https://go.dev/dl/go1.18.1.linux-amd64.tar.gz
+      - name: verify binary
+        run: sha256sum go1.18.1.linux-amd64.tar.gz
+      - name: extract go directory
+        run: sudo tar -C /usr/local -xvf go1.18.1.linux-amd64.tar.gz
+      - name: add golang to path
+        run: |
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+          source ~/.profile
+      - name: show version
+        run: go version
           
 
 #      - name: Checkout repository
