@@ -29,9 +29,12 @@ jobs:
         run: |
           echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
           source ~/.profile
-          export PATH=$PATH:/usr/local/go/bin
           echo $PATH
+      - name: show go path
+        run: echo $GOPATH
+      - name: show go root
+        run: echo $GOROOT
       - name: show version
-        run: sudo go version
+        run: go version
 
 
