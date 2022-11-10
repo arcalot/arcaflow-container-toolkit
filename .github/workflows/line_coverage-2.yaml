@@ -13,6 +13,10 @@ jobs:
       contents: read
       packages: write
     steps:
+      - name: show go
+        run: ls -alh /usr/local/go
+      - name: show path
+        run: echo $PATH
       - name: remove old golang
         run: |
           sudo rm -rf /usr/local/go
