@@ -40,7 +40,7 @@ jobs:
       - name: show golang ci lint
         run: sudo ls ./bin/golangci-lint
       - name: soft link golang ci lint
-        run: sudo ln -s .bin/golangci-lint /usr/bin/golangci-lint
+        run: sudo ln -s ./bin/golangci-lint /usr/bin/golangci-lint
       - name: show golang ci lint other
         run: sudo ls /usr/bin/golangci-lint
       - name: verify golang ci lint is on system path
