@@ -10,7 +10,6 @@ import (
 
 func TestLookupEnvVar(t *testing.T) {
 	logger := log.NewLogger(log.LevelInfo, log.NewNOOPLogger())
-	// these debug messages shouldn't be hard coded into this test
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
 

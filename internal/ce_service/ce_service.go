@@ -1,4 +1,4 @@
-package ce_client
+package ce_service
 
 import (
 	"fmt"
@@ -7,13 +7,13 @@ import (
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/docker"
 )
 
-type ContainerEngineClient interface {
+type ContainerEngineService interface {
 	Build(filepath string, name string, tags []string) error
 	Tag(image_tag string, destination string) error
 	Push(destination string, username string, password string, registry_address string) error
 }
 
-func NewCeClient(choice string) (ContainerEngineClient, error) {
+func NewContainerEngineService(choice string) (ContainerEngineService, error) {
 	choice = strings.ToLower(choice)
 	switch choice {
 	case "podman":

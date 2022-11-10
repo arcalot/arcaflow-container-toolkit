@@ -1,12 +1,12 @@
 package images
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_client"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_service"
 	"go.arcalot.io/log"
 	"strings"
 )
 
-func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string,
+func BuildImage(build_img bool, all_checks bool, cec ce_service.ContainerEngineService, abspath string, image_name string,
 	image_tag string, logger log.Logger) error {
 
 	if all_checks && build_img {
@@ -19,7 +19,7 @@ func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineCl
 	return nil
 }
 
-func PushImage(all_checks, build_image, push_image bool, cec ce_client.ContainerEngineClient, name, version,
+func PushImage(all_checks, build_image, push_image bool, cec ce_service.ContainerEngineService, name, version,
 	username, password, registry_address, registry_namespace string, logger log.Logger) error {
 
 	if all_checks && build_image && push_image {

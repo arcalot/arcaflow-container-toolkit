@@ -3,7 +3,7 @@ package carpentry
 import (
 	"bytes"
 	"fmt"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_client"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_service"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/images"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 )
 
-func Carpentry(build_img bool, push_img bool, cec ce_client.ContainerEngineClient, conf dto.Carpenter, abspath string,
+func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.Carpenter, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 
@@ -82,7 +82,7 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	if err != nil {
 		return fmt.Errorf("error closing directory at %s (%w)", abspath, err)
 	}
-	cec, err := ce_client.NewCeClient(cec_choice)
+	cec, err := ce_service.NewContainerEngineService(cec_choice)
 	if err != nil {
 		return fmt.Errorf("invalid container engine client %s", err)
 	}

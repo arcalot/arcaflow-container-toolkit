@@ -1,4 +1,4 @@
-package ce_client
+package ce_service
 
 import (
 	"testing"
@@ -7,8 +7,8 @@ import (
 )
 
 func TestNewCeClient(t *testing.T) {
-	_, err := NewCeClient("podman")
+	_, err := NewContainerEngineService("podman")
 	assert.Error(t, err)
-	_, err = NewCeClient("docker")
+	_, err = NewContainerEngineService("docker")
 	assert.NoError(t, err)
 }
