@@ -15,13 +15,12 @@ jobs:
     steps:
       - name: download golang 1.18
         run: |
-          which go
-          rm -rf /usr/local/go
+          rm -f /usr/local/go
           sudo ls -alh /usr/bin/go
           sudo rm -rf /usr/bin/go
           curl -OL https://golang.org/dl/${{ env.target_go_binary }}
           sha256sum ${{ env.target_go_binary }}
-          sudo tar -C /usr/local -xf ${{ env.target_go_binary }}
+          sudo tar -C /usr/local -xf go1.18.1.linux-amd64.tar.gz
           echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
           which go
           source ~/.profile
