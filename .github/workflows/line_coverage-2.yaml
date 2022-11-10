@@ -27,8 +27,8 @@ jobs:
           ls -alh /usr/local/go/bin
       - name: add golang to path
         run: |
-#          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-#          source ~/.profile
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+          source ~/.profile
           export PATH=$PATH:/usr/local/go/bin
           echo $PATH
       - name: show version
