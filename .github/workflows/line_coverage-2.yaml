@@ -32,5 +32,26 @@ jobs:
           sudo ls -l /usr/local/go/bin/go /usr/bin/go
       - name: show version
         run: go version
-
-
+      - name: install git, make
+        run: apt-get -y install git make
+      - name: installl golang ci lint
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1
+      - name: install limgo
+        run: |
+          git clone https://github.com/GoTestTools/limgo.git
+          cd limgo
+          make build
+          cd ..
+      - name: Checkout source repository
+        uses: actions/checkout@v3
+      - name: generate coverage data
+        run: |
+          cd /github/workspace
+          go test ./... -coverprofile=cov.out
+          ./limgo/limgo -coverfile=cov.out -config=.limgo.json -outfile=limgo_cov.txt
+      - name: upload coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: limgo_cov.txt
+          if-no-files-found: error
