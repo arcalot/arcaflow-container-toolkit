@@ -15,10 +15,11 @@ jobs:
         run: |
           which go
           rm -rf /usr/local/go
-          rm -rf /usr/bin/go
+          sudo ls -alh /usr/bin/go
+          sudo rm -rf /usr/bin/go
           curl -OL https://golang.org/dl/go1.18.1.linux-amd64.tar.gz
           sha256sum go1.18.1.linux-amd64.tar.gz
-          sudo tar -C /usr/local -xvf go1.18.1.linux-amd64.tar.gz
+          tar -C /usr/local -xf go1.18.1.linux-amd64.tar.gz
           echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
           which go
           source ~/.profile
