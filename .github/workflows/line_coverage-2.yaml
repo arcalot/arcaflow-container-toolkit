@@ -32,6 +32,6 @@ jobs:
           export PATH=$PATH:/usr/local/go/bin
           echo $PATH
       - name: show version
-        run: go version
+        run: sudo go version
 
 
