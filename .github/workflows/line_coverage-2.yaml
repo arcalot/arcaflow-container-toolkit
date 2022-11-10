@@ -14,7 +14,7 @@ jobs:
       packages: write
     steps:
       - name: show go
-        run: ls -alh /usr/local/go
+        run: ls -alh $(which go)
       - name: show path
         run: echo $PATH
       - name: remove old golang
