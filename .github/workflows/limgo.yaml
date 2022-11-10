@@ -10,6 +10,8 @@ jobs:
     steps:
       - name: install flake8
         run: pip3 install --upgrade flake8
+      - name: check flake8 is on path
+        run: flake8
 
       # Checkout your project with git
       - name: Checkout
@@ -35,4 +37,5 @@ jobs:
       # Pass the coverprofile to limgo for coverage evaluation
       - name: Check test coverage
         run: |
-          limgo -covfile=test.cov -v=2
+          cat .limgo.json
+          limgo -covfile=test.cov -config=.limgo.json
