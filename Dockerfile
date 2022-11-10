@@ -1,13 +1,15 @@
 FROM quay.io/centos/centos:stream8
 RUN dnf -y install dnf-plugins-core &&\
+    dnf -y install golang
     dnf -y config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo &&\
-    dnf -y install golang docker-ce-cli git make
+    dnf -y install docker-ce-cli
 RUN dnf -y module install python39 &&\
     dnf -y install python39 python39-pip &&\
     python3.9 -m pip install --user --upgrade flake8
 
 
-RUN curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1 &&\
+RUN dnf -y install git make &&\
+    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1 &&\
     git clone https://github.com/GoTestTools/limgo.git
 WORKDIR /limgo
 RUN make build

@@ -22,8 +22,10 @@ type CEClient struct {
 func NewCEClient() (*CEClient, error) {
 	container_cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
+		fmt.Println(client.IsErrConnectionFailed(err))
 		return nil, fmt.Errorf("error while creating Docker client (%w)", err)
 	}
+
 	return &CEClient{
 		client: container_cli,
 	}, nil

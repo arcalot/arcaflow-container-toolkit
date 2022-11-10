@@ -1,0 +1,37 @@
+name: Carpenter Line Coverage
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+jobs:
+  code-cov:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: download golang 1.18
+        run: |
+          curl -OL https://golang.org/dl/go1.18.1.linux-amd64.tar.gz
+          sha256sum go1.18.1.linux-adm64.tar.gz
+          sudo tar -C /usr/local -xvf go1.18.1.linux-amd64.tar.gz
+          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+          source .profile
+          go version
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#      - name: build carpenter image
+#        run: |
+#          docker build --tag carpenter .
+#          docker create --name test carpenter
+#          docker cp test:/limgo_cov.txt .
+#          docker rm test
+#          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
+#      - name: upload coverage results
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: coverage
+#          path: limgo_cov.txt
+#          if-no-files-found: error
+
