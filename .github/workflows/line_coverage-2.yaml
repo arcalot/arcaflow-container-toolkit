@@ -3,9 +3,9 @@ on:
   push:
     branches:
       - "**"
-#  pull_request:
-#env:
-#  target_go_binary: go1.18.1.linux-amd64.tar.gz
+  pull_request:
+env:
+  target_go_binary: go1.18.1.linux-amd64.tar.gz
 jobs:
   code-cov:
     runs-on: ubuntu-latest
@@ -17,16 +17,17 @@ jobs:
         run: ls -alh $(which go)
       - name: show path
         run: echo $PATH
-      - name: download golang 1.18
-        run: curl -OL https://go.dev/dl/go1.18.1.linux-amd64.tar.gz
+      - name: download target golang
+        run: curl -OL https://go.dev/dl/${{ env.target_go_binary }}
       - name: verify binary
-        run: sha256sum go1.18.1.linux-amd64.tar.gz
+        run: sha256sum ${{ env.target_go_binary }}
       - name: extract go directory
         run: |
-          sudo tar -C /usr/local -xf go1.18.1.linux-amd64.tar.gz
-      - name: add soft link
+          sudo tar -C /usr/local -xf ${{ env.target_go_binary }}
+      - name: remove old soft link
+        run: sudo rm /usr/bin/go
+      - name: add new soft link
         run: |
-          sudo rm /usr/bin/go
           sudo ln -s /usr/local/go/bin/go /usr/bin/go
           sudo ls -l /usr/local/go/bin/go /usr/bin/go
       - name: show version
