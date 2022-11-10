@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - "**"
-  pull_request:
+#  pull_request:
 #env:
 #  target_go_binary: go1.18.1.linux-amd64.tar.gz
 jobs:
@@ -22,11 +22,14 @@ jobs:
       - name: verify binary
         run: sha256sum go1.18.1.linux-amd64.tar.gz
       - name: extract go directory
-        run: sudo tar -C /usr/local -xvf go1.18.1.linux-amd64.tar.gz
+        run: |
+          sudo tar -C /usr/local -xf go1.18.1.linux-amd64.tar.gz
+          ls -alh /usr/local/go
       - name: add golang to path
         run: |
           echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
           source ~/.profile
+          export PATH=$PATH:/usr/local/go/bin
       - name: show version
         run: go version
 
