@@ -24,12 +24,13 @@ jobs:
       - name: extract go directory
         run: |
           sudo tar -C /usr/local -xf go1.18.1.linux-amd64.tar.gz
-          ls -alh /usr/local/go
+          ls -alh /usr/local/go/bin
       - name: add golang to path
         run: |
-          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
-          source ~/.profile
+#          echo 'export PATH=$PATH:/usr/local/go/bin' >> ~/.profile
+#          source ~/.profile
           export PATH=$PATH:/usr/local/go/bin
+          echo $PATH
       - name: show version
         run: go version
 
