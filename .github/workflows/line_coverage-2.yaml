@@ -28,7 +28,7 @@ jobs:
         run: |
           sudo rm /usr/bin/go
           sudo ln -s /usr/local/go/bin/go /usr/bin/go
-          sudo ln -l /usr/local/go/bin/go /usr/bin/go
+          sudo ls -l /usr/local/go/bin/go /usr/bin/go
       - name: show version
         run: go version
 
