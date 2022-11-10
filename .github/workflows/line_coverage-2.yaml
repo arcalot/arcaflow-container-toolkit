@@ -16,7 +16,6 @@ jobs:
       - name: download golang 1.18
         run: |
           rm -rf /usr/local/go
-#          sudo ls -alh /usr/bin/go
           sudo rm -f /usr/bin/go
           curl -OL https://golang.org/dl/go1.18.1.linux-amd64.tar.gz
           sha256sum go1.18.1.linux-amd64.tar.gz
