@@ -37,6 +37,10 @@ jobs:
         run: sudo apt-get -y install git make
       - name: install golang ci lint
         run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1
+      - name: show golang ci lint
+        run: sudo ls ./bin/golangci-lint
+      - name: show golang ci lint other
+        run: sudo ls /usr/bin/golangci-lint
       - name: verify golang ci lint is on system path
         run: golangci-lint --version
       - name: install limgo
