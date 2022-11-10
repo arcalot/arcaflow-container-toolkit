@@ -8,18 +8,8 @@ RUN dnf -y module install python39 &&\
     python3.9 -m pip install --user --upgrade flake8
 
 
-RUN dnf -y install git make &&\
-    curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.50.1 &&\
-    git clone https://github.com/GoTestTools/limgo.git
-WORKDIR /limgo
-RUN make build
-
 COPY . /build
 WORKDIR /build
-
-RUN go test ./... -coverprofile=cov.out &&\
-    ../limgo/limgo -coverfile=cov.out -config=.limgo.json -outfile=/limgo_cov.txt
-
 RUN CGO_ENABLED=0 go build ./carpenter.go
 RUN mv carpenter /carpenter
 COPY .carpenter.yaml /.carpenter.yaml
