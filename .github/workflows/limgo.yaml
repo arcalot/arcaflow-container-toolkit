@@ -38,4 +38,4 @@ jobs:
       - name: Check test coverage
         run: |
           cat .limgo.json
-          limgo -covfile=test.cov -config=.limgo.json
+          limgo -coverfile=test.cov -config=.limgo.json
