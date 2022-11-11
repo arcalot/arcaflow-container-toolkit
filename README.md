@@ -38,9 +38,12 @@ If successful, this will result in the arcaflow-plugin-image-builder executable,
 docker build . --tag carpenter-img
 ```
 
-## Example build configurations
+## Example Build Execution
 
-### Build a single plugin directory
+### Requirements
+
+* arcaflow-plugin-image-builder executable named `carpenter`
+* `.carpenter.yaml` in the same directory as `carpenter` executable
 
 example `.carpenter.yaml`
 ```yaml
@@ -58,7 +61,12 @@ registries:
     namespace_envvar: "QUAY_NAMESPACE"
 ```
 
-## Example Execution Containerized
+```shell
+./carpenter build --build
+```
+
+
+## Example Build and Push Execution Containerized
 
 ### Requirements
 
@@ -78,7 +86,7 @@ docker run \
     -e=QUAY_PASSWORD=$QUAY_PASSWORD\
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
     --volume /var/run/docker.sock:/var/run/docker.sock:z \
-    --volume $PWD/../arcaflow-plugin-template-python:/github/workspace:z \
+    --volume $PWD/../arcaflow-plugin-template-python:/github/workspace \
     carpenter-img build --build --push
 ```
 
