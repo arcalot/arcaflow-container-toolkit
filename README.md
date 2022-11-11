@@ -16,10 +16,32 @@ Each plugin directory must meet the [Arcaflow Plugins Requirements](https://gith
 
 The builder will check that the requirements are met.
 
+## Test carpenter
+
+* golang v1.18
+* current working directory is this project's root directory
+* python 3 and pip
+
+Install flake8
+```shell
+python3 -m pip install --user flake8
+```
+
+Generate mocks
+```shell
+go generate ./...
+```
+
+Execute test suite with statement coverage and save coverage data to `cov.txt`
+```shell
+go test ./... -coverprofile=cov.txt
+```
+
 ## Build the carpenter
 
 * golang v1.18
 * current working directory is this project's root directory
+* flake8
 
 ```shell
 go build carpenter.go
@@ -44,6 +66,7 @@ docker build . --tag carpenter-img
 
 * arcaflow-plugin-image-builder executable named `carpenter`
 * `.carpenter.yaml` in the same directory as `carpenter` executable
+* flake8
 
 example `.carpenter.yaml`
 ```yaml

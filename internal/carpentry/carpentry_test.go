@@ -3,7 +3,7 @@ package carpentry
 import (
 	"bytes"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
-	mocks "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_client"
+	mock_ces "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	arcalog "go.arcalot.io/log"
@@ -21,7 +21,7 @@ func TestBuildCmdMain(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	cec := mocks.NewMockContainerEngineClient(ctrl)
+	cec := mock_ces.NewMockContainerEngineService(ctrl)
 	rg1 := dto.Registry{
 		Url:      "reg1.io",
 		Username: "user1",

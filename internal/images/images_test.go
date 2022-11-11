@@ -3,7 +3,7 @@ package images
 import (
 	"fmt"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
-	"github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_client"
+	"github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"go.arcalot.io/log"
@@ -14,7 +14,7 @@ func TestBuildImage(t *testing.T) {
 	logger := log.NewLogger(log.LevelInfo, log.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	cec := mocks.NewMockContainerEngineClient(ctrl)
+	cec := mocks.NewMockContainerEngineService(ctrl)
 	cec.EXPECT().
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
@@ -26,7 +26,7 @@ func TestPushImage(t *testing.T) {
 	logger := log.NewLogger(log.LevelInfo, log.NewNOOPLogger())
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	cec := mocks.NewMockContainerEngineClient(ctrl)
+	cec := mocks.NewMockContainerEngineService(ctrl)
 	rg1 := dto.Registry{
 		Url:       "reg1.io",
 		Username:  "user1",
