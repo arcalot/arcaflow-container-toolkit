@@ -20,6 +20,7 @@ The builder will check that the requirements are met.
 
 * golang v1.18
 * current working directory is this project's root directory
+* mock interfaces for carpenter's interfaces
 * python 3 and pip
 
 Install flake8
@@ -27,7 +28,7 @@ Install flake8
 python3 -m pip install --user flake8
 ```
 
-Generate mocks
+Generate golang mocks for carpenter's interfaces
 ```shell
 go generate ./...
 ```
