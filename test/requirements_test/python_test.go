@@ -1,9 +1,10 @@
-package requirements
+package requirements_test
 
 import (
 	"bytes"
 	"fmt"
-	"github.com/stretchr/testify/assert"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
+	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
 	"log"
 	"testing"
@@ -42,11 +43,11 @@ func TestPythonCodeStyle(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-			act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
+			act, err := requirements.PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
-			assert.Equal(t, tc.expectedResult, act)
+			assert.Equals(t, tc.expectedResult, act)
 		})
 	}
 }
@@ -84,11 +85,11 @@ func TestPythonFileRequirements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-			act, err := PythonFileRequirements(tc.filenames, logger)
+			act, err := requirements.PythonFileRequirements(tc.filenames, logger)
 			if err != nil {
 				log.Fatal(err)
 			}
-			assert.Equal(t, tc.expectedResult, act)
+			assert.Equals(t, tc.expectedResult, act)
 		})
 	}
 }
@@ -126,12 +127,12 @@ func TestPythonRequirements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-			//act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
-			act, err := PythonRequirements(tc.abspath, tc.filenames, tc.name, tc.version, logger, tc.fn)
+			// act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
+			act, err := requirements.PythonRequirements(tc.abspath, tc.filenames, tc.name, tc.version, logger, tc.fn)
 			if err != nil {
 				log.Fatal(err)
 			}
-			assert.Equal(t, tc.expectedResult, act)
+			assert.Equals(t, tc.expectedResult, act)
 		})
 	}
 }

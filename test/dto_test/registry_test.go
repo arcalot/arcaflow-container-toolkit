@@ -1,7 +1,8 @@
-package dto
+package dto_test
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
+	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
 	"log"
 	"os"
@@ -9,21 +10,21 @@ import (
 )
 
 func TestFilterByIndex(t *testing.T) {
-	a := Registry{Url: "a"}
-	b := Registry{Url: "b"}
-	c := Registry{Url: "c"}
-	d := Registry{Url: "d"}
-	e := Registry{Url: "e"}
+	a := dto.Registry{Url: "a"}
+	b := dto.Registry{Url: "b"}
+	c := dto.Registry{Url: "c"}
+	d := dto.Registry{Url: "d"}
+	e := dto.Registry{Url: "e"}
 	var PlaceHolder struct{}
-	list := []Registry{a, b, c, d, e}
-	remove := map[string]Empty{
+	list := []dto.Registry{a, b, c, d, e}
+	remove := map[string]dto.Empty{
 		"1": PlaceHolder,
 		"3": PlaceHolder,
 	}
-	actualList := FilterByIndex(list, remove)
-	assert.Equal(t, actualList[0], a)
-	assert.Equal(t, actualList[1], c)
-	assert.Equal(t, actualList[2], e)
+	actualList := dto.FilterByIndex(list, remove)
+	assert.Equals(t, actualList[0], a)
+	assert.Equals(t, actualList[1], c)
+	assert.Equals(t, actualList[2], e)
 }
 
 func TestUserIsQuayRobot(t *testing.T) {
@@ -53,11 +54,11 @@ func TestUserIsQuayRobot(t *testing.T) {
 		tc := tc
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
-			act, err := UserIsQuayRobot(tc.username)
+			act, err := dto.UserIsQuayRobot(tc.username)
 			if err != nil {
 				log.Fatal(err)
 			}
-			assert.Equal(t, tc.expectedResult, act)
+			assert.Equals(t, tc.expectedResult, act)
 		})
 	}
 }
@@ -75,13 +76,13 @@ func TestRegistries_Parse(t *testing.T) {
 
 	reg2_namespace := envvars["reg2_namespace"]
 
-	a := Registry{
+	a := dto.Registry{
 		Url:              "a",
 		Username_Envvar:  "reg1_username",
 		Password_Envvar:  "reg1_password",
 		Namespace_Envvar: "reg1_namespace",
 	}
-	b := Registry{
+	b := dto.Registry{
 		Url:              "b",
 		Username_Envvar:  "reg2_username",
 		Password_Envvar:  "reg2_password",
@@ -89,29 +90,35 @@ func TestRegistries_Parse(t *testing.T) {
 	}
 
 	for envvar_key, envvar_val := range envvars {
-		os.Setenv(envvar_key, envvar_val)
+		err := os.Setenv(envvar_key, envvar_val)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	rs := Registries{a, b}
+	rs := dto.Registries{a, b}
 	rs2, err := rs.Parse(logger)
 	if err != nil {
 		panic(err)
 	}
 
 	v := envvars["reg1_username"]
-	assert.Equal(t, v, rs2[0].Username)
+	assert.Equals(t, v, rs2[0].Username)
 	v = envvars["reg1_password"]
-	assert.Equal(t, v, rs2[0].Password)
-	assert.Equal(t, "reg1_username", rs2[0].Namespace)
+	assert.Equals(t, v, rs2[0].Password)
+	assert.Equals(t, "reg1_username", rs2[0].Namespace)
 
 	v = envvars["reg2_username"]
-	assert.Equal(t, v, rs2[1].Username)
+	assert.Equals(t, v, rs2[1].Username)
 	v = envvars["reg2_password"]
-	assert.Equal(t, v, rs2[1].Password)
-	assert.Equal(t, "reg2_username", rs2[1].Namespace)
+	assert.Equals(t, v, rs2[1].Password)
+	assert.Equals(t, "reg2_username", rs2[1].Namespace)
 
 	for envvar_key := range envvars {
-		os.Unsetenv(envvar_key)
+		err := os.Unsetenv(envvar_key)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }

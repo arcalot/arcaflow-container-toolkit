@@ -69,7 +69,7 @@ linters:
     - prealloc
     # Check for improper duration handling.
     - durationcheck
-    # Enforce tests being in the _test package.
+    # Enforce test being in the _test package.
     - testpackage
 
     # endregion
@@ -83,7 +83,12 @@ linters-settings:
       - go.flow.arcalot.io/
       - go.arcalot.io/
       - gopkg.in/yaml.v3
-      - github.com/fxamacker/cbor
+      - github.com/arcalot/arcaflow-plugin-image-builder
+      - github.com/docker/docker
+      - github.com/spf13/viper
+      - github.com/spf13/cobra
+      - github.com/creasty/defaults
+      - github.com/golang/mock/gomock
   govet:
     enable-all: true
     check-shadowing: false

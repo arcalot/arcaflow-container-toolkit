@@ -1,8 +1,9 @@
-package docker
+package docker_test
 
 import (
 	"bytes"
 	"fmt"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/docker"
 	"io"
 	"log"
 	"os"
@@ -12,7 +13,7 @@ import (
 	mock_docker "github.com/arcalot/arcaflow-plugin-image-builder/mocks/docker"
 	"github.com/docker/docker/api/types"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
+	"go.arcalot.io/assert"
 )
 
 func TestClient_BuildImage(t *testing.T) {
@@ -24,8 +25,8 @@ func TestClient_BuildImage(t *testing.T) {
 		Times(1).
 		Return(types.ImageBuildResponse{}, fmt.Errorf("I totally crashed"))
 
-	client := CEClient{
-		client: dockerClientMock,
+	client := docker.CEClient{
+		Client: dockerClientMock,
 	}
 
 	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"}))
@@ -40,8 +41,8 @@ func TestClient_ImageTag(t *testing.T) {
 		Times(1).
 		Return(fmt.Errorf("I totally crashed"))
 
-	client := CEClient{
-		client: dockerClientMock,
+	client := docker.CEClient{
+		Client: dockerClientMock,
 	}
 
 	assert.Error(t, client.Tag("some:path", "sky.io"))
@@ -56,8 +57,8 @@ func TestClient_ImagePush(t *testing.T) {
 		Times(1).
 		Return(io.NopCloser(strings.NewReader("stream")), fmt.Errorf("I totally crashed"))
 
-	client := CEClient{
-		client: dockerClientMock,
+	client := docker.CEClient{
+		Client: dockerClientMock,
 	}
 
 	assert.Error(t, client.Push("some:path", "user", "pass", "sky.io"))
@@ -74,40 +75,35 @@ func TestClient_Show(t *testing.T) {
 	}
 	rdr_jsons := io.NopCloser(strings.NewReader(string(stream_jsons)))
 	buf := new(bytes.Buffer)
-	err = Show(rdr_jsons, buf)
+	err = docker.Show(rdr_jsons, buf)
 	if err != nil {
 		log.Fatal(err)
 	}
-	assert.Equal(t, string(stream_txt), buf.String())
+	assert.Equals(t, string(stream_txt), buf.String())
 
 	bad_jsons, err := os.ReadFile("../../fixtures/jsons/bad.jsons")
 	if err != nil {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
+	assert.Error(t, docker.Show(rdr_jsons, new(bytes.Buffer)))
 
 	bad_jsons, err = os.ReadFile("../../fixtures/jsons/malformed_docker_error_details.jsons")
 	if err != nil {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
+	assert.Error(t, docker.Show(rdr_jsons, new(bytes.Buffer)))
 
 	bad_jsons, err = os.ReadFile("../../fixtures/jsons/error_details.jsons")
 	if err != nil {
 		panic(err)
 	}
 	rdr_jsons = io.NopCloser(strings.NewReader(string(bad_jsons)))
-	assert.Error(t, Show(rdr_jsons, new(bytes.Buffer)))
+	assert.Error(t, docker.Show(rdr_jsons, new(bytes.Buffer)))
 }
 
 func TestNewCEClient(t *testing.T) {
-	cec, err := NewCEClient()
-	var cec_t *CEClient
-	if err != nil {
-		assert.Nil(t, cec)
-	} else {
-		assert.IsType(t, cec_t, cec)
-	}
+	cec, _ := docker.NewCEClient()
+	assert.NotNil(t, cec)
 }

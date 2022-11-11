@@ -61,24 +61,17 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		username_envvar := registries[i].Username_Envvar
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
-		username := LookupEnvVar(username_envvar, logger).return_value
-		password := LookupEnvVar(password_envvar, logger).return_value
-		namespace := LookupEnvVar(namespace_envvar, logger).return_value
-		if len(username) > 0 && len(password) > 0 {
+		username := LookupEnvVar(username_envvar, logger).Return_value
+		password := LookupEnvVar(password_envvar, logger).Return_value
+		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
+		if registries[i].ValidCredentials(username) {
 			registries[i].Username = username
 			registries[i].Password = password
-			if len(namespace) == 0 {
-				if robot, err := UserIsQuayRobot(username); err != nil {
-					return nil, err
-				} else if robot {
-					robot_owner := strings.Split(username, "+")
-					registries[i].Namespace = robot_owner[0]
-				} else {
-					registries[i].Namespace = registries[i].Username
-				}
-			} else {
-				registries[i].Namespace = namespace
+			inferred_namespace, err := InferNamespace(namespace, username)
+			if err != nil {
+				return nil, err
 			}
+			registries[i].Namespace = inferred_namespace
 		} else {
 			logger.Infof("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
@@ -86,4 +79,24 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 	}
 	filteredRegistries := FilterByIndex(registries, misconfigured_registries)
 	return filteredRegistries, nil
+}
+
+func (registry Registry) ValidCredentials(username string) bool {
+	return len(username) > 0
+}
+
+func InferNamespace(namespace string, username string) (string, error) {
+	if len(namespace) == 0 {
+		robot, err := UserIsQuayRobot(username)
+		if err != nil {
+			return "", err
+		}
+		if robot {
+			robot_owner := strings.Split(username, "+")
+			return robot_owner[0], nil
+		} else {
+			return username, nil
+		}
+	}
+	return namespace, nil
 }

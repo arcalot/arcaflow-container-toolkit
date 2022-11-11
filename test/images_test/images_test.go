@@ -1,11 +1,12 @@
-package images
+package images_test
 
 import (
 	"fmt"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/images"
 	"github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
+	"go.arcalot.io/assert"
 	"go.arcalot.io/log"
 	"testing"
 )
@@ -19,7 +20,7 @@ func TestBuildImage(t *testing.T) {
 		Build("use", "the", []string{"forks"}).
 		Return(nil).
 		Times(1)
-	assert.Nil(t, BuildImage(true, true, cec, "use", "the", "forks", logger))
+	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", logger))
 }
 
 func TestPushImage(t *testing.T) {
@@ -45,6 +46,6 @@ func TestPushImage(t *testing.T) {
 		Push(destination, rg1.Username, rg1.Password, rg1.Url).
 		Return(nil).
 		Times(1)
-	assert.Nil(t, PushImage(true, true, true, cec, image_name, image_tag,
+	assert.Nil(t, images.PushImage(true, true, true, cec, image_name, image_tag,
 		rg1.Username, rg1.Password, rg1.Url, rg1.Namespace, logger))
 }

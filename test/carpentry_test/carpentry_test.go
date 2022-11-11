@@ -1,11 +1,13 @@
-package carpentry
+package carpentry_test
 
 import (
 	"bytes"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpentry"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	mock_ces "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/assert"
+
+	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
 	"log"
 	"os"
@@ -45,10 +47,10 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	passed, err := Carpentry(
+	passed, err := carpentry.Carpentry(
 		true, true, cec, conf, ".",
 		python_filenames, logger, emptyPythonCodeStyle)
-	assert.False(t, passed)
+	assert.Equals(t, passed, false)
 	assert.NoError(t, err)
 }
 
@@ -57,15 +59,14 @@ func TestAllTrue(t *testing.T) {
 	a[0] = true
 	a[1] = false
 	a[2] = true
-	assert.False(t, AllTrue(a))
-
+	assert.Equals(t, carpentry.AllTrue(a), false)
 	a[1] = true
-	assert.True(t, AllTrue(a))
+	assert.Equals(t, carpentry.AllTrue(a), true)
 }
 
 func TestCliCarpentry(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	assert.Error(t, CliCarpentry(true, true, logger, "podman"))
+	assert.Error(t, carpentry.CliCarpentry(true, true, logger, "podman"))
 }
 
 func TestFlake8(t *testing.T) {
@@ -75,18 +76,18 @@ func TestFlake8(t *testing.T) {
 		Destination: arcalog.DestinationStdout,
 		Stdout:      os.Stdout,
 	})
-	err := flake8PythonCodeStyle("/githug/workplace", stdout, logger)
+	err := carpentry.Flake8PythonCodeStyle("/githug/workplace", stdout, logger)
 	assert.Error(t, err)
 
 	afp, patherr := filepath.Abs("../../fixtures/pep8_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	assert.Nil(t, flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
+	assert.Nil(t, carpentry.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 
 	afp, patherr = filepath.Abs("../../fixtures/pep8_non_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	assert.Error(t, flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
+	assert.Error(t, carpentry.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-func LookupEnvVar(key string, logger log.Logger) verbose {
+func LookupEnvVar(key string, logger log.Logger) Verbose {
 	val, ok := os.LookupEnv(key)
 	var msg string
 	if !ok {
@@ -15,10 +15,10 @@ func LookupEnvVar(key string, logger log.Logger) verbose {
 		msg = fmt.Sprintf("%s is empty", key)
 	}
 	logger.Infof(msg)
-	return verbose{return_value: val, msg: msg}
+	return Verbose{Return_value: val, Msg: msg}
 }
 
-type verbose struct {
-	msg          string
-	return_value string
+type Verbose struct {
+	Msg          string
+	Return_value string
 }

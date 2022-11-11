@@ -9,12 +9,15 @@ import (
 
 func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) {
 	meets_reqs := true
-	project_files, err := os.Open(abspath)
+	project_files, err := os.Open(filepath.Clean(abspath))
 	if err != nil {
 		return false, err
 	}
-	defer project_files.Close()
 	filenames, err := project_files.Readdirnames(0)
+	if err != nil {
+		return false, err
+	}
+	err = project_files.Close()
 	if err != nil {
 		return false, err
 	}
@@ -25,9 +28,8 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 	if !has_ {
 		logger.Infof("Missing Dockerfile")
 		meets_reqs = false
-
 	} else {
-		file, err := os.ReadFile(filepath.Join(abspath, "Dockerfile"))
+		file, err := os.ReadFile(filepath.Join(filepath.Clean(abspath), "Dockerfile"))
 		if err != nil {
 			return false, err
 		}
@@ -60,10 +62,7 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 
 func ImageLanguage(filenames []string) (string, error) {
 	ext2Lang := map[string]string{"go": "go", "py": "python"}
-	cr, err := regexp.Compile("(?i).*plugin.*")
-	if err != nil {
-		return "", err
-	}
+	cr := regexp.MustCompile("(?i).*plugin.*")
 	for _, name := range filenames {
 		if cr.MatchString(name) {
 			ext := filepath.Ext(name)

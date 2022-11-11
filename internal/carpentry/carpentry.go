@@ -66,11 +66,12 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	if err != nil {
 		return fmt.Errorf("error in carpentry configuration file (%w)", err)
 	}
-	abspath, err := filepath.Abs(conf.Project_Filepath)
+	cleanpath := filepath.Clean(conf.Project_Filepath)
+	abspath, err := filepath.Abs(cleanpath)
 	if err != nil {
 		return fmt.Errorf("invalid absolute path to project (%w)", err)
 	}
-	files, err := os.Open(abspath)
+	files, err := os.Open(filepath.Clean(abspath))
 	if err != nil {
 		return fmt.Errorf("error opening project directory (%w)", err)
 	}
@@ -84,11 +85,11 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	}
 	cec, err := ce_service.NewContainerEngineService(cec_choice)
 	if err != nil {
-		return fmt.Errorf("invalid container engine client %s", err)
+		return fmt.Errorf("invalid container engine client %w", err)
 	}
 	passed_reqs, err := Carpentry(build, push, cec, conf, abspath, filenames,
 		logger,
-		flake8PythonCodeStyle)
+		Flake8PythonCodeStyle)
 	if err != nil {
 		return fmt.Errorf("error during carpentry (%w)", err)
 	}
@@ -98,7 +99,7 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	return nil
 }
 
-func flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
+func Flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
 	err := os.Chdir(abspath)
 	if err != nil {
 		return err

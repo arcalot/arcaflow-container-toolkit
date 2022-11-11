@@ -29,8 +29,8 @@ jobs:
           version: "v0.0.3-beta"
           install-only: true
 
-      # Run tests with coverprofile
-      - name: Run tests
+      # Run test with coverprofile
+      - name: Run test
         run: |
           go test ./... -coverprofile=test.cov
 

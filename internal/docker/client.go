@@ -16,18 +16,18 @@ import (
 )
 
 type CEClient struct {
-	client DockerClient
+	Client DockerClient
 }
 
 func NewCEClient() (*CEClient, error) {
 	container_cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		fmt.Println(client.IsErrConnectionFailed(err))
-		return nil, fmt.Errorf("error while creating Docker client (%w)", err)
+		return nil, fmt.Errorf("error while creating Docker Client (%w)", err)
 	}
 
 	return &CEClient{
-		client: container_cli,
+		Client: container_cli,
 	}, nil
 }
 
@@ -43,7 +43,7 @@ func (ce CEClient) Build(filepath string, name string, tags []string) error {
 		Dockerfile: "Dockerfile",
 		Tags:       []string{image_tag},
 	}
-	res, err := ce.client.ImageBuild(ctx, tar, opts)
+	res, err := ce.Client.ImageBuild(ctx, tar, opts)
 	if err != nil {
 		return fmt.Errorf("error building %s (%w)", name, err)
 	}
@@ -83,7 +83,7 @@ func Show(rd io.Reader, writer io.Writer) error {
 	err := json.Unmarshal([]byte(lastLine), errLine)
 	if err != nil {
 		return fmt.Errorf(
-			"error unmarshalling error details from jsons stream producer  %s (%v)",
+			"error unmarshalling error details from jsons stream producer  %s (%w)",
 			lastLine, err)
 	}
 
@@ -101,7 +101,7 @@ func Show(rd io.Reader, writer io.Writer) error {
 func (ce CEClient) Tag(image_tag string, destination string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
-	err := ce.client.ImageTag(ctx, image_tag, destination)
+	err := ce.Client.ImageTag(ctx, image_tag, destination)
 
 	if err != nil {
 		return fmt.Errorf("error tagging %s (%w)", destination, err)
@@ -120,7 +120,7 @@ func (ce CEClient) Push(destination string, username string, password string, re
 	opts := types.ImagePushOptions{RegistryAuth: authConfigEncoded}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
-	rdr, err := ce.client.ImagePush(ctx, destination, opts)
+	rdr, err := ce.Client.ImagePush(ctx, destination, opts)
 
 	if err != nil {
 		return fmt.Errorf("error pushing %s (%w)", destination, err)
