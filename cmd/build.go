@@ -383,7 +383,7 @@ func ContainerRequirements(abspath string, name string, version string, logger l
 		// create map of regexp patterns to search for in Dockerfile as well as log information if not found
 		m := map[string]string{
 			"FROM quay\\.io/centos/centos:stream8":                                             "Dockerfile doesn't use 'FROM quay.io/centos/centos:stream8'\n",
-			"(ADD|COPY) LICENSE /.*":                                                           "Dockerfile does not contain copy of arcaflow plugin license\n",
+			"(ADD|COPY) .*/?LICENSE /.*":                                                       "Dockerfile does not contain copy of arcaflow plugin license\n",
 			"ENTRYPOINT \\[.*\".*plugin.*\".*\\]":                                              "Dockerfile enterypoint does not point to an executable that includes 'plugin' in its name",
 			"CMD \\[\\]":                                                                       "Dockerfile does not contain an empty command (i.e. CMD [])",
 			"LABEL org.opencontainers.image.source=\".*\"":                                     "Dockerfile is missing LABEL org.opencontainers.image.source",
