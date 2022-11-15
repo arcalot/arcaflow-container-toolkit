@@ -1,5 +1,7 @@
 carpenter
 .idea/
+coverage.*
+cov.*
 
 # Binaries for programs and plugins
 *.exe

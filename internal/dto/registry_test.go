@@ -16,7 +16,7 @@ func TestFilterByIndex(t *testing.T) {
 	d := dto.Registry{Url: "d"}
 	e := dto.Registry{Url: "e"}
 	var PlaceHolder struct{}
-	list := []dto.Registry{a, b, c, d, e}
+	list := dto.Registries{a, b, c, d, e}
 	remove := map[string]dto.Empty{
 		"1": PlaceHolder,
 		"3": PlaceHolder,

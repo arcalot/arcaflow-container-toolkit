@@ -127,7 +127,6 @@ func TestPythonRequirements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-			// act, err := PythonCodeStyle(".", "dummy", "latest", tc.fn, logger)
 			act, err := requirements.PythonRequirements(tc.abspath, tc.filenames, tc.name, tc.version, logger, tc.fn)
 			if err != nil {
 				log.Fatal(err)
