@@ -26,7 +26,7 @@ jobs:
       - name: Set up limgo - option 2
         uses: GoTestTools/limgo-action@v1.0.1
         with:
-          version: "limgo@a3e4cecc548811b94424b4b51e2c3602debbdaf0"
+          version: "v0.0.3-beta"
           install-only: true
 
       # Run test with coverprofile
