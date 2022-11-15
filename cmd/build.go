@@ -31,6 +31,7 @@ type config struct {
 	Image_Name       string `default:"all"`
 	Project_Filepath string
 	Image_Tag        string `default:"latest"`
+	Quay_Img_Exp     string `default:"never"`
 	Registries       []Registry
 }
 
@@ -136,7 +137,7 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 	if !all_checks {
 		return false, nil
 	}
-	if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+	if err := BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Quay_Img_Exp,
 		logger); err != nil {
 		return false, err
 	}
@@ -150,12 +151,12 @@ func BuildCmdMain(build_img bool, push_img bool, cec ce_client.ContainerEngineCl
 }
 
 func BuildImage(build_img bool, all_checks bool, cec ce_client.ContainerEngineClient, abspath string, image_name string,
-	image_tag string, logger log.Logger) error {
+	image_tag string, quay_img_exp string, logger log.Logger) error {
 
 	if all_checks && build_img {
 		logger.Infof("Passed all requirements: %s %s\n", image_name, image_tag)
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
-		if err := cec.Build(abspath, image_name, []string{image_tag}); err != nil {
+		if err := cec.Build(abspath, image_name, []string{image_tag}, quay_img_exp); err != nil {
 			return err
 		}
 	}
@@ -225,6 +226,7 @@ func getConfig(logger log.Logger) (config, error) {
 		Image_Name:       viper.GetString("image_name"),
 		Project_Filepath: viper.GetString("project_filepath"),
 		Image_Tag:        viper.GetString("image_tag"),
+		Quay_Img_Exp:     viper.GetString("quay_img_exp"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
 		return config{}, fmt.Errorf("error setting carpenter config defaults (%w)", err)

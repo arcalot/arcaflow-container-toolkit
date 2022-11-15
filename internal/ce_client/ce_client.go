@@ -18,7 +18,7 @@ import (
 )
 
 type ContainerEngineClient interface {
-	Build(filepath string, name string, tags []string) error
+	Build(filepath string, name string, tags []string, quay_img_exp string) error
 	Tag(image_tag string, destination string) error
 	Push(destination string, username string, password string, registry_address string) error
 }
@@ -43,8 +43,11 @@ func NewCeClient(choice string) (ContainerEngineClient, error) {
 	}
 }
 
-func (ce docker) Build(filepath string, name string, tags []string) error {
+func (ce docker) Build(filepath string, name string, tags []string, quay_img_exp string) error {
 	image_tag := name + ":" + tags[0]
+	quay_img_exp_value := map[string]string{
+		"quay.expires-after": quay_img_exp,
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
 	defer cancel()
 	tar, err := archive.TarWithOptions(filepath, &archive.TarOptions{})
@@ -54,6 +57,7 @@ func (ce docker) Build(filepath string, name string, tags []string) error {
 	opts := types.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
 		Tags:       []string{image_tag},
+		Labels:     quay_img_exp_value,
 	}
 	res, err := ce.client.ImageBuild(ctx, tar, opts)
 	if err != nil {
