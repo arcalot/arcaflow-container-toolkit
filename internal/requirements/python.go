@@ -3,7 +3,9 @@ package requirements
 import (
 	"bytes"
 	"fmt"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/util"
 	"go.arcalot.io/log"
+	"os"
 )
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error
@@ -52,4 +54,24 @@ func PythonFileRequirements(filenames []string, logger log.Logger) (bool, error)
 		meets_reqs = false
 	}
 	return meets_reqs, nil
+}
+
+func Flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
+	err := os.Chdir(abspath)
+	if err != nil {
+		return err
+	}
+	return util.RunExternalProgram(
+		"python3",
+		[]string{
+			"-m",
+			"flake8",
+			"--show-source",
+			abspath,
+		},
+		nil,
+		nil,
+		stdout,
+		stdout,
+	)
 }

@@ -7,7 +7,6 @@ import (
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/images"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/util"
 	"go.arcalot.io/log"
 	log2 "log"
 	"os"
@@ -89,7 +88,7 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	}
 	passed_reqs, err := Carpentry(build, push, cec, conf, abspath, filenames,
 		logger,
-		Flake8PythonCodeStyle)
+		requirements.Flake8PythonCodeStyle)
 	if err != nil {
 		return fmt.Errorf("error during carpentry (%w)", err)
 	}
@@ -97,24 +96,4 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 		log2.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)
 	}
 	return nil
-}
-
-func Flake8PythonCodeStyle(abspath string, stdout *bytes.Buffer, logger log.Logger) error {
-	err := os.Chdir(abspath)
-	if err != nil {
-		return err
-	}
-	return util.RunExternalProgram(
-		"python3",
-		[]string{
-			"-m",
-			"flake8",
-			"--show-source",
-			abspath,
-		},
-		nil,
-		nil,
-		stdout,
-		stdout,
-	)
 }

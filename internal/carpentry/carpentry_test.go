@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpentry"
 	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
+	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
 	mock_ces "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
-
 	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
 	"log"
@@ -76,18 +76,18 @@ func TestFlake8(t *testing.T) {
 		Destination: arcalog.DestinationStdout,
 		Stdout:      os.Stdout,
 	})
-	err := carpentry.Flake8PythonCodeStyle("/githug/workplace", stdout, logger)
+	err := requirements.Flake8PythonCodeStyle("/githug/workplace", stdout, logger)
 	assert.Error(t, err)
 
 	afp, patherr := filepath.Abs("../../fixtures/pep8_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	assert.Nil(t, carpentry.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
+	assert.Nil(t, requirements.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 
 	afp, patherr = filepath.Abs("../../fixtures/pep8_non_compliant")
 	if patherr != nil {
 		log.Fatal(patherr)
 	}
-	assert.Error(t, carpentry.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
+	assert.Error(t, requirements.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 }
