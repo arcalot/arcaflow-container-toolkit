@@ -12,6 +12,7 @@ type Carpenter struct {
 	Image_Name       string `default:"all"`
 	Project_Filepath string
 	Image_Tag        string `default:"latest"`
+	Quay_Img_Exp     string `default:"never"`
 	Registries       []Registry
 }
 
@@ -25,6 +26,7 @@ func Unmarshal(logger log.Logger) (Carpenter, error) {
 		Image_Name:       viper.GetString("image_name"),
 		Project_Filepath: viper.GetString("project_filepath"),
 		Image_Tag:        viper.GetString("image_tag"),
+		Quay_Img_Exp:     viper.GetString("quay_img_exp"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
 		return Carpenter{}, fmt.Errorf("error setting carpentry Carpenter defaults (%w)", err)

@@ -17,10 +17,10 @@ func TestBuildImage(t *testing.T) {
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineService(ctrl)
 	cec.EXPECT().
-		Build("use", "the", []string{"forks"}).
+		Build("use", "the", []string{"forks"}, "never").
 		Return(nil).
 		Times(1)
-	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", logger))
+	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", "never", logger))
 }
 
 func TestPushImage(t *testing.T) {

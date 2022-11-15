@@ -38,7 +38,7 @@ func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineServ
 	if !all_checks {
 		return false, nil
 	}
-	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag,
+	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Quay_Img_Exp,
 		logger); err != nil {
 		return false, err
 	}

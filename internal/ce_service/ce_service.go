@@ -8,7 +8,7 @@ import (
 )
 
 type ContainerEngineService interface {
-	Build(filepath string, name string, tags []string) error
+	Build(filepath string, name string, tags []string, quay_img_exp string) error
 	Tag(image_tag string, destination string) error
 	Push(destination string, username string, password string, registry_address string) error
 }

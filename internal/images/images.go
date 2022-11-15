@@ -7,12 +7,12 @@ import (
 )
 
 func BuildImage(build_img bool, all_checks bool, cec ce_service.ContainerEngineService, abspath string, image_name string,
-	image_tag string, logger log.Logger) error {
+	image_tag string, quay_img_exp string, logger log.Logger) error {
 
 	if all_checks && build_img {
 		logger.Infof("Passed all requirements: %s %s\n", image_name, image_tag)
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
-		if err := cec.Build(abspath, image_name, []string{image_tag}); err != nil {
+		if err := cec.Build(abspath, image_name, []string{image_tag}, quay_img_exp); err != nil {
 			return err
 		}
 	}

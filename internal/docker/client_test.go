@@ -29,7 +29,7 @@ func TestClient_BuildImage(t *testing.T) {
 		Client: dockerClientMock,
 	}
 
-	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"}))
+	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"}, "never"))
 }
 
 func TestClient_ImageTag(t *testing.T) {
