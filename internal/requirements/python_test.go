@@ -7,6 +7,8 @@ import (
 	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
 	"log"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -134,4 +136,27 @@ func TestPythonRequirements(t *testing.T) {
 			assert.Equals(t, tc.expectedResult, act)
 		})
 	}
+}
+
+func TestFlake8(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	logger := arcalog.New(arcalog.Config{
+		Level:       arcalog.LevelInfo,
+		Destination: arcalog.DestinationStdout,
+		Stdout:      os.Stdout,
+	})
+	err := requirements.Flake8PythonCodeStyle("/githug/workplace", stdout, logger)
+	assert.Error(t, err)
+
+	afp, patherr := filepath.Abs("../../fixtures/pep8_compliant")
+	if patherr != nil {
+		log.Fatal(patherr)
+	}
+	assert.Nil(t, requirements.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
+
+	afp, patherr = filepath.Abs("../../fixtures/pep8_non_compliant")
+	if patherr != nil {
+		log.Fatal(patherr)
+	}
+	assert.Error(t, requirements.Flake8PythonCodeStyle(afp, &bytes.Buffer{}, logger))
 }
