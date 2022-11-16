@@ -30,19 +30,20 @@ jobs:
           install-only: true
 
       # Run test with coverprofile
-      - name: Run test
+      - name: Run tests
         run: |
           go test ./... -coverprofile=test.cov
 
       # Pass the coverprofile to limgo for coverage evaluation
-      - name: Check test coverage
+      - name: Calculate test coverage
         run: |
           cat .limgo.json
           limgo -coverfile=test.cov -config=.limgo.json -outfile=limgo_cov.txt
           cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
+          limgo -coverfile=test.cov -config=.limgo.json -outfmt=md -outfile=limgo_cov.md
       - name: upload coverage results
         uses: actions/upload-artifact@v3
         with:
           name: coverage
-          path: limgo_cov.txt
+          path: limgo_cov.md
           if-no-files-found: error

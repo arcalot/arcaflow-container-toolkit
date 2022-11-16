@@ -1,6 +1,6 @@
 carpenter
 .idea/
-coverage.*
+coverage.md
 cov.*
 
 # Binaries for programs and plugins
