@@ -38,9 +38,8 @@ jobs:
       - name: Calculate test coverage
         run: |
           cat .limgo.json
-          limgo -coverfile=test.cov -config=.limgo.json -outfile=limgo_cov.txt
-          cat limgo_cov.txt >> $GITHUB_STEP_SUMMARY
           limgo -coverfile=test.cov -config=.limgo.json -outfmt=md -outfile=limgo_cov.md
+          cat limgo_cov.md >> $GITHUB_STEP_SUMMARY
       - name: upload coverage results
         uses: actions/upload-artifact@v3
         with:
