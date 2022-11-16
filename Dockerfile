@@ -1,6 +1,6 @@
 FROM quay.io/centos/centos:stream8
 RUN dnf -y install dnf-plugins-core &&\
-    dnf -y install golang
+    dnf -y install golang &&\
     dnf -y config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo &&\
     dnf -y install docker-ce-cli
 RUN dnf -y module install python39 &&\
