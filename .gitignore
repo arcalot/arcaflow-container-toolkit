@@ -1,6 +1,7 @@
 carpenter
 .idea/
 coverage.md
+limgo_cov.md
 cov.*
 
 # Binaries for programs and plugins
