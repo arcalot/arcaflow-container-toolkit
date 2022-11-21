@@ -1,4 +1,4 @@
-module github.com/arcalot/arcaflow-plugin-image-builder
+module go.arcalot.io/imagebuilder
 
 go 1.18
 

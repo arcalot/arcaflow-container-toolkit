@@ -1,8 +1,8 @@
 package requirements_test
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
 	"go.arcalot.io/assert"
+	"go.arcalot.io/imagebuilder/internal/requirements"
 	"go.arcalot.io/log"
 	log2 "log"
 	"testing"

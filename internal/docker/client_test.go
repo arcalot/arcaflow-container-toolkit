@@ -3,17 +3,17 @@ package docker_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/docker"
+	"go.arcalot.io/imagebuilder/internal/docker"
 	"io"
 	"log"
 	"os"
 	"strings"
 	"testing"
 
-	mock_docker "github.com/arcalot/arcaflow-plugin-image-builder/mocks/docker"
 	"github.com/docker/docker/api/types"
 	"github.com/golang/mock/gomock"
 	"go.arcalot.io/assert"
+	mock_docker "go.arcalot.io/imagebuilder/mocks/docker"
 )
 
 func TestClient_BuildImage(t *testing.T) {

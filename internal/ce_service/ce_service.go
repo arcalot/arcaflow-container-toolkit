@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/docker"
+	"go.arcalot.io/imagebuilder/internal/docker"
 )
 
 type ContainerEngineService interface {

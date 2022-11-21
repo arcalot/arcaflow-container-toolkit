@@ -3,7 +3,7 @@ package requirements
 import (
 	"bytes"
 	"fmt"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/util"
+	"go.arcalot.io/imagebuilder/internal/util"
 	"go.arcalot.io/log"
 	"os"
 )

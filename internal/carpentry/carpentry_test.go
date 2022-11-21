@@ -2,11 +2,11 @@ package carpentry_test
 
 import (
 	"bytes"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpentry"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
-	mock_ces "github.com/arcalot/arcaflow-plugin-image-builder/mocks/ce_service"
 	"github.com/golang/mock/gomock"
 	"go.arcalot.io/assert"
+	"go.arcalot.io/imagebuilder/internal/carpentry"
+	"go.arcalot.io/imagebuilder/internal/dto"
+	mock_ces "go.arcalot.io/imagebuilder/mocks/ce_service"
 	arcalog "go.arcalot.io/log"
 	"testing"
 )

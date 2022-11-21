@@ -1,8 +1,8 @@
 package dto_test
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/dto"
 	"go.arcalot.io/assert"
+	"go.arcalot.io/imagebuilder/internal/dto"
 	arcalog "go.arcalot.io/log"
 	"log"
 	"os"

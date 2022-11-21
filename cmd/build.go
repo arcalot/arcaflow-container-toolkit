@@ -4,8 +4,8 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/carpentry"
 	"github.com/spf13/cobra"
+	"go.arcalot.io/imagebuilder/internal/carpentry"
 	"os"
 )
 

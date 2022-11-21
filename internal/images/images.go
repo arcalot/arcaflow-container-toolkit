@@ -1,7 +1,7 @@
 package images
 
 import (
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/ce_service"
+	"go.arcalot.io/imagebuilder/internal/ce_service"
 	"go.arcalot.io/log"
 	"strings"
 )

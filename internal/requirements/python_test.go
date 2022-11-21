@@ -3,8 +3,8 @@ package requirements_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/arcalot/arcaflow-plugin-image-builder/internal/requirements"
 	"go.arcalot.io/assert"
+	"go.arcalot.io/imagebuilder/internal/requirements"
 	arcalog "go.arcalot.io/log"
 	"log"
 	"os"
