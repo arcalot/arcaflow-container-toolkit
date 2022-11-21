@@ -17,11 +17,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      # Install Go on the VM running the action
       - name: Set up Go
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
+
+      - name: Set up gotestfmt
+        uses: gotesttools/gotestfmt-action@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up limgo - option 2
         uses: GoTestTools/limgo-action@v1.0.1
@@ -29,10 +33,18 @@ jobs:
           version: "v0.0.5-beta"
           install-only: true
 
-      # Run test with coverprofile
-      - name: Run tests
+      - name: run tests
         run: |
-          go test ./... -coverprofile=test.cov
+          set -euo pipefail
+          go test -coverprofile=test.cov -json -v ./... 2>&1 | tee /tmp/gotest.log | gotestfmt
+
+      - name: upload test log
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-log
+          path: /tmp/gotest.log
+          if-no-files-found: error
 
       # Pass the coverprofile to limgo for coverage evaluation
       - name: Calculate test coverage
@@ -40,6 +52,7 @@ jobs:
           cat .limgo.json
           limgo -coverfile=test.cov -config=.limgo.json -outfmt=md -outfile=limgo_cov.md
           cat limgo_cov.md >> $GITHUB_STEP_SUMMARY
+
       - name: upload coverage results
         uses: actions/upload-artifact@v3
         with:
