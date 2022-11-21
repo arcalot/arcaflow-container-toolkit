@@ -21,11 +21,11 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 	if err != nil {
 		return false, err
 	}
-	has_, err := HasFilename(filenames, "Dockerfile")
+	present, err := HasFilename(filenames, "Dockerfile")
 	if err != nil {
 		return false, err
 	}
-	if !has_ {
+	if !present {
 		logger.Infof("Missing Dockerfile")
 		meets_reqs = false
 	} else {
