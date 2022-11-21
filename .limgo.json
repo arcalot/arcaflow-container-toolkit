@@ -1,0 +1,8 @@
+{
+  "statistic": {
+    "excludes": [
+      "mocks/.*",
+      "internal/docker/dto.go"
+    ]
+  }
+}

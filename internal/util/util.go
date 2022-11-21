@@ -1,7 +1,6 @@
 package util
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -38,26 +37,4 @@ func RunExternalProgram(
 		return err
 	}
 	return nil
-}
-
-func WriteOutput(
-	image string,
-	version string,
-	stdout *bytes.Buffer,
-	err error,
-) {
-	output := ""
-	output += fmt.Sprintf(
-		"img=%s version=%s\n",
-		// prefix,
-		image,
-		version,
-	)
-	output += stdout.String()
-	if err != nil {
-		output += fmt.Sprintf(err.Error())
-	}
-	if _, err := os.Stdout.Write([]byte(output)); err != nil {
-		panic(err)
-	}
 }

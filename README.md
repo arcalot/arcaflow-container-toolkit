@@ -16,10 +16,33 @@ Each plugin directory must meet the [Arcaflow Plugins Requirements](https://gith
 
 The builder will check that the requirements are met.
 
+## Test carpenter
+
+* golang v1.18
+* current working directory is this project's root directory
+* mock interfaces for carpenter's interfaces
+* python 3 and pip
+
+Install flake8
+```shell
+python3 -m pip install --user flake8
+```
+
+Generate golang mocks for carpenter's interfaces
+```shell
+go generate ./...
+```
+
+Execute test suite with statement coverage and save coverage data to `cov.txt`
+```shell
+go test ./... -coverprofile=cov.txt
+```
+
 ## Build the carpenter
 
 * golang v1.18
 * current working directory is this project's root directory
+* flake8
 
 ```shell
 go build carpenter.go
@@ -38,9 +61,13 @@ If successful, this will result in the arcaflow-plugin-image-builder executable,
 docker build . --tag carpenter-img
 ```
 
-## Example build configurations
+## Example Build Execution
 
-### Build a single plugin directory
+### Requirements
+
+* arcaflow-plugin-image-builder executable named `carpenter`
+* `.carpenter.yaml` in the same directory as `carpenter` executable
+* flake8
 
 example `.carpenter.yaml`
 ```yaml
@@ -58,7 +85,12 @@ registries:
     namespace_envvar: "QUAY_NAMESPACE"
 ```
 
-## Example Execution Containerized
+```shell
+./carpenter build --build
+```
+
+
+## Example Build and Push Execution Containerized
 
 ### Requirements
 
@@ -78,7 +110,7 @@ docker run \
     -e=QUAY_PASSWORD=$QUAY_PASSWORD\
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
     --volume /var/run/docker.sock:/var/run/docker.sock:z \
-    --volume $PWD/../arcaflow-plugin-template-python:/github/workspace:z \
+    --volume $PWD/../arcaflow-plugin-template-python:/github/workspace \
     carpenter-img build --build --push
 ```
 You can override the variables `image_tag` and `image_name` by injecting the environment variable `IMAGE_TAG` `IMAGE_NAME` respectively, set to your chosen string into `carpenter-img` when you run the container.

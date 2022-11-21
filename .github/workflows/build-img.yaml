@@ -2,7 +2,7 @@ name: Carpenter Image
 on:
   push:
     branches:
-      - gh-container-axn
+      - main
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}

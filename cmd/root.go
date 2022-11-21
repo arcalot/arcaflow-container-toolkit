@@ -16,7 +16,7 @@ var cfgFile string
 var verbosity bool
 var rootLogger log.Logger
 
-// rootCmd represents the base command when called without any subcommands
+// rootCmd represents the base command when called without any subcommands.
 var rootCmd = &cobra.Command{
 	Use:   "arcaflow-plugin-image-builder",
 	Short: "A brief description of your application",

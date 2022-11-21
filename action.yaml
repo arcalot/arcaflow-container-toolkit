@@ -1,4 +1,4 @@
-name: carpenter-action
+name: carpentry-action
 description: 'build a given source project'
 inputs:
   src:
@@ -6,7 +6,7 @@ inputs:
     required: true
 outputs:
   carpenter:
-    description: "carpenter build logs"
+    description: "carpentry build logs"
 runs:
   using: docker
   image: Dockerfile

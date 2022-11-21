@@ -1,10 +1,9 @@
 /*
 Copyright © 2022 NAME HERE <EMAIL ADDRESS>
-
 */
 package main
 
-import "github.com/arcalot/arcaflow-plugin-image-builder/cmd"
+import "go.arcalot.io/imagebuilder/cmd"
 
 func main() {
 	cmd.Execute()
