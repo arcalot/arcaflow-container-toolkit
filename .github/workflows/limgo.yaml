@@ -8,11 +8,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: install flake8
-        run: pip3 install --upgrade flake8
-      - name: check flake8 is on path
-        run: flake8
-
       # Checkout your project with git
       - name: Checkout
         uses: actions/checkout@v2

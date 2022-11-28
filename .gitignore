@@ -1,4 +1,5 @@
 carpenter
+dist/
 .idea/
 coverage.md
 limgo_cov.md
