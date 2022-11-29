@@ -14,6 +14,8 @@ builds:
     ignore:
       - goos: windows
         goarch: arm64
+    main:
+      ./carpenter.go
 archives:
   - id: my-archive
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
@@ -23,6 +25,12 @@ archives:
     files:
       - LICENSE
       - README.md
+dockers:
+  - dockerfile: Dockerfile
+    image_templates:
+      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Tag }}
+      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Major }}
+      - ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
 checksum:
     name_template: 'checksums.txt'
 changelog:
