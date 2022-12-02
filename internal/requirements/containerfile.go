@@ -60,21 +60,6 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 	return meets_reqs, nil
 }
 
-func ImageLanguage(filenames []string) (string, error) {
-	ext2Lang := map[string]string{"go": "go", "py": "python"}
-	cr := regexp.MustCompile("(?i).*plugin.*")
-	for _, name := range filenames {
-		if cr.MatchString(name) {
-			ext := filepath.Ext(name)
-			lang, ok := ext2Lang[ext[1:]]
-			if ok {
-				return lang, nil
-			}
-		}
-	}
-	return "", nil
-}
-
 func DockerfileHasLine(dockerfile string, line string) (bool, error) {
 	matched, err := regexp.MatchString(line, dockerfile)
 	if err != nil {

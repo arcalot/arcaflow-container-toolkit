@@ -36,38 +36,3 @@ func TestContainerRequirements(t *testing.T) {
 		})
 	}
 }
-
-func TestImageLanguage(t *testing.T) {
-	python_file := []string{"plugin.py"}
-	golang_file := []string{"plugin.go"}
-
-	testCases := map[string]struct {
-		filenames      []string
-		expectedResult string
-	}{
-		"a": {
-			python_file,
-			"python",
-		},
-		"b": {
-			golang_file,
-			"go",
-		},
-		"c": {
-			[]string{},
-			"",
-		},
-	}
-
-	for name, tc := range testCases {
-		tc := tc
-		t.Run(name, func(t *testing.T) {
-			t.Parallel()
-			act, err := requirements.ImageLanguage(tc.filenames)
-			if err != nil {
-				log2.Fatal(err)
-			}
-			assert.Equals(t, tc.expectedResult, act)
-		})
-	}
-}
