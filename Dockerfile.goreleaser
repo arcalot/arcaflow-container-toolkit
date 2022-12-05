@@ -1,3 +1,4 @@
 FROM scratch
 ENTRYPOINT ["/arcaflow-plugin-image-builder"]
+RUN pwd && ls .
 COPY arcaflow-plugin-image-builder /
