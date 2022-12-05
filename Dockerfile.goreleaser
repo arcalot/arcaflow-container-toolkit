@@ -1,0 +1,3 @@
+FROM scratch
+ENTRYPOINT ["/arcaflow-plugin-image-builder"]
+COPY arcaflow-plugin-image-builder /
