@@ -1,4 +1,3 @@
-FROM alpine
-ENTRYPOINT ["/arcaflow-plugin-image-builder"]
-RUN pwd && ls .
-COPY arcaflow-plugin-image-builder /
+FROM scratch
+ENTRYPOINT ["/imagebuilder"]
+COPY imagebuilder /
