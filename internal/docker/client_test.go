@@ -3,12 +3,13 @@ package docker_test
 import (
 	"bytes"
 	"fmt"
-	"go.arcalot.io/imagebuilder/internal/docker"
 	"io"
 	"log"
 	"os"
 	"strings"
 	"testing"
+
+	"go.arcalot.io/imagebuilder/internal/docker"
 
 	"github.com/docker/docker/api/types"
 	"github.com/golang/mock/gomock"
@@ -29,7 +30,8 @@ func TestClient_BuildImage(t *testing.T) {
 		Client: dockerClientMock,
 	}
 
-	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"}, "never"))
+	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"},
+		docker.DefaultBuildOptions()))
 }
 
 func TestClient_ImageTag(t *testing.T) {

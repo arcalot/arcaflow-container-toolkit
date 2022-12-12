@@ -15,6 +15,18 @@ import (
 	"github.com/docker/docker/pkg/archive"
 )
 
+type BuildOptions struct {
+	QuayImgExp            string
+	BuildTimeLimitSeconds uint32
+}
+
+func DefaultBuildOptions() *BuildOptions {
+	return &BuildOptions{
+		QuayImgExp:            "never",
+		BuildTimeLimitSeconds: 60 * 10, // 10 minutes
+	}
+}
+
 type CEClient struct {
 	Client DockerClient
 }
@@ -31,12 +43,13 @@ func NewCEClient() (*CEClient, error) {
 	}, nil
 }
 
-func (ce CEClient) Build(filepath string, name string, tags []string, quay_img_exp string) error {
+func (ce CEClient) Build(filepath string, name string, tags []string, build_options *BuildOptions) error {
 	image_tag := name + ":" + tags[0]
 	quay_img_exp_value := map[string]string{
-		"quay.expires-after": quay_img_exp,
+		"quay.expires-after": build_options.QuayImgExp,
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*300)
+	ctx, cancel := context.WithTimeout(context.Background(),
+		time.Second*time.Duration(build_options.BuildTimeLimitSeconds))
 	defer cancel()
 	tar, err := archive.TarWithOptions(filepath, &archive.TarOptions{})
 	if err != nil {

@@ -3,14 +3,16 @@ package carpentry
 import (
 	"bytes"
 	"fmt"
+	log2 "log"
+	"os"
+	"path/filepath"
+
 	"go.arcalot.io/imagebuilder/internal/ce_service"
+	"go.arcalot.io/imagebuilder/internal/docker"
 	"go.arcalot.io/imagebuilder/internal/dto"
 	"go.arcalot.io/imagebuilder/internal/images"
 	"go.arcalot.io/imagebuilder/internal/requirements"
 	"go.arcalot.io/log"
-	log2 "log"
-	"os"
-	"path/filepath"
 )
 
 func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.Carpenter, abspath string,
@@ -38,7 +40,11 @@ func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineServ
 	if !all_checks {
 		return false, nil
 	}
-	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Quay_Img_Exp,
+	build_options := docker.BuildOptions{
+		QuayImgExp:            conf.Quay_Img_Exp,
+		BuildTimeLimitSeconds: conf.Build_Timeout,
+	}
+	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, &build_options,
 		logger); err != nil {
 		return false, err
 	}

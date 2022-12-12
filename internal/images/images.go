@@ -1,18 +1,20 @@
 package images
 
 import (
-	"go.arcalot.io/imagebuilder/internal/ce_service"
-	"go.arcalot.io/log"
 	"strings"
+
+	"go.arcalot.io/imagebuilder/internal/ce_service"
+	"go.arcalot.io/imagebuilder/internal/docker"
+	"go.arcalot.io/log"
 )
 
 func BuildImage(build_img bool, all_checks bool, cec ce_service.ContainerEngineService, abspath string, image_name string,
-	image_tag string, quay_img_exp string, logger log.Logger) error {
+	image_tag string, options *docker.BuildOptions, logger log.Logger) error {
 
 	if all_checks && build_img {
 		logger.Infof("Passed all requirements: %s %s\n", image_name, image_tag)
 		logger.Infof("Building %s %s from %v\n", image_name, image_tag, abspath)
-		if err := cec.Build(abspath, image_name, []string{image_tag}, quay_img_exp); err != nil {
+		if err := cec.Build(abspath, image_name, []string{image_tag}, options); err != nil {
 			return err
 		}
 	}
