@@ -5,15 +5,25 @@ on:
       - "**"
   pull_request:
 jobs:
+  golangci-lint:
+    name: golangci-lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.49
   test:
     runs-on: ubuntu-latest
     steps:
       # Checkout your project with git
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: 1.18
 
@@ -22,11 +32,14 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up limgo - option 2
+      - name: Set up limgo
         uses: GoTestTools/limgo-action@v1.0.1
         with:
-          version: "v0.0.5-beta"
+          version: "v1.0.0"
           install-only: true
+
+      - name: generate mocks
+        run: go generate ./...
 
       - name: run tests
         run: |
