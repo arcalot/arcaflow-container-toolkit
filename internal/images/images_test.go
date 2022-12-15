@@ -2,13 +2,15 @@ package images_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"go.arcalot.io/assert"
+	"go.arcalot.io/imagebuilder/internal/docker"
 	"go.arcalot.io/imagebuilder/internal/dto"
 	"go.arcalot.io/imagebuilder/internal/images"
 	mocks "go.arcalot.io/imagebuilder/mocks/ce_service"
 	"go.arcalot.io/log"
-	"testing"
 )
 
 func TestBuildImage(t *testing.T) {
@@ -17,10 +19,10 @@ func TestBuildImage(t *testing.T) {
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineService(ctrl)
 	cec.EXPECT().
-		Build("use", "the", []string{"forks"}, "never").
+		Build("use", "the", []string{"forks"}, docker.DefaultBuildOptions()).
 		Return(nil).
 		Times(1)
-	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", "never", logger))
+	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", docker.DefaultBuildOptions(), logger))
 }
 
 func TestPushImage(t *testing.T) {

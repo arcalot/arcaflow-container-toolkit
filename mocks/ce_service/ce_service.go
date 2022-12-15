@@ -8,6 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	docker "go.arcalot.io/imagebuilder/internal/docker"
 )
 
 // MockContainerEngineService is a mock of ContainerEngineService interface.
@@ -34,7 +35,7 @@ func (m *MockContainerEngineService) EXPECT() *MockContainerEngineServiceMockRec
 }
 
 // Build mocks base method.
-func (m *MockContainerEngineService) Build(arg0, arg1 string, arg2 []string, arg3 string) error {
+func (m *MockContainerEngineService) Build(arg0, arg1 string, arg2 []string, arg3 *docker.BuildOptions) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Build", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)
