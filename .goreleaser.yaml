@@ -28,9 +28,9 @@ archives:
 dockers:
   - dockerfile: Dockerfile.goreleaser
     image_templates:
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Tag }}
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Major }}
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
+      - ghcr.io/mfleader/arcaflow-plugin-image-builder:{{ .Tag }}
+      - ghcr.io/mfleader/arcaflow-plugin-image-builder:{{ .Major }}
+      - ghcr.io/mfleader/arcaflow-plugin-image-builder:latest
 checksum:
     name_template: 'checksums.txt'
 changelog:
