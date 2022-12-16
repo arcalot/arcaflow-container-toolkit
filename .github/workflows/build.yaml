@@ -19,7 +19,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      # Checkout your project with git
       - name: Checkout
         uses: actions/checkout@v3
 
