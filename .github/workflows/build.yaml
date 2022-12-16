@@ -3,7 +3,9 @@ on:
   push:
     branches:
       - "**"
+    tags:
   pull_request:
+
 jobs:
   golangci-lint:
     name: golangci-lint
