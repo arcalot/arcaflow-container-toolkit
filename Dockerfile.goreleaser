@@ -1,0 +1,4 @@
+FROM scratch
+ENTRYPOINT ["/imagebuilder"]
+COPY imagebuilder /
+COPY .carpenter.yaml /

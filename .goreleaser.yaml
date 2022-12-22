@@ -26,7 +26,7 @@ archives:
       - LICENSE
       - README.md
 dockers:
-  - dockerfile: Dockerfile
+  - dockerfile: Dockerfile.goreleaser
     image_templates:
       - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Tag }}
       - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Major }}
@@ -39,3 +39,28 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  # If set to auto, will mark the release as not ready for production
+  # in case there is an indicator for this in the tag e.g. v1.0.0-rc1
+  # If set to true, will mark the release as not ready for production.
+  # Default is false.
+  prerelease: auto
+  # What to do with the release notes in case the release already exists.
+  #
+  # Valid options are:
+  # - `keep-existing`: keep the existing notes
+  # - `append`: append the current release notes to the existing notes
+  # - `prepend`: prepend the current release notes to the existing notes
+  # - `replace`: replace existing notes
+  #
+  # Default is `keep-existing`.
+  mode: append
+
+
+
+
+
+
+
+
+
