@@ -11,14 +11,14 @@ import (
 )
 
 type Registry struct {
-	Url              string
-	Username_Envvar  string
-	Password_Envvar  string
-	Namespace_Envvar string
-	Username         string `default:""`
-	Password         string `default:""`
-	Namespace        string `default:""`
-	Quay_Custom_Repo string `default:""`
+	Url                     string
+	Username_Envvar         string
+	Password_Envvar         string
+	Namespace_Envvar        string
+	Quay_Custom_Repo_Envvar string
+	Username                string `default:""`
+	Password                string `default:""`
+	Namespace               string `default:""`
 }
 
 type Registries []Registry
@@ -63,22 +63,23 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		username_envvar := registries[i].Username_Envvar
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
-		quay_custom_repo_envvar := registries[i].Quay_Custom_Repo
+		quay_custom_repo_envvar := registries[i].Quay_Custom_Repo_Envvar
 		username := LookupEnvVar(username_envvar, logger).Return_value
 		password := LookupEnvVar(password_envvar, logger).Return_value
 		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
 		quay_custom_repo := LookupEnvVar(quay_custom_repo_envvar, logger).Return_value
-		if quay_custom_repo != "" && registries[i].Url == "quay.io" {
-			registries[i].Namespace = quay_custom_repo
-		}
 		if registries[i].ValidCredentials(username) {
 			registries[i].Username = username
 			registries[i].Password = password
-			inferred_namespace, err := InferNamespace(namespace, username)
-			if err != nil {
-				return nil, err
+			if quay_custom_repo != "" && registries[i].Url == "quay.io" {
+				registries[i].Namespace = quay_custom_repo
+			} else {
+				inferred_namespace, err := InferNamespace(namespace, username)
+				if err != nil {
+					return nil, err
+				}
+				registries[i].Namespace = inferred_namespace
 			}
-			registries[i].Namespace = inferred_namespace
 		} else {
 			logger.Infof("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
