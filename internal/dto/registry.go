@@ -2,11 +2,12 @@ package dto
 
 import (
 	"fmt"
-	"github.com/spf13/viper"
-	"go.arcalot.io/log"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/spf13/viper"
+	"go.arcalot.io/log"
 )
 
 type Registry struct {
@@ -17,6 +18,7 @@ type Registry struct {
 	Username         string `default:""`
 	Password         string `default:""`
 	Namespace        string `default:""`
+	Quay_Custom_Repo string `default:""`
 }
 
 type Registries []Registry
@@ -61,9 +63,14 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		username_envvar := registries[i].Username_Envvar
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
+		quay_custom_repo_envvar := registries[i].Quay_Custom_Repo
 		username := LookupEnvVar(username_envvar, logger).Return_value
 		password := LookupEnvVar(password_envvar, logger).Return_value
 		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
+		quay_custom_repo := LookupEnvVar(quay_custom_repo_envvar, logger).Return_value
+		if quay_custom_repo != "" && registries[i].Url == "quay.io" {
+			registries[i].Namespace = quay_custom_repo
+		}
 		if registries[i].ValidCredentials(username) {
 			registries[i].Username = username
 			registries[i].Password = password
