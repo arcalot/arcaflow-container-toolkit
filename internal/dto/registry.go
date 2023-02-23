@@ -15,7 +15,7 @@ type Registry struct {
 	Username_Envvar              string
 	Password_Envvar              string
 	Namespace_Envvar             string
-	Quay_Custom_Namespace_Envvar string
+	Quay_Custom_Namespace_Envvar string `default:""`
 	Username                     string `default:""`
 	Password                     string `default:""`
 	Namespace                    string `default:""`
@@ -71,17 +71,18 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		if registries[i].ValidCredentials(username) {
 			registries[i].Username = username
 			registries[i].Password = password
-			inferred_namespace, err := InferNamespace(namespace, username)
-			if err != nil {
-				return nil, err
-			}
-			registries[i].Namespace = inferred_namespace
 		} else {
 			logger.Infof("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 		}
 		if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
 			registries[i].Namespace = quay_custom_namespace
+		} else {
+			inferred_namespace, err := InferNamespace(namespace, username)
+			if err != nil {
+				return nil, err
+			}
+			registries[i].Namespace = inferred_namespace
 		}
 	}
 	filteredRegistries := FilterByIndex(registries, misconfigured_registries)
