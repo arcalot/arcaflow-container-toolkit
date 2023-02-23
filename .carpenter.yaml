@@ -12,4 +12,4 @@ registries:
     username_envvar: "QUAY_USERNAME"
     password_envvar: "QUAY_PASSWORD"
     namespace_envvar: "QUAY_NAMESPACE"
-    quay_custom_repo_envvar: "QUAY_CUSTOM_REPO"
+    quay_custom_repo_envvar: "QUAY_CUSTOM_NAMESPACE"

@@ -11,14 +11,14 @@ import (
 )
 
 type Registry struct {
-	Url                     string
-	Username_Envvar         string
-	Password_Envvar         string
-	Namespace_Envvar        string
-	Quay_Custom_Repo_Envvar string
-	Username                string `default:""`
-	Password                string `default:""`
-	Namespace               string `default:""`
+	Url                          string
+	Username_Envvar              string
+	Password_Envvar              string
+	Namespace_Envvar             string
+	Quay_Custom_Namespace_Envvar string
+	Username                     string `default:""`
+	Password                     string `default:""`
+	Namespace                    string `default:""`
 }
 
 type Registries []Registry
@@ -63,16 +63,16 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		username_envvar := registries[i].Username_Envvar
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
-		quay_custom_repo_envvar := registries[i].Quay_Custom_Repo_Envvar
+		quay_custom_namespace_envvar := registries[i].Quay_Custom_Namespace_Envvar
 		username := LookupEnvVar(username_envvar, logger).Return_value
 		password := LookupEnvVar(password_envvar, logger).Return_value
 		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
-		quay_custom_repo := LookupEnvVar(quay_custom_repo_envvar, logger).Return_value
+		quay_custom_namespace := LookupEnvVar(quay_custom_namespace_envvar, logger).Return_value
 		if registries[i].ValidCredentials(username) {
 			registries[i].Username = username
 			registries[i].Password = password
-			if quay_custom_repo != "" && registries[i].Url == "quay.io" {
-				registries[i].Namespace = quay_custom_repo
+			if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
+				registries[i].Namespace = quay_custom_namespace
 			} else {
 				inferred_namespace, err := InferNamespace(namespace, username)
 				if err != nil {
