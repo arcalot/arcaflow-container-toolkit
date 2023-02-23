@@ -68,13 +68,13 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		password := LookupEnvVar(password_envvar, logger).Return_value
 		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
 		quay_custom_namespace := LookupEnvVar(quay_custom_namespace_envvar, logger).Return_value
-		if registries[i].ValidCredentials(username) {
-			registries[i].Username = username
-			registries[i].Password = password
-		} else {
+		if !registries[i].ValidCredentials(username) {
 			logger.Infof("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
 		}
+		registries[i].Username = username
+		registries[i].Password = password
 		if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
 			registries[i].Namespace = quay_custom_namespace
 		} else {
