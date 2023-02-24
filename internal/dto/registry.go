@@ -15,7 +15,7 @@ type Registry struct {
 	Username_Envvar              string
 	Password_Envvar              string
 	Namespace_Envvar             string
-	Quay_Custom_Namespace_Envvar string `default:""`
+	Quay_Custom_Namespace_Envvar string
 	Username                     string `default:""`
 	Password                     string `default:""`
 	Namespace                    string `default:""`
