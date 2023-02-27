@@ -116,8 +116,10 @@ docker run \
 ```
 You can override the variables `image_tag` and `image_name` by injecting the environment variable `IMAGE_TAG` `IMAGE_NAME` respectively, set to your chosen string into `carpenter-img` when you run the container.
 
-Additionally, `build_timeout` and `quay_img_exp` can be overridden.
+Additionally, `build_timeout`,`quay_img_exp`, and `quay_custom_namespace` can be overridden.
 
 `quay_img_exp` is overwritten by injecting the environment variable `QUAY_IMG_EXP`. Configuring this variable from default `never` will update the LABEL added to the image during build time to automatically expire after the time indicated and delete from the repository in Quay. Documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
+
+`quay_custom_namespace` is overwritten by injecting the environment variable `QUAY_CUSTOM_NAMESPACE`. This will overwrite the default value of `""`, and additionally use this requested quay namespace to push the image instead of the inferred namespace automatically assigned by carpenter with `QUAY_NAMESPACE`. This is primarly used when carpenter is being utilized in GitHub Actions CI/CD without needing to change the secrets of the repository where `QUAY_NAMESPACE` value is stored if a different location is required.
 
 `build_timeout` is overwritten by injecting the environment variable `BUILD_TIMEOUT`, which accepts an integer representing the number of **seconds** before a build timeouts. You should set this to long enough that it should not fail unless something goes wrong while under the expected system conditions. Builds on automated third party CI will take much longer due to the reduced CPU cycles allocated to a workflow.
