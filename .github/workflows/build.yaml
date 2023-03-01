@@ -76,6 +76,8 @@ jobs:
   release:
     name: release
     runs-on: ubuntu-latest
+    permissions:
+      packages: write
     needs:
       - golangci-lint
       - test
