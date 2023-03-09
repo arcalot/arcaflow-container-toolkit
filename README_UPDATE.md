@@ -17,13 +17,13 @@ Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
 
 ## Table of Contents
 
-[Requirements](#requirements)  
-[Configuration](#configuration)  
-[Build Carpenter Executable](#build-carpenter-executable)  
-[Build Carpenter Image](#build-carpenter-image)  
-[Example Build Execution With Executable](#example-build-execution-with-executable)  
-[Example Build and Push Execution Containerized](#example-build-and-push-execution-containerized)  
-[Using Carpenter As Reusable Workflow](#using-carpenter-in-reusable-workflow)  
+• [Requirements](#requirements)  
+• [Configuration](#configuration)  
+• [Build Carpenter Executable](#build-carpenter-executable)  
+• [Build Carpenter Image](#build-carpenter-image)  
+• [Example Build Execution With Executable](#example-build-execution-with-executable)  
+• [Example Build and Push Execution Containerized](#example-build-and-push-execution-containerized)  
+• [Using Carpenter and Reusable Workflows](#using-carpenter-and-reusable-workflows)  
 
 ## Requirements
 
@@ -69,7 +69,7 @@ Carpenter additionally can be configured beyond defaults using enviornment varia
 
 * `BUILD_TIMEOUT` accepts an integer representing the number of **seconds** before a build timeouts.
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter As Reusable Workflow](#using-carpenter-in-reusable-workflow) •
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter and Reusable Workflow](#using-carpenter-and-reusable-workflows) •
 
 ## Build Carpenter Executable
 
@@ -124,7 +124,7 @@ docker run \
     carpenter-img build --build --push
 ```
 
-## Using Carpenter In Reusable Workflow
+## Using Carpenter and Reusable Workflows
 
 From within a plugin repository you can utilize carpenter to test, build, and push automatically.
 Secrets should be configuerd within the repository for credentials.
