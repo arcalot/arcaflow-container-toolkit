@@ -19,11 +19,9 @@ Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
 
 • [Requirements](#requirements)  
 • [Configuration](#configuration)  
-• [Build Carpenter Executable](#build-carpenter-executable)  
-• [Build Carpenter Image](#build-carpenter-image)  
-• [Example Build Execution With Executable](#example-build-execution-with-executable)  
-• [Example Build and Push Execution Containerized](#example-build-and-push-execution-containerized)  
-• [Using Carpenter and Reusable Workflows](#using-carpenter-and-reusable-workflows)  
+• [Build Carpenter As Executable Locally](#build-carpenter-as-executable-locally)  
+• [Carpenter as a Package](#carpenter-as-a-package)  
+• [Using Carpenter and Reusable Workflows](#Using-carpenter-and-reusable-workflows)  
 
 ## Requirements
 
@@ -59,26 +57,9 @@ Configuring carpenter can be done in the `carpenter.yaml` file as well as settin
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
 * `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter and Reusable Workflow](#using-carpenter-and-reusable-workflows)
 
-
-example `.carpenter.yaml`
-```yaml
-revision: 20220824
-image_name: arcaflow-plugin-template-python
-image_tag: '0.0.1'
-project_filepath: ../arcaflow-plugin-template-python
-registries:
-  - url: ghcr.io
-    username_envvar: "GITHUB_USERNAME"
-    password_envvar: "GITHUB_PASSWORD"
-  - url: quay.io
-    username_envvar: "QUAY_USERNAME"
-    password_envvar: "QUAY_PASSWORD"
-    namespace_envvar: "QUAY_NAMESPACE"
-```
-
 ## Build Carpenter As Executable Locally
 
-Carpenter can be ran locally by building an executable
+Carpenter can be ran locally by building an executable  
 Configure `carpenter.yaml` and or set environment variables
 
 ```shell
@@ -88,17 +69,17 @@ vi carpenter.yaml
 example `.carpenter.yaml`
 ```yaml
 revision: 20220824
-image_name: arcaflow-plugin-template-python
-image_tag: '0.0.1'
-project_filepath: ../arcaflow-plugin-template-python
+image_name: "<IMAGE_NAME>"
+image_tag: "<IMAGE_TAG>"
+project_filepath: "<path/to/plugin/project/>"
 registries:
   - url: ghcr.io
-    username_envvar: "GITHUB_USERNAME"
-    password_envvar: "GITHUB_PASSWORD"
+    username_envvar: "<GITHUB_USERNAME>"
+    password_envvar: "<GITHUB_PASSWORD>"
   - url: quay.io
-    username_envvar: "QUAY_USERNAME"
-    password_envvar: "QUAY_PASSWORD"
-    namespace_envvar: "QUAY_NAMESPACE"
+    username_envvar: "<QUAY_USERNAME>"
+    password_envvar: "<QUAY_PASSWORD>"
+    namespace_envvar: "<QUAY_NAMESPACE>"
 ```
 
 ```shell
