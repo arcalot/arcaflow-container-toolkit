@@ -13,6 +13,9 @@
 
 Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
  
+</div>
+
+## Table of Contents
 
 [Requirements](#requirements) •
 [Configuration](#configuration) •
@@ -21,8 +24,6 @@ Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
 [Example Build Execution With Executable](#example-build-execution-with-executable)
 [Example Build and Push Execution Containerized](#example-build-and-push-execution-containerized)
 [Using Carpenter As Reusable Workflow](#using-carpenter-in-reusable-workflow) •
-
-</div>
 
 ## Requirements
 
