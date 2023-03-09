@@ -37,7 +37,28 @@ Each plugin directory must meet the [Arcaflow Plugins Requirements](https://gith
 
 ## Configuration
 
-Configuring the carpenter can be done in the `carpenter.yaml` file
+Configuring carpenter can be done in the `carpenter.yaml` file as well as setting environment variables.
+
+### Configurable Variables
+
+#### Required:
+  `IMAGE_NAME` Name of the image that carpenter will build - string
+  `IMAGE_TAG`  Tag of the image that carpenter will build - string
+#### Optional:  
+  `GITHUB_USERNAME` Github Username to be used for credentials - Default: ""
+  `GITHUB_PASSWORD` Github Password to be used for credentials - Default: ""
+  `GITHUB_NAMESPACE` Github Namespace to push image - Default: ""
+  `QUAY_USERNAME` Quay Username to be used for credentials - Default: ""
+  `QUAY_PASSWORD` Quay Password to be used for credentials - Default: ""
+  `QUAY_NAMESPACE` Quay Namespace to push image - Default: ""
+  `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""
+  `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"
+  `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600
+
+#### Additional Information
+* `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter and Reusable Workflow](#using-carpenter-and-reusable-workflows)
+
 
 example `.carpenter.yaml`
 ```yaml
@@ -54,60 +75,56 @@ registries:
     password_envvar: "QUAY_PASSWORD"
     namespace_envvar: "QUAY_NAMESPACE"
 ```
-### Environment variables
 
-Carpenter additionally can be configured beyond defaults using enviornment variables
+## Build Carpenter As Executable Locally
 
-  - Configureable Environment Variables:
-    | Env Var               | Description                                 | Type   | Default Value                |
-    | --------------------- | ------------------------------------------- | ------ | ---------------------------- |
-    | IMAGE_TAG             | Tag of image being built                    | String | image_tag in carpenter.yaml  |
-    | IMAGE_NAME            | Name of image being built                   | String | image_name in carpenter.yaml |
-    | BUILD_TIMEOUT         | Length of time before build fails           | Int    | 600                          |
-    | QUAY_IMG_EXP          | Image label to automatically expire in Quay | String | "never"                      |
-    | QUAY_CUSTOM_NAMESPACE | Overrides $QUAY_NAMESPACE                   | String | ""                           |
+Carpenter can be ran locally by building an executable
+Configure `carpenter.yaml` and or set environment variables
 
-* `BUILD_TIMEOUT` accepts an integer representing the number of **seconds** before a build timeouts.
-* `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter and Reusable Workflow](#using-carpenter-and-reusable-workflows) •
+```shell
+vi carpenter.yaml
+```
 
-## Build Carpenter Executable
+example `.carpenter.yaml`
+```yaml
+revision: 20220824
+image_name: arcaflow-plugin-template-python
+image_tag: '0.0.1'
+project_filepath: ../arcaflow-plugin-template-python
+registries:
+  - url: ghcr.io
+    username_envvar: "GITHUB_USERNAME"
+    password_envvar: "GITHUB_PASSWORD"
+  - url: quay.io
+    username_envvar: "QUAY_USERNAME"
+    password_envvar: "QUAY_PASSWORD"
+    namespace_envvar: "QUAY_NAMESPACE"
+```
 
 ```shell
 go build carpenter.go
 ```
-
-If successful, this will result in the carpenter executable named `carpenter` in your current working directory.
-
-## Build Carpenter Image
-
-```shell
-docker build . --tag carpenter-img
-```
-
-## Example Build Execution With Executable
-
-example `.carpenter.yaml`
-```yaml
-revision: 20220824
-image_name: arcaflow-plugin-template-python
-image_tag: '0.0.1'
-project_filepath: ../arcaflow-plugin-template-python
-registries:
-  - url: ghcr.io
-    username_envvar: "GITHUB_USERNAME"
-    password_envvar: "GITHUB_PASSWORD"
-  - url: quay.io
-    username_envvar: "QUAY_USERNAME"
-    password_envvar: "QUAY_PASSWORD"
-    namespace_envvar: "QUAY_NAMESPACE"
-```
+### Carpenter test and build
 
 ```shell
 ./carpenter build --build
 ```
 
-## Example Build and Push Execution Containerized
+### Carpenter test, build, and push
+
+```shell
+./carpenter build --build --push
+```
+
+## Carpenter as a Package
+
+Pull the latest image
+
+```shell
+docker pull ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
+```
+
+Run the Carpenter image with enviornment variables
 
 ```shell
 docker run \
@@ -121,7 +138,7 @@ docker run \
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
     --volume /var/run/docker.sock:/var/run/docker.sock:z \
     --volume $PWD/../arcaflow-plugin-template-python:/github/workspace \
-    carpenter-img build --build --push
+    ghcr.io/arcalot/arcaflow-plugin-image-builder:latest build --build --push
 ```
 
 ## Using Carpenter and Reusable Workflows
