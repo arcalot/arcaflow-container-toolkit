@@ -29,7 +29,7 @@ Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
 * docker
 * python 3 and pip
 * flake8
-* current working directory is this project's root directory
+* current working directory is this project's root directory for local builds
 
 Each plugin directory must meet the [Arcaflow Plugins Requirements](https://github.com/arcalot/arcaflow-plugins#requirements-for-plugins).
 
@@ -85,13 +85,13 @@ registries:
 ```shell
 go build carpenter.go
 ```
-### Carpenter test and build
+#### Carpenter test and build
 
 ```shell
 ./carpenter build --build
 ```
 
-### Carpenter test, build, and push
+#### Carpenter test, build, and push
 
 ```shell
 ./carpenter build --build --push
