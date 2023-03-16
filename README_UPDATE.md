@@ -9,9 +9,10 @@
 
 <div align="center">
 
-# Carpenter
+# Arcaflow Container Toolkit
+## - Carpenter -
 
-Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
+Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins.
  
 </div>
 
@@ -19,9 +20,9 @@ Carpenter is a tool to automatically test, build, and publish Arcaflow plugins.
 
 • [Requirements](#requirements)  
 • [Configuration](#configuration)  
-• [Build Carpenter As Executable Locally](#build-carpenter-as-executable-locally)  
-• [Carpenter as a Package](#carpenter-as-a-package)  
-• [Using Carpenter and Reusable Workflows](#Using-carpenter-and-reusable-workflows)  
+• [Build Arcaflow Container Toolkit As Executable Locally](#build-arcaflow-container-toolkit-as-executable-locally)  
+• [Arcaflow Container Toolkit as a Package](#arcaflow-container-toolkit-as-a-package)  
+• [Using Arcaflow Container Toolkit and Reusable Workflows](#Using-arcaflow-container-toolkit-and-reusable-workflows)  
 
 ## Requirements
 
@@ -35,13 +36,13 @@ Each plugin directory must meet the [Arcaflow Plugins Requirements](https://gith
 
 ## Configuration
 
-Configuring carpenter can be done in the `carpenter.yaml` file as well as setting environment variables.
+Configuring Arcaflow Container Toolkit can be done in the `carpenter.yaml` file as well as setting environment variables.
 
 ### Configurable Variables
 
 #### Required:
-  `IMAGE_NAME` Name of the image that carpenter will build - string  
-  `IMAGE_TAG`  Tag of the image that carpenter will build - string  
+  `IMAGE_NAME` Name of the image that Arcaflow Container Toolkit will build - string  
+  `IMAGE_TAG`  Tag of the image that Arcaflow Container Toolkit will build - string  
 #### Optional:  
   `GITHUB_USERNAME` Github Username to be used for credentials - Default: ""  
   `GITHUB_PASSWORD` Github Password to be used for credentials - Default: ""  
@@ -55,11 +56,11 @@ Configuring carpenter can be done in the `carpenter.yaml` file as well as settin
 
 #### Additional Information
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Carpenter and Reusable Workflow](#using-carpenter-and-reusable-workflows)
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Arcaflow Container Toolkit and Reusable Workflow](#using-arcaflow-container-toolkit-and-reusable-workflows)
 
-## Build Carpenter As Executable Locally
+## Build Arcaflow Container Toolkit As Executable Locally
 
-Carpenter can be ran locally by building an executable  
+Arcaflow Container Toolkit can be ran locally by building an executable  
 Configure `carpenter.yaml` and or set environment variables
 
 ```shell
@@ -85,19 +86,19 @@ registries:
 ```shell
 go build carpenter.go
 ```
-#### Carpenter test and build
+#### Arcaflow Container Toolkit test and build
 
 ```shell
 ./carpenter build --build
 ```
 
-#### Carpenter test, build, and push
+#### Arcaflow Container Toolkit test, build, and push
 
 ```shell
 ./carpenter build --build --push
 ```
 
-## Carpenter as a Package
+## Arcaflow Container Toolkit as a Package
 
 Pull the latest image
 
@@ -105,7 +106,7 @@ Pull the latest image
 docker pull ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
 ```
 
-Run the Carpenter image with enviornment variables
+Run the Arcaflow Container Toolkit image with enviornment variables
 
 ```shell
 docker run \
@@ -122,13 +123,13 @@ docker run \
     ghcr.io/arcalot/arcaflow-plugin-image-builder:latest build --build --push
 ```
 
-## Using Carpenter and Reusable Workflows
+## Using Arcaflow Container Toolkit and Reusable Workflows
 
-From within a plugin repository you can utilize carpenter to test, build, and push automatically.
+From within a plugin repository you can utilize Arcaflow Container Toolkit to test, build, and push automatically.
 Secrets should be configuerd within the repository for credentials.
 
 ```yaml
-name: Carpenter
+name: Arcaflow Container Toolkit
 on:
   push:
     branches:
@@ -138,8 +139,8 @@ on:
       - published
 
 jobs:
-  carpenter:
-    uses: arcalot/carpenter/.github/workflows/carpenter_reusable_workflow.yaml@main
+  arcaflow-container-toolkit:
+    uses: arcalot/arcaflow-container-toolkit/.github/workflows/reusable_workflow.yaml@main
     with:
       image_name: ${{ github.event.repository.name }}
       image_tag: 'latest'
