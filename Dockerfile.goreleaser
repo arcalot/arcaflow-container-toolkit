@@ -1,8 +1,6 @@
-FROM quay.io/centos/centos:stream8
+FROM python:3.9.16-alpine3.17
 
-RUN dnf -y module install python39 &&\
-    dnf -y install python39 python39-pip &&\
-    python3.9 -m pip install --user --upgrade flake8
+RUN python -m pip install --user --upgrade flake8
     
 COPY imagebuilder /
 COPY .carpenter.yaml /

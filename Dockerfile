@@ -1,18 +1,17 @@
+# Build stage
 FROM golang:1.18 AS builder
 COPY . /build
 WORKDIR /build
 RUN CGO_ENABLED=0 go build ./carpenter.go
 
-
-FROM quay.io/centos/centos:stream8
-RUN dnf -y module install python39 &&\
-    dnf -y install python39 python39-pip &&\
-    python3.9 -m pip install --user --upgrade flake8
+# Main stage
+FROM python:3.9.16-alpine3.17
+RUN python -m ensurepip
+RUN python -m pip install --user --upgrade flake8
 
 COPY --from=builder /build/carpenter /
 COPY .carpenter.yaml /.carpenter.yaml
 WORKDIR /
-
 
 ENTRYPOINT ["/carpenter"]
 CMD ["build"]
