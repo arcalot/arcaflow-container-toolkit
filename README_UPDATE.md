@@ -24,6 +24,7 @@ Arcaflow Container Toolkit is a tool to automatically test, build, and publish A
 • [Build Arcaflow Container Toolkit As Executable Locally](#build-arcaflow-container-toolkit-as-executable-locally)  
 • [Arcaflow Container Toolkit as a Package](#arcaflow-container-toolkit-as-a-package)  
 • [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)  
+• [Arcaflow Container Toolkit as an Action](#arcaflow-container-toolkit-as-an-action)  
 
 ## Requirements
 
@@ -61,8 +62,8 @@ Configuring Arcaflow Container Toolkit can be done in the `carpenter.yaml` file 
 
 ## Build Arcaflow Container Toolkit As Executable Locally
 
-Arcaflow Container Toolkit can be ran locally by building an executable  
-Configure `carpenter.yaml` and or set environment variables
+Arcaflow Container Toolkit can be ran locally by building an executable.  
+Configure `carpenter.yaml` and or set environment variables.  
 
 ```shell
 vi carpenter.yaml
@@ -84,7 +85,7 @@ registries:
     namespace_envvar: "<QUAY_NAMESPACE>"
 ```
 
-Build the executable
+#### Build the executable
 
 ```shell
 go build carpenter.go
@@ -128,8 +129,10 @@ docker run \
 
 ## Arcaflow Container Toolkit and Reusable Workflows
 
-From within a plugin repository you can utilize Arcaflow Container Toolkit to test, build, and push automatically.
-Secrets should be configuerd within the repository for credentials.
+From within a plugin repository you can utilize Arcaflow Container Toolkit to test, build, and push automatically using the official `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml` reusable workflow.  
+This will automatically configure some options such as image release and development tags.  
+It will set `QUAY_IMG_EXP` to 90 days for developmental branches automatically.  
+Secrets should be configuerd within the repository for credentials.  
 
 ```yaml
 name: Arcaflow Container Toolkit
@@ -157,3 +160,19 @@ jobs:
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 
 ```
+
+## Arcaflow Container Toolkit as an Action
+
+Arcaflow Container Toolkit can be utilized as an action.  
+
+```yaml
+- name: arcaflow-container-toolkit-action
+        uses: arcalot/arcaflow-container-toolkit-action@v0.1.0
+        with:
+          image_name: ${{ github.event.repository.name }}
+          image_tag: 'latest'
+          quay_username: ${{ secrets.QUAY_USERNAME }}
+          quay_password: ${{ secrets.QUAY_PASSWORD }}
+          quay_namespace: ${{ secrets.QUAY_NAMESPACE }}
+          quay_img_exp: 'never'
+'''
