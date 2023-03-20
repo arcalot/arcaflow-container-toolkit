@@ -13,7 +13,7 @@
 **Carpenter**
 
 
-Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins.
+Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to a single or multiple repositories.
  
 </div>
 
@@ -23,7 +23,7 @@ Arcaflow Container Toolkit is a tool to automatically test, build, and publish A
 • [Configuration](#configuration)  
 • [Build Arcaflow Container Toolkit As Executable Locally](#build-arcaflow-container-toolkit-as-executable-locally)  
 • [Arcaflow Container Toolkit as a Package](#arcaflow-container-toolkit-as-a-package)  
-• [Using Arcaflow Container Toolkit and Reusable Workflows](#Using-arcaflow-container-toolkit-and-reusable-workflows)  
+• [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)  
 
 ## Requirements
 
@@ -57,7 +57,7 @@ Configuring Arcaflow Container Toolkit can be done in the `carpenter.yaml` file 
 
 #### Additional Information
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Using Arcaflow Container Toolkit and Reusable Workflow](#using-arcaflow-container-toolkit-and-reusable-workflows)
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
 
 ## Build Arcaflow Container Toolkit As Executable Locally
 
@@ -83,6 +83,8 @@ registries:
     password_envvar: "<QUAY_PASSWORD>"
     namespace_envvar: "<QUAY_NAMESPACE>"
 ```
+
+Build the executable
 
 ```shell
 go build carpenter.go
@@ -124,7 +126,7 @@ docker run \
     ghcr.io/arcalot/arcaflow-plugin-image-builder:latest build --build --push
 ```
 
-## Using Arcaflow Container Toolkit and Reusable Workflows
+## Arcaflow Container Toolkit and Reusable Workflows
 
 From within a plugin repository you can utilize Arcaflow Container Toolkit to test, build, and push automatically.
 Secrets should be configuerd within the repository for credentials.
