@@ -1,3 +1,5 @@
+<p align="center"><img width=12.5% src="img/act-logo.png"></p>
+
 <!-- markdownlint-configure-file {
   "MD013": {
     "code_blocks": false,
@@ -10,8 +12,6 @@
 <div align="center">
 
 # Arcaflow Container Toolkit  
-**Carpenter**
-
 
 Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to a single or multiple repositories.
  
