@@ -173,4 +173,5 @@ Arcaflow Container Toolkit can be utilized as an action.
           quay_password: ${{ secrets.QUAY_PASSWORD }}
           quay_namespace: ${{ secrets.QUAY_NAMESPACE }}
           quay_img_exp: 'never'
-'''
+
+```
