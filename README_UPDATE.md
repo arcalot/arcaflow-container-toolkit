@@ -1,4 +1,4 @@
-<p align="center"><img width=12.5% src="img/act-logo.png"></p>
+<p align="center"><img width=50% src="img/act-logo.png"></p>
 
 <!-- markdownlint-configure-file {
   "MD013": {
