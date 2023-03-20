@@ -11,8 +11,6 @@
 
 <div align="center">
 
-# Arcaflow Container Toolkit  
-
 Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to a single or multiple repositories.
  
 </div>
