@@ -1,7 +1,7 @@
 FROM golang:1.18 AS builder
 COPY . /build
 WORKDIR /build
-RUN CGO_ENABLED=0 go build ./carpenter.go
+RUN CGO_ENABLED=0 go build ./act.go
 
 
 FROM quay.io/centos/centos:stream8
@@ -9,12 +9,12 @@ RUN dnf -y module install python39 &&\
     dnf -y install python39 python39-pip &&\
     python3.9 -m pip install --user --upgrade flake8
 
-COPY --from=builder /build/carpenter /
-COPY .carpenter.yaml /.carpenter.yaml
+COPY --from=builder /build/act /
+COPY .act.yaml /.act.yaml
 WORKDIR /
 
 
-ENTRYPOINT ["/carpenter"]
+ENTRYPOINT ["/act"]
 CMD ["build"]
 
 

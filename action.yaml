@@ -5,7 +5,7 @@ inputs:
     description: 'Source Project Repository'
     required: true
 outputs:
-  carpenter:
+  act:
     description: "carpentry build logs"
 runs:
   using: docker

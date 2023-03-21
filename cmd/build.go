@@ -4,9 +4,10 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"go.arcalot.io/imagebuilder/internal/carpentry"
 	"os"
+
+	"github.com/spf13/cobra"
+	carpentry "go.arcalot.io/imagebuilder/internal/act"
 )
 
 var Push bool

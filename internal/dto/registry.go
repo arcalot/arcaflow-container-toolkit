@@ -51,7 +51,7 @@ func UnmarshalRegistries(logger log.Logger) ([]Registry, error) {
 	var registries Registries
 	err := viper.UnmarshalKey("registries", &registries)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling registries from Carpenter file (%w)", err)
+		return nil, fmt.Errorf("error unmarshalling registries from act file (%w)", err)
 	}
 	return registries.Parse(logger)
 }

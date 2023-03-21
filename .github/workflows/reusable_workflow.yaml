@@ -1,4 +1,4 @@
-name: Carpenter Reusable Workflow to Build and Push Image
+name: Act Reusable Workflow to Build and Push Image
 on:
   workflow_call:
     inputs:
@@ -40,7 +40,7 @@ env:
   QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
   QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 jobs:
-  carpenter-build:
+  act-build:
     name: Build ${{ github.ref_name }} from ${{ github.event_name }}
     runs-on: ubuntu-latest
     steps:
@@ -56,7 +56,7 @@ jobs:
           echo "QUAY_IMG_EXP=90d" >> $GITHUB_ENV
       - name: Checkout this project
         uses: actions/checkout@v3
-      - name: Carpenter build
-        uses: arcalot/arcaflow-plugin-image-builder@main
+      - name: act build
+        uses: arcalot/arcaflow-container-toolkit@main
         with:
           args: build --build --push

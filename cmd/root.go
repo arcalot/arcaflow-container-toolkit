@@ -46,7 +46,7 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.carpenter.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.act.yaml)")
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 	rootCmd.PersistentFlags().BoolVarP(&verbosity, "verbosity", "v", false, "verbose debugging log messages")
 	ConfigureLogger(&rootLogger, log.LevelInfo, log.DestinationStdout, os.Stdout)
@@ -74,14 +74,14 @@ func initConfig() {
 		viper.AddConfigPath(".")
 		viper.AddConfigPath("/")
 		viper.SetConfigType("yaml")
-		viper.SetConfigName(".carpenter")
+		viper.SetConfigName(".act")
 	}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		rootLogger.Infof("Using config file:%s\n", viper.ConfigFileUsed())
 	} else {
-		rootLogger.Errorf("Did not find .carpenter config file")
+		rootLogger.Errorf("Did not find .act config file")
 		os.Exit(1)
 	}
 

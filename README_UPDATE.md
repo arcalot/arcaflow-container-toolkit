@@ -36,7 +36,7 @@ Each plugin directory must meet the [Arcaflow Plugins Requirements](https://gith
 
 ## Configuration
 
-Configuring Arcaflow Container Toolkit can be done in the `carpenter.yaml` file as well as setting environment variables.
+Configuring Arcaflow Container Toolkit can be done in the `act.yaml` file as well as setting environment variables.
 
 ### Configurable Variables
 
@@ -61,13 +61,13 @@ Configuring Arcaflow Container Toolkit can be done in the `carpenter.yaml` file 
 ## Build Arcaflow Container Toolkit As Executable Locally
 
 Arcaflow Container Toolkit can be ran locally by building an executable.  
-Configure `carpenter.yaml` and or set environment variables.  
+Configure `act.yaml` and or set environment variables.  
 
 ```shell
-vi carpenter.yaml
+vi act.yaml
 ```
 
-example `.carpenter.yaml`
+example `.act.yaml`
 ```yaml
 revision: 20220824
 image_name: "<IMAGE_NAME>"
@@ -86,18 +86,18 @@ registries:
 #### Build the executable
 
 ```shell
-go build carpenter.go
+go build act.go
 ```
 #### Arcaflow Container Toolkit test and build
 
 ```shell
-./carpenter build --build
+./act build --build
 ```
 
 #### Arcaflow Container Toolkit test, build, and push
 
 ```shell
-./carpenter build --build --push
+./act build --build --push
 ```
 
 ## Arcaflow Container Toolkit as a Package
@@ -105,7 +105,7 @@ go build carpenter.go
 Pull the latest image
 
 ```shell
-docker pull ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
+docker pull ghcr.io/arcalot/arcaflow-container-toolkit:latest
 ```
 
 Run the Arcaflow Container Toolkit image with enviornment variables
@@ -122,7 +122,7 @@ docker run \
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
     --volume /var/run/docker.sock:/var/run/docker.sock:z \
     --volume $PWD/../arcaflow-plugin-template-python:/github/workspace \
-    ghcr.io/arcalot/arcaflow-plugin-image-builder:latest build --build --push
+    ghcr.io/arcalot/arcaflow-container-toolkit:latest build --build --push
 ```
 
 ## Arcaflow Container Toolkit and Reusable Workflows
