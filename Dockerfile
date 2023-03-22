@@ -5,7 +5,7 @@ WORKDIR /build
 RUN CGO_ENABLED=0 go build ./carpenter.go
 
 # Main stage
-FROM python:3.9.16-alpine3.17
+FROM python:3.9.16-slim-bullseye
 RUN python -m ensurepip
 RUN python -m pip install --user --upgrade flake8
 
