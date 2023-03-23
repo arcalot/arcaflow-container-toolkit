@@ -11,7 +11,7 @@
 
 <div align="center">
 
-Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to a single or multiple repositories.
+Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to Quay.
  
 </div>
 
@@ -42,19 +42,18 @@ Configuring Arcaflow Container Toolkit can be done in the `act.yaml` file as wel
 
 #### Required:
   `IMAGE_NAME` Name of the image that Arcaflow Container Toolkit will build - string  
-  `IMAGE_TAG`  Tag of the image that Arcaflow Container Toolkit will build - string  
-#### Optional:  
-  `GITHUB_USERNAME` Github Username to be used for credentials - Default: ""  
-  `GITHUB_PASSWORD` Github Password to be used for credentials - Default: ""  
-  `GITHUB_NAMESPACE` Github Namespace to push image - Default: ""  
+  `IMAGE_TAG`  Tag of the image that Arcaflow Container Toolkit will build - string
+#### Required for Publishing to Quay:
   `QUAY_USERNAME` Quay Username to be used for credentials - Default: ""  
   `QUAY_PASSWORD` Quay Password to be used for credentials - Default: ""  
-  `QUAY_NAMESPACE` Quay Namespace to push image - Default: ""  
+  `QUAY_NAMESPACE` Quay Namespace to push image - Default: "" 
+#### Optional:    
   `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""  
   `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"  
   `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600  
 
 #### Additional Information
+
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
 * `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
 
@@ -74,9 +73,6 @@ image_name: "<IMAGE_NAME>"
 image_tag: "<IMAGE_TAG>"
 project_filepath: "<path/to/plugin/project/>"
 registries:
-  - url: ghcr.io
-    username_envvar: "<GITHUB_USERNAME>"
-    password_envvar: "<GITHUB_PASSWORD>"
   - url: quay.io
     username_envvar: "<QUAY_USERNAME>"
     password_envvar: "<QUAY_PASSWORD>"
@@ -115,8 +111,6 @@ docker run \
     --rm \
     -e=IMAGE_TAG="0.0.1"\
     -e=BUILD_TIMEOUT=600\
-    -e=GITHUB_USERNAME=$GITHUB_USERNAME \
-    -e=GITHUB_PASSWORD=$GITHUB_PASSWORD \
     -e=QUAY_USERNAME=$QUAY_USERNAME\
     -e=QUAY_PASSWORD=$QUAY_PASSWORD\
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
@@ -127,7 +121,7 @@ docker run \
 
 ## Arcaflow Container Toolkit and Reusable Workflows
 
-Arcaflow Container Toolkit can be utilized using the official reusable workflow `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml`.  
+Arcaflow Container Toolkit can be utilized using the official reusable workflow `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml`. 
 
 ```yaml
 name: Arcaflow Container Toolkit
@@ -151,6 +145,12 @@ jobs:
       QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 
 ```
+
+#### Additional Information
+
+* This workflow will automatically configure `IMAGE_TAG` to version if a release is detected.
+* This workflow will automatically configure `IMAGE_TAG` to the format `branch_commit-hash[0:7]` if a development branch is detected.
+* This workflow will automatically configure `QUAY_IMG_EXP` to 90 days if a development branch is detected.
 
 ## Arcaflow Container Toolkit as an Action
 
