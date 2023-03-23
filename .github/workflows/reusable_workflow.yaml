@@ -9,7 +9,7 @@ on:
         required: true
         type: string
       quay_img_exp:
-        required: true
+        required: false
         type: string
       quay_custom_namespace:
         required: false

@@ -127,10 +127,7 @@ docker run \
 
 ## Arcaflow Container Toolkit and Reusable Workflows
 
-From within a plugin repository you can utilize Arcaflow Container Toolkit to test, build, and push automatically using the official `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml` reusable workflow.  
-This will automatically configure some options such as image release and development tags.  
-It will set `QUAY_IMG_EXP` to 90 days for developmental branches automatically.  
-Secrets should be configuerd within the repository for credentials.  
+Arcaflow Container Toolkit can be utilized using the official reusable workflow `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml`.  
 
 ```yaml
 name: Arcaflow Container Toolkit
@@ -147,11 +144,7 @@ jobs:
     uses: arcalot/arcaflow-container-toolkit/.github/workflows/reusable_workflow.yaml@main
     with:
       image_name: ${{ github.event.repository.name }}
-      image_tag: 'latest'
-      quay_img_exp: 'never'
-      github_username: ${{ github.actor }}
-      github_namespace: ${{ github.repository_owner }}
-      quay_custom_namespace: 'example' # This is optional, for reference
+      image_tag: 'latest'     
     secrets: 
       QUAY_NAMESPACE: ${{ secrets.QUAY_NAMESPACE }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
@@ -161,7 +154,7 @@ jobs:
 
 ## Arcaflow Container Toolkit as an Action
 
-Arcaflow Container Toolkit can be utilized as an action.  
+Arcaflow Container Toolkit can be utilized as an action in a workflow.  
 
 ```yaml
 - name: arcaflow-container-toolkit-action
@@ -172,6 +165,6 @@ Arcaflow Container Toolkit can be utilized as an action.
           quay_username: ${{ secrets.QUAY_USERNAME }}
           quay_password: ${{ secrets.QUAY_PASSWORD }}
           quay_namespace: ${{ secrets.QUAY_NAMESPACE }}
-          quay_img_exp: 'never'
+          quay_custom_namespace: 'example' # This is optional, for reference
 
 ```
