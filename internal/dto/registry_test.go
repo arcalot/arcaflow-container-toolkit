@@ -1,12 +1,13 @@
 package dto_test
 
 import (
-	"go.arcalot.io/assert"
-	"go.arcalot.io/imagebuilder/internal/dto"
-	arcalog "go.arcalot.io/log"
 	"log"
 	"os"
 	"testing"
+
+	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
+	"go.arcalot.io/assert"
+	arcalog "go.arcalot.io/log"
 )
 
 func TestFilterByIndex(t *testing.T) {

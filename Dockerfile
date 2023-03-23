@@ -18,8 +18,8 @@ ENTRYPOINT ["/act"]
 CMD ["build"]
 
 
-LABEL org.opencontainers.image.source="https://github.com/arcalot/arcaflow-plugin-image-builder"
+LABEL org.opencontainers.image.source="https://github.com/arcalot/arcaflow-container-toolkit"
 LABEL org.opencontainers.image.licenses="Apache-2.0+GPL-2.0-only"
 LABEL org.opencontainers.image.vendor="Arcalot project"
 LABEL org.opencontainers.image.authors="Arcalot contributors"
-LABEL org.opencontainers.image.title="Plugin Image Builder"
+LABEL org.opencontainers.image.title="Arcaflow Container Toolkit"

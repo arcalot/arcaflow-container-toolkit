@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-project_name: imagebuilder
+project_name: arcaflow-container-toolkit
 before:
   hooks:
     - go mod tidy

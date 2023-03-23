@@ -1,8 +1,9 @@
 package ce_service_test
 
 import (
-	"go.arcalot.io/imagebuilder/internal/ce_service"
 	"testing"
+
+	"go.arcalot.io/arcaflow-container-toolkit/internal/ce_service"
 
 	"go.arcalot.io/assert"
 )

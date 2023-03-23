@@ -5,11 +5,11 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/images"
+	mocks "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
 	"go.arcalot.io/assert"
-	"go.arcalot.io/imagebuilder/internal/docker"
-	"go.arcalot.io/imagebuilder/internal/dto"
-	"go.arcalot.io/imagebuilder/internal/images"
-	mocks "go.arcalot.io/imagebuilder/mocks/ce_service"
 	"go.arcalot.io/log"
 )
 

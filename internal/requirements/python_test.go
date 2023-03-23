@@ -3,12 +3,13 @@ package requirements_test
 import (
 	"bytes"
 	"fmt"
-	"go.arcalot.io/assert"
-	"go.arcalot.io/imagebuilder/internal/requirements"
-	arcalog "go.arcalot.io/log"
 	"log"
 	"os"
 	"testing"
+
+	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
+	"go.arcalot.io/assert"
+	arcalog "go.arcalot.io/log"
 )
 
 func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {

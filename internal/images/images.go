@@ -3,8 +3,8 @@ package images
 import (
 	"strings"
 
-	"go.arcalot.io/imagebuilder/internal/ce_service"
-	"go.arcalot.io/imagebuilder/internal/docker"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/ce_service"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 	"go.arcalot.io/log"
 )
 

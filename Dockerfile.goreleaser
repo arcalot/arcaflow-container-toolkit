@@ -4,7 +4,7 @@ RUN dnf -y module install python39 &&\
     dnf -y install python39 python39-pip &&\
     python3.9 -m pip install --user --upgrade flake8
     
-COPY imagebuilder /
+COPY arcaflow-container-toolkit /
 COPY .act.yaml /
 
-ENTRYPOINT ["/imagebuilder"]
+ENTRYPOINT ["/arcaflow-container-toolkit"]

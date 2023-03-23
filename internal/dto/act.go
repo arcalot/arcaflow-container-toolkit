@@ -32,7 +32,7 @@ func Unmarshal(logger log.Logger) (Act, error) {
 		Build_Timeout:    viper.GetUint32("build_timeout"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		return Act{}, fmt.Errorf("error setting carpentry act defaults (%w)", err)
+		return Act{}, fmt.Errorf("error setting ACT defaults (%w)", err)
 	}
 	return conf, nil
 }
