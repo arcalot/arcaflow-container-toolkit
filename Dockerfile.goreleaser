@@ -2,7 +2,7 @@ FROM python:3.9.16-slim-bullseye
 
 RUN python -m pip install --user --upgrade flake8
     
-COPY imagebuilder /
-COPY .carpenter.yaml /
+COPY arcaflow-container-toolkit /
+COPY .act.yaml /
 
-ENTRYPOINT ["/imagebuilder"]
+ENTRYPOINT ["/arcaflow-container-toolkit"]

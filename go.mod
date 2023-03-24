@@ -1,4 +1,4 @@
-module go.arcalot.io/imagebuilder
+module go.arcalot.io/arcaflow-container-toolkit
 
 go 1.18
 

@@ -7,15 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"go.arcalot.io/imagebuilder/internal/ce_service"
-	"go.arcalot.io/imagebuilder/internal/docker"
-	"go.arcalot.io/imagebuilder/internal/dto"
-	"go.arcalot.io/imagebuilder/internal/images"
-	"go.arcalot.io/imagebuilder/internal/requirements"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/ce_service"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/images"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
 	"go.arcalot.io/log"
 )
 
-func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.Carpenter, abspath string,
+func Act(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.Act, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 
@@ -67,10 +67,10 @@ func AllTrue(checks []bool) bool {
 	return true
 }
 
-func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) error {
+func CliAct(build bool, push bool, logger log.Logger, cec_choice string) error {
 	conf, err := dto.Unmarshal(logger)
 	if err != nil {
-		return fmt.Errorf("error in carpentry configuration file (%w)", err)
+		return fmt.Errorf("error in act configuration file (%w)", err)
 	}
 	cleanpath := filepath.Clean(conf.Project_Filepath)
 	abspath, err := filepath.Abs(cleanpath)
@@ -93,11 +93,11 @@ func CliCarpentry(build bool, push bool, logger log.Logger, cec_choice string) e
 	if err != nil {
 		return fmt.Errorf("invalid container engine client %w", err)
 	}
-	passed_reqs, err := Carpentry(build, push, cec, conf, abspath, filenames,
+	passed_reqs, err := Act(build, push, cec, conf, abspath, filenames,
 		logger,
 		requirements.Flake8PythonCodeStyle)
 	if err != nil {
-		return fmt.Errorf("error during carpentry (%w)", err)
+		return fmt.Errorf("error during arcaflow container toolkit (%w)", err)
 	}
 	if !passed_reqs {
 		log2.Fatalf("failed requirements check, not building: %s %s", conf.Image_Name, conf.Image_Tag)

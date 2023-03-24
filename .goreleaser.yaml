@@ -1,5 +1,5 @@
 # yaml-language-server: $schema=https://goreleaser.com/static/schema.json
-project_name: imagebuilder
+project_name: arcaflow-container-toolkit
 before:
   hooks:
     - go mod tidy
@@ -15,7 +15,7 @@ builds:
       - goos: windows
         goarch: arm64
     main:
-      ./carpenter.go
+      ./act.go
 archives:
   - id: my-archive
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
@@ -28,11 +28,11 @@ archives:
 dockers:
   - dockerfile: Dockerfile.goreleaser
     image_templates:
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Tag }}
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:{{ .Major }}
-      - ghcr.io/arcalot/arcaflow-plugin-image-builder:latest
+      - ghcr.io/arcalot/arcaflow-container-toolkit:{{ .Tag }}
+      - ghcr.io/arcalot/arcaflow-container-toolkit:{{ .Major }}
+      - ghcr.io/arcalot/arcaflow-container-toolkit:latest
     extra_files:
-      - .carpenter.yaml
+      - .act.yaml
 checksum:
     name_template: 'checksums.txt'
 changelog:
