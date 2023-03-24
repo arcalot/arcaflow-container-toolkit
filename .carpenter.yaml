@@ -4,10 +4,6 @@ image_tag: '0.1.0'
 project_filepath: /github/workspace
 quay_exp: 'never'
 registries:
-  - url: ghcr.io
-    username_envvar: "GITHUB_USERNAME"
-    password_envvar: "GITHUB_PASSWORD"
-    namespace_envvar: "GITHUB_NAMESPACE"
   - url: quay.io
     username_envvar: "QUAY_USERNAME"
     password_envvar: "QUAY_PASSWORD"

@@ -76,9 +76,6 @@ image_name: arcaflow-plugin-template-python
 image_tag: '0.0.1'
 project_filepath: ../arcaflow-plugin-template-python
 registries:
-  - url: ghcr.io
-    username_envvar: "GITHUB_USERNAME"
-    password_envvar: "GITHUB_PASSWORD"
   - url: quay.io
     username_envvar: "QUAY_USERNAME"
     password_envvar: "QUAY_PASSWORD"
@@ -97,7 +94,6 @@ registries:
 * docker engine and cli
 * a carpenter image named `carpenter-img`
 * plugin project
-* GitHub username and password
 * Quay username and password
 
 ```shell
@@ -105,8 +101,6 @@ docker run \
     --rm \
     -e=IMAGE_TAG="0.0.1"\
     -e=BUILD_TIMEOUT=600\
-    -e=GITHUB_USERNAME=$GITHUB_USERNAME \
-    -e=GITHUB_PASSWORD=$GITHUB_PASSWORD \
     -e=QUAY_USERNAME=$QUAY_USERNAME\
     -e=QUAY_PASSWORD=$QUAY_PASSWORD\
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\

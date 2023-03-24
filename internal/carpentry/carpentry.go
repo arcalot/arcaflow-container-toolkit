@@ -52,6 +52,7 @@ func Carpentry(build_img bool, push_img bool, cec ce_service.ContainerEngineServ
 		if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
 			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
 			logger.Errorf("(%w)", err)
+			return false, err
 		}
 	}
 	return true, nil
