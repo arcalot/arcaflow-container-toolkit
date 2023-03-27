@@ -11,7 +11,7 @@
 
 <div align="center">
 
-Arcaflow Container Toolkit is a tool to automatically test, build, and publish Arcaflow plugins to Quay.
+Arcaflow Container Toolkit is a tool used to automatically test, build, and publish Arcaflow plugins to Quay.
  
 </div>
 
@@ -19,7 +19,7 @@ Arcaflow Container Toolkit is a tool to automatically test, build, and publish A
 
 • [Requirements](#requirements)  
 • [Configuration](#configuration)  
-• [Build Arcaflow Container Toolkit As Executable Locally](#build-arcaflow-container-toolkit-as-executable-locally)  
+• [Build Arcaflow Container Toolkit as an Executable Locally](#build-arcaflow-container-toolkit-as-an-executable-locally)  
 • [Arcaflow Container Toolkit as a Package](#arcaflow-container-toolkit-as-a-package)  
 • [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)  
 • [Arcaflow Container Toolkit as an Action](#arcaflow-container-toolkit-as-an-action)  
@@ -30,13 +30,25 @@ Arcaflow Container Toolkit is a tool to automatically test, build, and publish A
 * docker
 * python 3 and pip
 * flake8
-* current working directory is this project's root directory for local builds
 
 Each plugin directory must meet the [Arcaflow Plugins Requirements](https://github.com/arcalot/arcaflow-plugins#requirements-for-plugins).
 
 ## Configuration
 
-Configuring Arcaflow Container Toolkit can be done in the `act.yaml` file as well as setting environment variables.
+Configuring Arcaflow Container Toolkit can be configured using the `act.yaml` configuration file, or by using environment variables. More details are below.
+
+example `.act.yaml`  
+```yaml
+revision: 20220824
+image_name: "<IMAGE_NAME>"
+image_tag: "<IMAGE_TAG>"
+project_filepath: "<path/to/plugin/project/>"
+registries:
+  - url: quay.io
+    username_envvar: "<QUAY_USERNAME>"
+    password_envvar: "<QUAY_PASSWORD>"
+    namespace_envvar: "<QUAY_NAMESPACE>"
+```
 
 ### Configurable Variables
 
@@ -57,33 +69,17 @@ Configuring Arcaflow Container Toolkit can be done in the `act.yaml` file as wel
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
 * `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
 
-## Build Arcaflow Container Toolkit As Executable Locally
+## Build Arcaflow Container Toolkit as an Executable Locally
 
-Arcaflow Container Toolkit can be ran locally by building an executable.  
-Configure `act.yaml` and or set environment variables.  
-
-```shell
-vi act.yaml
-```
-
-example `.act.yaml`
-```yaml
-revision: 20220824
-image_name: "<IMAGE_NAME>"
-image_tag: "<IMAGE_TAG>"
-project_filepath: "<path/to/plugin/project/>"
-registries:
-  - url: quay.io
-    username_envvar: "<QUAY_USERNAME>"
-    password_envvar: "<QUAY_PASSWORD>"
-    namespace_envvar: "<QUAY_NAMESPACE>"
-```
+Arcaflow Container Toolkit can be ran locally by building an executable from the project's root directory.
+Configure the `act.yaml` and or set environment variables for build options.  
 
 #### Build the executable
 
 ```shell
 go build act.go
 ```
+
 #### Arcaflow Container Toolkit test and build
 
 ```shell
