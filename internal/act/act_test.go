@@ -1,4 +1,4 @@
-package carpentry_test
+package act_test
 
 import (
 	"bytes"
