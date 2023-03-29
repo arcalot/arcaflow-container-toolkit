@@ -8,8 +8,8 @@ RUN dnf -y module install python39 &&\
 
 COPY . /build
 WORKDIR /build
-RUN CGO_ENABLED=0 go build ./carpentry.go
-RUN mv carpentry /carpentry
+RUN CGO_ENABLED=0 go build ./act.go
+RUN mv act /act
 COPY .act.yaml /.act.yaml
 WORKDIR /
 
