@@ -12,7 +12,7 @@
 <div align="center">
 
 Arcaflow Container Toolkit is a tool used to automatically test, build, and publish Arcaflow plugins to Quay.
- 
+
 </div>
 
 ## Table of Contents
