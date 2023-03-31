@@ -83,7 +83,7 @@ linters-settings:
       - go.flow.arcalot.io/
       - go.arcalot.io/
       - gopkg.in/yaml.v3
-      - github.com/arcalot/arcaflow-plugin-image-builder
+      - github.com/arcalot/arcaflow-container-toolkit
       - github.com/docker/docker
       - github.com/spf13/viper
       - github.com/spf13/cobra

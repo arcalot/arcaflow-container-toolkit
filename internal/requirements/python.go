@@ -3,9 +3,10 @@ package requirements
 import (
 	"bytes"
 	"fmt"
-	"go.arcalot.io/imagebuilder/internal/util"
-	"go.arcalot.io/log"
 	"os"
+
+	"go.arcalot.io/arcaflow-container-toolkit/internal/util"
+	"go.arcalot.io/log"
 )
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error

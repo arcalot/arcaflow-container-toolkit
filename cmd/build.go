@@ -4,9 +4,10 @@ Copyright © 2022 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-	"go.arcalot.io/imagebuilder/internal/carpentry"
 	"os"
+
+	"github.com/spf13/cobra"
+	act "go.arcalot.io/arcaflow-container-toolkit/internal/act"
 )
 
 var Push bool
@@ -22,7 +23,7 @@ var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := carpentry.CliCarpentry(Build, Push, rootLogger, "docker")
+		err := act.CliACT(Build, Push, rootLogger, "docker")
 		if err != nil {
 			rootLogger.Errorf("build command failed (%w)", err)
 			os.Exit(1)

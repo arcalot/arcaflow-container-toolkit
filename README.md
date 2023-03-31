@@ -1,100 +1,106 @@
-# Carpenter, Arcaflow Plugin Image Builder
+<p align="center"><img width=50% src="img/act-logo.png"></p>
 
-Arcaflow Plugin Image Builder is a tool which has been developed for automatically testing, building, and publishing Arcaflow plugins.
+<!-- markdownlint-configure-file {
+  "MD013": {
+    "code_blocks": false,
+    "tables": false
+  },
+  "MD033": false,
+  "MD041": false
+} -->
 
-More in detail:
-* Python plugins are going to be unit tested, scanned with pyflakes, and coverage data for each plugin will be collected.
-  Successfully tested plugins will be published on pypi registry automatically on tag event.
-* Go plugins are going to be unit tested and coverage data for each plugin will be collected.
+<div align="center">
 
-Successfully tested plugins will be also added to docker images and end to end tested where possible.
-Successfully tested images will be published to quay.io automatically on tag event.
+Arcaflow Container Toolkit is a tool used to automatically test, build, and publish Arcaflow plugins to Quay.
 
-# Preparing the project for being built with Arcaflow Plugin Image Builder
+</div>
+
+## Table of Contents
+
+• [Requirements](#requirements)  
+• [Configuration](#configuration)  
+• [Build Arcaflow Container Toolkit as an Executable Locally](#build-arcaflow-container-toolkit-as-an-executable-locally)  
+• [Arcaflow Container Toolkit as a Package](#arcaflow-container-toolkit-as-a-package)  
+• [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)  
+• [Arcaflow Container Toolkit as an Action](#arcaflow-container-toolkit-as-an-action)  
+
+## Requirements
+
+* golang v1.18
+* docker
+* python 3 and pip
+* flake8
 
 Each plugin directory must meet the [Arcaflow Plugins Requirements](https://github.com/arcalot/arcaflow-plugins#requirements-for-plugins).
 
-The builder will check that the requirements are met.
+## Configuration
 
-## Test carpenter
+Configuring Arcaflow Container Toolkit can be configured using the `act.yaml` configuration file, or by using environment variables. More details are below.
 
-* golang v1.18
-* current working directory is this project's root directory
-* mock interfaces for carpenter's interfaces
-* python 3 and pip
-
-Install flake8
-```shell
-python3 -m pip install --user flake8
-```
-
-Generate golang mocks for carpenter's interfaces
-```shell
-go generate ./...
-```
-
-Execute test suite with statement coverage and save coverage data to `cov.txt`
-```shell
-go test ./... -coverprofile=cov.txt
-```
-
-## Build the carpenter
-
-* golang v1.18
-* current working directory is this project's root directory
-* flake8
-
-```shell
-go build carpenter.go
-```
-
-If successful, this will result in the arcaflow-plugin-image-builder executable, and it will be named `carpenter` in your current working directory.
-
-## Build carpenter's image
-
-### Requirements
-
-* docker
-* current working directory is `arcaflow-plugin-image-builder`
-
-```shell
-docker build . --tag carpenter-img
-```
-
-## Example Build Execution
-
-### Requirements
-
-* arcaflow-plugin-image-builder executable named `carpenter`
-* `.carpenter.yaml` in the same directory as `carpenter` executable
-* flake8
-
-example `.carpenter.yaml`
+example `.act.yaml`  
 ```yaml
 revision: 20220824
-image_name: arcaflow-plugin-template-python
-image_tag: '0.0.1'
-project_filepath: ../arcaflow-plugin-template-python
+image_name: "<IMAGE_NAME>"
+image_tag: "<IMAGE_TAG>"
+project_filepath: "<path/to/plugin/project/>"
 registries:
   - url: quay.io
-    username_envvar: "QUAY_USERNAME"
-    password_envvar: "QUAY_PASSWORD"
-    namespace_envvar: "QUAY_NAMESPACE"
+    username_envvar: "<QUAY_USERNAME>"
+    password_envvar: "<QUAY_PASSWORD>"
+    namespace_envvar: "<QUAY_NAMESPACE>"
 ```
+
+### Configurable Variables
+
+#### Required:
+  `IMAGE_NAME` Name of the image that Arcaflow Container Toolkit will build - string  
+  `IMAGE_TAG`  Tag of the image that Arcaflow Container Toolkit will build - string
+#### Required for Publishing to Quay:
+  `QUAY_USERNAME` Quay Username to be used for credentials - Default: ""  
+  `QUAY_PASSWORD` Quay Password to be used for credentials - Default: ""  
+  `QUAY_NAMESPACE` Quay Namespace to push image - Default: "" 
+#### Optional:    
+  `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""  
+  `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"  
+  `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600  
+
+#### Additional Information
+
+* `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
+
+## Build Arcaflow Container Toolkit as an Executable Locally
+
+Arcaflow Container Toolkit can be ran locally by building an executable from the project's root directory.
+Configure the `act.yaml` and or set environment variables for build options.  
+
+#### Build the executable
 
 ```shell
-./carpenter build --build
+go build act.go
 ```
 
+#### Arcaflow Container Toolkit test and build
 
-## Example Build and Push Execution Containerized
+```shell
+./act build --build
+```
 
-### Requirements
+#### Arcaflow Container Toolkit test, build, and push
 
-* docker engine and cli
-* a carpenter image named `carpenter-img`
-* plugin project
-* Quay username and password
+```shell
+./act build --build --push
+```
+
+## Arcaflow Container Toolkit as a Package
+
+Pull the latest image
+
+```shell
+docker pull ghcr.io/arcalot/arcaflow-container-toolkit:latest
+```
+
+Run the Arcaflow Container Toolkit image with enviornment variables
 
 ```shell
 docker run \
@@ -106,14 +112,55 @@ docker run \
     -e=QUAY_NAMESPACE=$QUAY_NAMESPACE\
     --volume /var/run/docker.sock:/var/run/docker.sock:z \
     --volume $PWD/../arcaflow-plugin-template-python:/github/workspace \
-    carpenter-img build --build --push
+    ghcr.io/arcalot/arcaflow-container-toolkit:latest build --build --push
 ```
-You can override the variables `image_tag` and `image_name` by injecting the environment variable `IMAGE_TAG` `IMAGE_NAME` respectively, set to your chosen string into `carpenter-img` when you run the container.
 
-Additionally, `build_timeout`,`quay_img_exp`, and `quay_custom_namespace` can be overridden.
+## Arcaflow Container Toolkit and Reusable Workflows
 
-`quay_img_exp` is overwritten by injecting the environment variable `QUAY_IMG_EXP`. Configuring this variable from default `never` will update the LABEL added to the image during build time to automatically expire after the time indicated and delete from the repository in Quay. Documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
+Arcaflow Container Toolkit can be utilized using the official reusable workflow `arcalot/arcaflow-containter-toolkit/.github/workflows/reusable_workflow.yaml`. 
 
-`quay_custom_namespace` is overwritten by injecting the environment variable `QUAY_CUSTOM_NAMESPACE`. This will overwrite the default value of `""`, and additionally use this requested quay namespace to push the image instead of the inferred namespace automatically assigned by carpenter with `QUAY_NAMESPACE`. This is primarly used when carpenter is being utilized in GitHub Actions CI/CD without needing to change the secrets of the repository where `QUAY_NAMESPACE` value is stored if a different location is required.
+```yaml
+name: Arcaflow Container Toolkit
+on:
+  push:
+    branches:
+      - "**"
+  release:
+    types:
+      - published
 
-`build_timeout` is overwritten by injecting the environment variable `BUILD_TIMEOUT`, which accepts an integer representing the number of **seconds** before a build timeouts. You should set this to long enough that it should not fail unless something goes wrong while under the expected system conditions. Builds on automated third party CI will take much longer due to the reduced CPU cycles allocated to a workflow.
+jobs:
+  arcaflow-container-toolkit:
+    uses: arcalot/arcaflow-container-toolkit/.github/workflows/reusable_workflow.yaml@main
+    with:
+      image_name: ${{ github.event.repository.name }}
+      image_tag: 'latest'     
+    secrets: 
+      QUAY_NAMESPACE: ${{ secrets.QUAY_NAMESPACE }}
+      QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
+      QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
+
+```
+
+#### Additional Information
+
+* This workflow will automatically configure `IMAGE_TAG` to version if a release is detected.
+* This workflow will automatically configure `IMAGE_TAG` to the format `branch_commit-hash[0:7]` if a development branch is detected.
+* This workflow will automatically configure `QUAY_IMG_EXP` to 90 days if a development branch is detected.
+
+## Arcaflow Container Toolkit as an Action
+
+Arcaflow Container Toolkit can be utilized as an action in a workflow.  
+
+```yaml
+- name: arcaflow-container-toolkit-action
+        uses: arcalot/arcaflow-container-toolkit-action@v0.1.0
+        with:
+          image_name: ${{ github.event.repository.name }}
+          image_tag: 'latest'
+          quay_username: ${{ secrets.QUAY_USERNAME }}
+          quay_password: ${{ secrets.QUAY_PASSWORD }}
+          quay_namespace: ${{ secrets.QUAY_NAMESPACE }}
+          quay_custom_namespace: 'example' # This is optional, for reference
+
+```

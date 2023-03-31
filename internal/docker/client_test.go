@@ -9,12 +9,12 @@ import (
 	"strings"
 	"testing"
 
-	"go.arcalot.io/imagebuilder/internal/docker"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 
 	"github.com/docker/docker/api/types"
 	"github.com/golang/mock/gomock"
+	mock_docker "go.arcalot.io/arcaflow-container-toolkit/mocks/docker"
 	"go.arcalot.io/assert"
-	mock_docker "go.arcalot.io/imagebuilder/mocks/docker"
 )
 
 func TestClient_BuildImage(t *testing.T) {

@@ -1,14 +1,15 @@
-package carpentry_test
+package act_test
 
 import (
 	"bytes"
-	"github.com/golang/mock/gomock"
-	"go.arcalot.io/assert"
-	"go.arcalot.io/imagebuilder/internal/carpentry"
-	"go.arcalot.io/imagebuilder/internal/dto"
-	mock_ces "go.arcalot.io/imagebuilder/mocks/ce_service"
-	arcalog "go.arcalot.io/log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
+	act "go.arcalot.io/arcaflow-container-toolkit/internal/act"
+	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
+	mock_ces "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
+	"go.arcalot.io/assert"
+	arcalog "go.arcalot.io/log"
 )
 
 func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {
@@ -30,7 +31,7 @@ func TestBuildCmdMain(t *testing.T) {
 		Username: "user2",
 		Password: "secret2",
 	}
-	conf := dto.Carpenter{
+	conf := dto.ACT{
 		Revision:         "20220928",
 		Image_Name:       "dummy",
 		Image_Tag:        "latest",
@@ -43,7 +44,7 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	passed, err := carpentry.Carpentry(
+	passed, err := act.ACT(
 		true, true, cec, conf, ".",
 		python_filenames, logger, emptyPythonCodeStyle)
 	assert.Equals(t, passed, false)
@@ -55,12 +56,12 @@ func TestAllTrue(t *testing.T) {
 	a[0] = true
 	a[1] = false
 	a[2] = true
-	assert.Equals(t, carpentry.AllTrue(a), false)
+	assert.Equals(t, act.AllTrue(a), false)
 	a[1] = true
-	assert.Equals(t, carpentry.AllTrue(a), true)
+	assert.Equals(t, act.AllTrue(a), true)
 }
 
-func TestCliCarpentry(t *testing.T) {
+func TestCliAct(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	assert.Error(t, carpentry.CliCarpentry(true, true, logger, "podman"))
+	assert.Error(t, act.CliACT(true, true, logger, "podman"))
 }

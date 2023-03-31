@@ -1,11 +1,12 @@
 package requirements_test
 
 import (
-	"go.arcalot.io/assert"
-	"go.arcalot.io/imagebuilder/internal/requirements"
-	"go.arcalot.io/log"
 	log2 "log"
 	"testing"
+
+	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
+	"go.arcalot.io/assert"
+	"go.arcalot.io/log"
 )
 
 func TestGolangRequirements(t *testing.T) {
