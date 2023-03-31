@@ -15,7 +15,7 @@ import (
 	"go.arcalot.io/log"
 )
 
-func Act(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.Act, abspath string,
+func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.ACT, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
 
@@ -67,7 +67,7 @@ func AllTrue(checks []bool) bool {
 	return true
 }
 
-func CliAct(build bool, push bool, logger log.Logger, cec_choice string) error {
+func CliACT(build bool, push bool, logger log.Logger, cec_choice string) error {
 	conf, err := dto.Unmarshal(logger)
 	if err != nil {
 		return fmt.Errorf("error in act configuration file (%w)", err)
@@ -93,7 +93,7 @@ func CliAct(build bool, push bool, logger log.Logger, cec_choice string) error {
 	if err != nil {
 		return fmt.Errorf("invalid container engine client %w", err)
 	}
-	passed_reqs, err := Act(build, push, cec, conf, abspath, filenames,
+	passed_reqs, err := ACT(build, push, cec, conf, abspath, filenames,
 		logger,
 		requirements.Flake8PythonCodeStyle)
 	if err != nil {

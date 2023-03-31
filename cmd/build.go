@@ -23,7 +23,7 @@ var buildCmd = &cobra.Command{
 	Use:   "build an image",
 	Short: "build image",
 	Run: func(cmd *cobra.Command, args []string) {
-		err := act.CliAct(Build, Push, rootLogger, "docker")
+		err := act.CliACT(Build, Push, rootLogger, "docker")
 		if err != nil {
 			rootLogger.Errorf("build command failed (%w)", err)
 			os.Exit(1)

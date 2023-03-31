@@ -31,7 +31,7 @@ func TestBuildCmdMain(t *testing.T) {
 		Username: "user2",
 		Password: "secret2",
 	}
-	conf := dto.Act{
+	conf := dto.ACT{
 		Revision:         "20220928",
 		Image_Name:       "dummy",
 		Image_Tag:        "latest",
@@ -44,7 +44,7 @@ func TestBuildCmdMain(t *testing.T) {
 		"Dockerfile",
 		"requirements.txt",
 		"pyproject.toml"}
-	passed, err := act.Act(
+	passed, err := act.ACT(
 		true, true, cec, conf, ".",
 		python_filenames, logger, emptyPythonCodeStyle)
 	assert.Equals(t, passed, false)
@@ -63,5 +63,5 @@ func TestAllTrue(t *testing.T) {
 
 func TestCliAct(t *testing.T) {
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	assert.Error(t, act.CliAct(true, true, logger, "podman"))
+	assert.Error(t, act.CliACT(true, true, logger, "podman"))
 }

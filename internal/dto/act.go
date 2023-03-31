@@ -8,7 +8,7 @@ import (
 	"go.arcalot.io/log"
 )
 
-type Act struct {
+type ACT struct {
 	Revision         string `yaml:"revision"`
 	Image_Name       string `default:"all"`
 	Project_Filepath string
@@ -18,12 +18,12 @@ type Act struct {
 	Registries       []Registry
 }
 
-func Unmarshal(logger log.Logger) (Act, error) {
+func Unmarshal(logger log.Logger) (ACT, error) {
 	filteredRegistries, err := UnmarshalRegistries(logger)
 	if err != nil {
-		return Act{}, err
+		return ACT{}, err
 	}
-	conf := Act{
+	conf := ACT{
 		Revision:         viper.GetString("revision"),
 		Image_Name:       viper.GetString("image_name"),
 		Project_Filepath: viper.GetString("project_filepath"),
@@ -32,7 +32,7 @@ func Unmarshal(logger log.Logger) (Act, error) {
 		Build_Timeout:    viper.GetUint32("build_timeout"),
 		Registries:       filteredRegistries}
 	if err := defaults.Set(&conf); err != nil {
-		return Act{}, fmt.Errorf("error setting defaults (%w)", err)
+		return ACT{}, fmt.Errorf("error setting defaults (%w)", err)
 	}
 	return conf, nil
 }
