@@ -1,4 +1,4 @@
-name: Act Reusable Workflow to Build and Push Image
+name: ACT Reusable Workflow to Build and Push Image
 on:
   workflow_call:
     inputs:
@@ -28,17 +28,6 @@ on:
       QUAY_PASSWORD:
         required: false
 
-env:
-  IMAGE_NAME: ${{ inputs.image_name }}
-  IMAGE_TAG: ${{ inputs.image_tag }}
-  QUAY_IMG_EXP: ${{ inputs.quay_img_exp }}
-  GITHUB_USERNAME: ${{ inputs.github_username }}
-  GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-  GITHUB_NAMESPACE: ${{ inputs.github_namespace }}
-  QUAY_NAMESPACE: ${{ secrets.QUAY_NAMESPACE }}
-  QUAY_CUSTOM_NAMESPACE: ${{ inputs.quay_custom_namespace }}
-  QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
-  QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
 jobs:
   act-build:
     name: Build ${{ github.ref_name }} from ${{ github.event_name }}
@@ -48,15 +37,28 @@ jobs:
         if: github.event_name == 'release'
         run: |
           echo "IMAGE_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      
       - name: Set image tag and expiration for dev
         if: github.ref != 'refs/heads/main' && github.event_name != 'release'
         run: |
           export commit_hash=${{ github.sha }}
           echo "IMAGE_TAG=${GITHUB_REF##*/}_${commit_hash:0:7}" >> $GITHUB_ENV
           echo "QUAY_IMG_EXP=90d" >> $GITHUB_ENV
+      
       - name: Checkout this project
         uses: actions/checkout@v3
-      - name: act build
-        uses: arcalot/arcaflow-container-toolkit@main
+        
+      - name: arcaflow-container-toolkit-action
+        uses: arcalot/arcaflow-container-toolkit-action@v1.0.0
         with:
-          args: build --build --push
+          image_name: ${{ inputs.image_name }}
+          image_tag: ${{ inputs.image_tag }}
+          github_username: ${{ inputs.github_username }}
+          github_password: ${{ secrets.GITHUB_TOKEN }}
+          github_namespace: ${{ inputs.github_namespace }}
+          quay_username: ${{ secrets.QUAY_USERNAME }}
+          quay_password: ${{ secrets.QUAY_PASSWORD }}
+          quay_namespace: ${{ secrets.QUAY_NAMESPACE }}
+          quay_custom_namespace: ${{ inputs.quay_custom_namespace }}
+          quay_img_exp: ${{ inputs.quay_img_exp }}
+          build_timeout: ${{ inputs.build_timeout }}
