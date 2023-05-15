@@ -22,10 +22,10 @@ func Unmarshal(push bool, logger log.Logger) (ACT, error) {
 	var registries Registries
 	if push {
 		filteredRegistries, err := UnmarshalRegistries(logger)
-		registries = filteredRegistries
 		if err != nil {
 			return ACT{}, err
 		}
+		registries = filteredRegistries
 	}
 	conf := ACT{
 		Revision:         viper.GetString("revision"),
