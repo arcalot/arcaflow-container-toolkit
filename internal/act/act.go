@@ -68,7 +68,7 @@ func AllTrue(checks []bool) bool {
 }
 
 func CliACT(build bool, push bool, logger log.Logger, cec_choice string) error {
-	conf, err := dto.Unmarshal(logger)
+	conf, err := dto.Unmarshal(push, logger)
 	if err != nil {
 		return fmt.Errorf("error in act configuration file (%w)", err)
 	}
