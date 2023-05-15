@@ -1,17 +1,20 @@
 package dto
 
 import (
+	"fmt"
 	"os"
 
 	"go.arcalot.io/log"
 )
 
-func LookupEnvVar(registries string, key string, logger log.Logger) string {
+func LookupEnvVar(registries string, key string, logger log.Logger) (string, error) {
 	val, ok := os.LookupEnv(key)
 	if !ok {
-		logger.Errorf("%s not set for %s", key, registries)
+		err := fmt.Errorf("%s environment variable not set to push to %s", key, registries)
+		return "", err
 	} else if len(val) == 0 {
-		logger.Errorf("%s empty for %s", key, registries)
+		err := fmt.Errorf("%s environment variable empty to push to %s", key, registries)
+		return "", err
 	}
-	return val
+	return val, nil
 }

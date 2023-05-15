@@ -51,7 +51,7 @@ func UnmarshalRegistries(logger log.Logger) ([]Registry, error) {
 	var registries Registries
 	err := viper.UnmarshalKey("registries", &registries)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling registries from act file (%w)", err)
+		return nil, fmt.Errorf("error unmarshalling registries from act file ((%w))", err)
 	}
 	return registries.Parse(logger)
 }
@@ -64,16 +64,36 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
 		quay_custom_namespace_envvar := registries[i].Quay_Custom_Namespace_Envvar
-		if quay_custom_namespace_envvar != "" && registries[i].Url == "quay.io" {
+		quay_custom_namespace, _ := LookupEnvVar(registries[i].Url, quay_custom_namespace_envvar, logger)
+		if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
+			logger.Infof("value is:%s", quay_custom_namespace_envvar)
 			logger.Infof("QUAY_CUSTOM_NAMESPACE environment variable detected,"+
 				"using value in place of QUAY_NAMESPACE for %s", registries[i].Url)
 			namespace_envvar = quay_custom_namespace_envvar
 		}
-		username := LookupEnvVar(registries[i].Url, username_envvar, logger)
-		password := LookupEnvVar(registries[i].Url, password_envvar, logger)
-		namespace := LookupEnvVar(registries[i].Url, namespace_envvar, logger)
+		username, err := LookupEnvVar(registries[i].Url, username_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
+		password, err := LookupEnvVar(registries[i].Url, password_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
+		namespace, err := LookupEnvVar(registries[i].Url, namespace_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
 		if !registries[i].ValidCredentials(username) {
-			logger.Infof("Missing credentials for %s\n", registries[i].Url)
+			logger.Errorf("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}

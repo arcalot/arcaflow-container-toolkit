@@ -17,14 +17,20 @@ func TestLookupEnvVar(t *testing.T) {
 	envvar_key := "i_hope_this_isnt_used"
 	envvar_val := ""
 
-	v := dto.LookupEnvVar(registries, envvar_key, logger)
-	assert.Equals(t, v, fmt.Sprintf("%s not set", envvar_key))
-
-	err := os.Setenv(envvar_key, envvar_val)
+	v, err := dto.LookupEnvVar(registries, envvar_key, logger)
 	if err != nil {
 		log.Fatal(err)
 	}
-	v = dto.LookupEnvVar(registries, envvar_key, logger)
+	assert.Equals(t, v, fmt.Sprintf("%s not set", envvar_key))
+
+	err = os.Setenv(envvar_key, envvar_val)
+	if err != nil {
+		log.Fatal(err)
+	}
+	v, err = dto.LookupEnvVar(registries, envvar_key, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
 	assert.Equals(t, v, fmt.Sprintf("%s is empty", envvar_key))
 
 	envvar_val = "robot"
@@ -32,7 +38,10 @@ func TestLookupEnvVar(t *testing.T) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	v = dto.LookupEnvVar(registries, envvar_key, logger)
+	v, err = dto.LookupEnvVar(registries, envvar_key, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
 	assert.Equals(t, v, "")
 
 	err = os.Unsetenv(envvar_key)
