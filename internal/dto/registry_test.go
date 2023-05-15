@@ -69,10 +69,10 @@ func TestRegistries_Parse(t *testing.T) {
 	envvars := map[string]string{
 		"reg1_username":  "reg1_username",
 		"reg1_password":  "reg1_password",
-		"reg1_namespace": "",
+		"reg1_namespace": "reg1_namespace",
 		"reg2_username":  "reg2_username+robot",
 		"reg2_password":  "reg2_password",
-		"reg2_namespace": "",
+		"reg2_namespace": "reg2_namespace",
 	}
 
 	reg2_namespace := envvars["reg2_namespace"]
@@ -108,13 +108,13 @@ func TestRegistries_Parse(t *testing.T) {
 	assert.Equals(t, v, rs2[0].Username)
 	v = envvars["reg1_password"]
 	assert.Equals(t, v, rs2[0].Password)
-	assert.Equals(t, "reg1_username", rs2[0].Namespace)
+	assert.Equals(t, "reg1_namespace", rs2[0].Namespace)
 
 	v = envvars["reg2_username"]
 	assert.Equals(t, v, rs2[1].Username)
 	v = envvars["reg2_password"]
 	assert.Equals(t, v, rs2[1].Password)
-	assert.Equals(t, "reg2_username", rs2[1].Namespace)
+	assert.Equals(t, "reg2_namespace", rs2[1].Namespace)
 
 	for envvar_key := range envvars {
 		err := os.Unsetenv(envvar_key)
