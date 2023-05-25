@@ -7,8 +7,9 @@ import (
 	"go.arcalot.io/log"
 )
 
-// LookupEnvVar returns an error if an environment variable is not set or empty.
-// The error includes the registry url to destinguish which registry encountered the error.
+// LookupEnvVar returns the value of an enviornment variable.
+// lookupEnvVar will return an error if the enviornment variable is not set or empty.
+// The error includes the registry url to destinguish which registry encountered the error if found.
 func LookupEnvVar(registry_url string, key string, logger log.Logger) (string, error) {
 	val, ok := os.LookupEnv(key)
 	if !ok {
