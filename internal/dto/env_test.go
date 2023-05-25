@@ -1,7 +1,6 @@
 package dto_test
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -12,30 +11,34 @@ import (
 )
 
 func TestLookupEnvVar(t *testing.T) {
+	registries := "test"
 	logger := arcalog.NewLogger(arcalog.LevelInfo, arcalog.NewNOOPLogger())
-	envvar_key := "i_hope_this_isnt_used"
-	envvar_val := ""
+	envvar_key := "foo"
+	envvar_val := "bar"
 
-	v := dto.LookupEnvVar(envvar_key, logger)
-	assert.Equals(t, v.Msg, fmt.Sprintf("%s not set", envvar_key))
-	assert.Equals(t, v.Return_value, "")
+	_, err := dto.LookupEnvVar(registries, envvar_key, logger)
+	assert.Error(t, err)
 
-	err := os.Setenv(envvar_key, envvar_val)
+	err = os.Setenv(envvar_key, envvar_val)
 	if err != nil {
 		log.Fatal(err)
 	}
-	v = dto.LookupEnvVar(envvar_key, logger)
-	assert.Equals(t, v.Msg, fmt.Sprintf("%s is empty", envvar_key))
-	assert.Equals(t, v.Return_value, "")
+	v, err := dto.LookupEnvVar(registries, envvar_key, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.Equals(t, v, envvar_val)
 
 	envvar_val = "robot"
 	err = os.Setenv(envvar_key, envvar_val)
 	if err != nil {
 		log.Fatal(err)
 	}
-	v = dto.LookupEnvVar(envvar_key, logger)
-	assert.Equals(t, v.Msg, "")
-	assert.Equals(t, v.Return_value, envvar_val)
+	v, err = dto.LookupEnvVar(registries, envvar_key, logger)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assert.Equals(t, v, "robot")
 
 	err = os.Unsetenv(envvar_key)
 	if err != nil {

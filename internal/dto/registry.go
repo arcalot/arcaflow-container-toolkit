@@ -51,7 +51,7 @@ func UnmarshalRegistries(logger log.Logger) ([]Registry, error) {
 	var registries Registries
 	err := viper.UnmarshalKey("registries", &registries)
 	if err != nil {
-		return nil, fmt.Errorf("error unmarshalling registries from act file (%w)", err)
+		return nil, fmt.Errorf("error unmarshalling registries from act file ((%w))", err)
 	}
 	return registries.Parse(logger)
 }
@@ -64,26 +64,48 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		password_envvar := registries[i].Password_Envvar
 		namespace_envvar := registries[i].Namespace_Envvar
 		quay_custom_namespace_envvar := registries[i].Quay_Custom_Namespace_Envvar
-		username := LookupEnvVar(username_envvar, logger).Return_value
-		password := LookupEnvVar(password_envvar, logger).Return_value
-		namespace := LookupEnvVar(namespace_envvar, logger).Return_value
-		quay_custom_namespace := LookupEnvVar(quay_custom_namespace_envvar, logger).Return_value
+		quay_custom_namespace, _ := LookupEnvVar(registries[i].Url, quay_custom_namespace_envvar, logger)
+		if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
+			logger.Infof("value is:%s", quay_custom_namespace_envvar)
+			logger.Infof("QUAY_CUSTOM_NAMESPACE environment variable detected,"+
+				"using value in place of QUAY_NAMESPACE for %s", registries[i].Url)
+			namespace_envvar = quay_custom_namespace_envvar
+		}
+		username, err := LookupEnvVar(registries[i].Url, username_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
+		password, err := LookupEnvVar(registries[i].Url, password_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
+		namespace, err := LookupEnvVar(registries[i].Url, namespace_envvar, logger)
+		if err != nil {
+			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
+				" to %s from error: (%w)", registries[i].Url, err)
+			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
+			continue
+		}
 		if !registries[i].ValidCredentials(username) {
-			logger.Infof("Missing credentials for %s\n", registries[i].Url)
+			logger.Errorf("Missing credentials for %s\n", registries[i].Url)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
 		registries[i].Username = username
 		registries[i].Password = password
-		if quay_custom_namespace != "" && registries[i].Url == "quay.io" {
-			registries[i].Namespace = quay_custom_namespace
-		} else {
-			inferred_namespace, err := InferNamespace(namespace, username)
-			if err != nil {
-				return nil, err
-			}
-			registries[i].Namespace = inferred_namespace
+
+		inferred_namespace, err := InferNamespace(namespace, username)
+		if err != nil {
+			return nil, err
 		}
+		registries[i].Namespace = inferred_namespace
+
 	}
 	filteredRegistries := FilterByIndex(registries, misconfigured_registries)
 	return filteredRegistries, nil

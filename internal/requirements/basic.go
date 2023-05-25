@@ -4,21 +4,18 @@ import "go.arcalot.io/log"
 
 func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true
-	output := ""
 
 	if present, err := HasFilename(filenames, "README.md"); err != nil {
 		return false, err
 	} else if !present {
-		output = "Missing README.md\n"
-		logger.Infof(output)
+		logger.Errorf("Missing required file README.md")
 		meets_reqs = false
 	}
 
 	if present, err := HasFilename(filenames, "Dockerfile"); err != nil {
 		return false, err
 	} else if !present {
-		output = "Missing Dockerfile\n"
-		logger.Infof(output)
+		logger.Errorf("Missing required file Dockerfile")
 		meets_reqs = false
 	}
 
@@ -26,10 +23,8 @@ func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 		return false, err
 	} else if !present {
 		// match case-insensitive 'test'?
-		output = "Missing a test file\n"
-		logger.Infof(output)
+		logger.Errorf("Missing required test file")
 		meets_reqs = false
 	}
-
 	return meets_reqs, nil
 }

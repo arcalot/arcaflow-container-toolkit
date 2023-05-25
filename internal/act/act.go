@@ -2,6 +2,7 @@ package act
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	log2 "log"
 	"os"
@@ -68,9 +69,12 @@ func AllTrue(checks []bool) bool {
 }
 
 func CliACT(build bool, push bool, logger log.Logger, cec_choice string) error {
-	conf, err := dto.Unmarshal(logger)
+	conf, err := dto.Unmarshal(push, logger)
 	if err != nil {
-		return fmt.Errorf("error in act configuration file (%w)", err)
+		return fmt.Errorf("error found in configuration: (%w)", err)
+	}
+	if push && len(conf.Registries) == 0 {
+		return errors.New("no registries passed configuration with the push argument")
 	}
 	cleanpath := filepath.Clean(conf.Project_Filepath)
 	abspath, err := filepath.Abs(cleanpath)

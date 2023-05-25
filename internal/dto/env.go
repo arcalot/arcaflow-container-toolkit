@@ -2,23 +2,22 @@ package dto
 
 import (
 	"fmt"
-	"go.arcalot.io/log"
 	"os"
+
+	"go.arcalot.io/log"
 )
 
-func LookupEnvVar(key string, logger log.Logger) Verbose {
+// LookupEnvVar returns the value of an enviornment variable.
+// lookupEnvVar will return an error if the enviornment variable is not set or empty.
+// The error includes the registry url to destinguish which registry encountered the error if found.
+func LookupEnvVar(registry_url string, key string, logger log.Logger) (string, error) {
 	val, ok := os.LookupEnv(key)
-	var msg string
 	if !ok {
-		msg = fmt.Sprintf("%s not set", key)
+		err := fmt.Errorf("%s environment variable not set to push to %s", key, registry_url)
+		return "", err
 	} else if len(val) == 0 {
-		msg = fmt.Sprintf("%s is empty", key)
+		err := fmt.Errorf("%s environment variable empty to push to %s", key, registry_url)
+		return "", err
 	}
-	logger.Infof(msg)
-	return Verbose{Return_value: val, Msg: msg}
-}
-
-type Verbose struct {
-	Msg          string
-	Return_value string
+	return val, nil
 }

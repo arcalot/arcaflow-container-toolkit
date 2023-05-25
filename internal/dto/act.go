@@ -18,10 +18,14 @@ type ACT struct {
 	Registries       []Registry
 }
 
-func Unmarshal(logger log.Logger) (ACT, error) {
-	filteredRegistries, err := UnmarshalRegistries(logger)
-	if err != nil {
-		return ACT{}, err
+func Unmarshal(push bool, logger log.Logger) (ACT, error) {
+	var registries Registries
+	if push {
+		filteredRegistries, err := UnmarshalRegistries(logger)
+		if err != nil {
+			return ACT{}, err
+		}
+		registries = filteredRegistries
 	}
 	conf := ACT{
 		Revision:         viper.GetString("revision"),
@@ -30,7 +34,7 @@ func Unmarshal(logger log.Logger) (ACT, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Quay_Img_Exp:     viper.GetString("quay_img_exp"),
 		Build_Timeout:    viper.GetUint32("build_timeout"),
-		Registries:       filteredRegistries}
+		Registries:       registries}
 	if err := defaults.Set(&conf); err != nil {
 		return ACT{}, fmt.Errorf("error setting defaults (%w)", err)
 	}
