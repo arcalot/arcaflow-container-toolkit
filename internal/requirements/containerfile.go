@@ -38,14 +38,14 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 		// create map of regexp patterns to search for in Dockerfile as well as log information if not found
 		m := map[string]string{
 			"FROM quay\\.io/(centos/centos:stream8|arcalot/arcaflow-plugin-baseimage-python-.*base$)": "Dockerfile doesn't use a supported base image\n",
-			"(ADD|COPY) .*/?LICENSE /.*":                                                                "Dockerfile does not contain copy of arcaflow plugin license\n",
-			"CMD \\[\\]":                                                                                "Dockerfile does not contain an empty command (i.e. CMD [])",
-			"LABEL org.opencontainers.image.source=\".*\"":                                              "Dockerfile is missing LABEL org.opencontainers.image.source",
-			"LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\"":                                "Dockerfile is missing LABEL org.opencontainers.image.licenses",
-			"LABEL org.opencontainers.image.vendor=\"Arcalot project\"":                                 "Dockerfile is missing LABEL org.opencontainers.image.vendor",
-			"LABEL org.opencontainers.image.authors=\"Arcalot contributors\"":                           "Dockerfile is missing LABEL org.opencontainers.image.authors",
-			"LABEL org.opencontainers.image.title=\".*\"":                                               "Dockerfile is missing LABEL org.opencontainers.image.title",
-			"LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\"":          "Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z",
+			"(ADD|COPY) .*/?LICENSE /.*": "Dockerfile does not contain copy of arcaflow plugin license\n",
+			"CMD \\[\\]":                 "Dockerfile does not contain an empty command (i.e. CMD [])",
+			"LABEL org.opencontainers.image.source=\".*\"":                                     "Dockerfile is missing LABEL org.opencontainers.image.source",
+			"LABEL org.opencontainers.image.licenses=\"Apache-2\\.0.*\"":                       "Dockerfile is missing LABEL org.opencontainers.image.licenses",
+			"LABEL org.opencontainers.image.vendor=\"Arcalot project\"":                        "Dockerfile is missing LABEL org.opencontainers.image.vendor",
+			"LABEL org.opencontainers.image.authors=\"Arcalot contributors\"":                  "Dockerfile is missing LABEL org.opencontainers.image.authors",
+			"LABEL org.opencontainers.image.title=\".*\"":                                      "Dockerfile is missing LABEL org.opencontainers.image.title",
+			"LABEL io.github.arcalot.arcaflow.plugin.version=\"(\\d*)(\\.?\\d*?)(\\.?\\d*?)\"": "Dockerfile is missing LABEL io.github.arcalot.arcaflow.plugin.version that uses form X, X.Y, X.Y.Z",
 		}
 
 		for regexp_, loggerResp := range m {
