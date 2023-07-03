@@ -37,7 +37,7 @@ func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) 
 
 		// create map of regexp patterns to search for in Dockerfile as well as log information if not found
 		m := map[string]string{
-			"FROM quay\.io\/(centos\/centos:stream8|arcalot\/arcaflow-plugin-baseimage-python-.*base$)": "Dockerfile doesn't use a supported base image\n",
+			"FROM quay\\.io/(centos/centos:stream8|arcalot/arcaflow-plugin-baseimage-python-.*base$)": "Dockerfile doesn't use a supported base image\n",
 			"(ADD|COPY) .*/?LICENSE /.*":                                                                "Dockerfile does not contain copy of arcaflow plugin license\n",
 			"CMD \\[\\]":                                                                                "Dockerfile does not contain an empty command (i.e. CMD [])",
 			"LABEL org.opencontainers.image.source=\".*\"":                                              "Dockerfile is missing LABEL org.opencontainers.image.source",
