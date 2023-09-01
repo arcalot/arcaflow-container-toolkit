@@ -65,6 +65,17 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 			}
 		}
 	}
+	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, image_tag, "", &build_options,
+		logger); err != nil {
+		return false, err
+	}
+	for _, registry := range conf.Registries {
+		if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, image_tag,
+			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+			logger.Errorf("(%w)", err)
+			return false, err
+		}
+	}
 	return true, nil
 }
 
