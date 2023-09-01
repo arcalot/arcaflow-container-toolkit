@@ -50,7 +50,8 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 	fmt.Println(architypes)
 	image_tag := conf.Image_Tag
 	if len(architypes) == 0 {
-		if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, image_tag, "", &build_options,
+		if err := images.BuildImage(build_img, all_checks,
+			cec, abspath, conf.Image_Name, image_tag, "", &build_options,
 			logger); err != nil {
 			return false, err
 		}
@@ -67,7 +68,8 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		if len(architypes) > 1 {
 			image_tag = ("manifest-" + architypes[i])
 		}
-		if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, image_tag, architypes[i], &build_options,
+		if err := images.BuildImage(build_img, all_checks, cec, abspath,
+			conf.Image_Name, image_tag, architypes[i], &build_options,
 			logger); err != nil {
 			return false, err
 		}
