@@ -19,7 +19,6 @@ import (
 func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.ACT, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
-
 	meets_reqs := make([]bool, 3)
 	basic_reqs, err := requirements.BasicRequirements(filenames, logger)
 	if err != nil {
@@ -46,9 +45,9 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		BuildTimeLimitSeconds: conf.Build_Timeout,
 	}
 	fmt.Println(conf.Architypes)
-	if len(conf.Architypes) == 0 {
+	if len(conf.Architypes) <= 1 {
 		if err := images.BuildImage(build_img, all_checks,
-			cec, abspath, conf.Image_Name, conf.Image_Tag, "", &build_options,
+			cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Architypes[0], &build_options,
 			logger); err != nil {
 			return false, err
 		}
@@ -62,9 +61,7 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		return true, nil
 	}
 	for i := 0; i < len(conf.Architypes); i++ {
-		if len(conf.Architypes) > 1 {
-			conf.Image_Tag = ("manifest-" + conf.Architypes[i])
-		}
+		conf.Image_Tag = ("manifest-" + conf.Architypes[i])
 		if err := images.BuildImage(build_img, all_checks, cec, abspath,
 			conf.Image_Name, conf.Image_Tag, conf.Architypes[i], &build_options,
 			logger); err != nil {
