@@ -52,7 +52,7 @@ jobs:
         uses: actions/checkout@v3
         
       - name: arcaflow-container-toolkit-action
-        uses: arcalot/arcaflow-docsgen/.github/workflows/reusable_workflow.yaml@main
+        uses: jdowni000/arcaflow-container-toolkit-action@v0.0.1
         with:
           image_name: ${{ inputs.image_name }}
           image_tag: ${{ inputs.image_tag }}
@@ -65,6 +65,3 @@ jobs:
           quay_custom_namespace: ${{ inputs.quay_custom_namespace }}
           quay_img_exp: ${{ inputs.quay_img_exp }}
           build_timeout: ${{ inputs.build_timeout }}
-      
-      # - name: Create manifest for multi-arch
-      #   if: ${{ inputs.architypes }} != ''
