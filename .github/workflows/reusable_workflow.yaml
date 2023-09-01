@@ -66,6 +66,6 @@ jobs:
           quay_img_exp: ${{ inputs.quay_img_exp }}
           build_timeout: ${{ inputs.build_timeout }}
       
-      - name: Create manifest for multi-arch
-        if: ${{ inputs.architypes }} != ''
-        
+      # - name: Create manifest for multi-arch
+      #   if: ${{ inputs.architypes }} != ''
+
