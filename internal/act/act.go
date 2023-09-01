@@ -48,7 +48,6 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 
 	architypes := conf.Architypes
 	fmt.Println(architypes)
-	fmt.Println("test")
 	image_tag := conf.Image_Tag
 	for i := 0; i < len(architypes); i++ {
 		if len(architypes) > 1 {

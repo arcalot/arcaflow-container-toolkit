@@ -19,7 +19,10 @@ on:
         type: string
       github_namespace:
         required: false
-        type: string    
+        type: string
+      architypes:
+        required: false
+        type: string   
     secrets:
       QUAY_NAMESPACE:
         required: false
@@ -62,3 +65,7 @@ jobs:
           quay_custom_namespace: ${{ inputs.quay_custom_namespace }}
           quay_img_exp: ${{ inputs.quay_img_exp }}
           build_timeout: ${{ inputs.build_timeout }}
+      
+      - name: Create manifest for multi-arch
+        if: ${{ inputs.architypes }} != ''
+        
