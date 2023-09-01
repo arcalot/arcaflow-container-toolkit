@@ -43,7 +43,7 @@ func NewCEClient() (*CEClient, error) {
 	}, nil
 }
 
-func (ce CEClient) Build(filepath string, name string, tags []string, build_options *BuildOptions) error {
+func (ce CEClient) Build(filepath string, name string, tags []string, architype string, build_options *BuildOptions) error {
 	image_tag := name + ":" + tags[0]
 	quay_img_exp_value := map[string]string{
 		"quay.expires-after": build_options.QuayImgExp,
@@ -59,6 +59,7 @@ func (ce CEClient) Build(filepath string, name string, tags []string, build_opti
 		Dockerfile: "Dockerfile",
 		Tags:       []string{image_tag},
 		Labels:     quay_img_exp_value,
+		Platform:   architype,
 	}
 	res, err := ce.Client.ImageBuild(ctx, tar, opts)
 	if err != nil {

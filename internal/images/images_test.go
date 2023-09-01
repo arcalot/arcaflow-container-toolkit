@@ -19,10 +19,10 @@ func TestBuildImage(t *testing.T) {
 	defer ctrl.Finish()
 	cec := mocks.NewMockContainerEngineService(ctrl)
 	cec.EXPECT().
-		Build("use", "the", []string{"forks"}, docker.DefaultBuildOptions()).
+		Build("use", "the", []string{"forks"}, "amd64", docker.DefaultBuildOptions()).
 		Return(nil).
 		Times(1)
-	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", docker.DefaultBuildOptions(), logger))
+	assert.Nil(t, images.BuildImage(true, true, cec, "use", "the", "forks", "amd64", docker.DefaultBuildOptions(), logger))
 }
 
 func TestPushImage(t *testing.T) {
