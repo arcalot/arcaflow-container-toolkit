@@ -50,6 +50,9 @@ jobs:
       
       - name: Checkout this project
         uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
         
       - name: arcaflow-container-toolkit-action
         uses: jdowni000/arcaflow-container-toolkit-action@v0.0.1
