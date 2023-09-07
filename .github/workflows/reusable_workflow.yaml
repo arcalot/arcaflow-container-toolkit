@@ -91,6 +91,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/ppc64le
           push: true
           tags: "quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ inputs.image_tag }}"
