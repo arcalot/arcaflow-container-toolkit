@@ -63,7 +63,7 @@ registries:
   `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""  
   `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"  
   `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600  
-  `ARCHETYPE` Request architecture (platform) of image to build with - Default: ""
+  `ARCHETYPE` Request architecture (platform) of image to build with - Default: ""  
   `REQ_CHECK_ONLY` Disables build and push but still checks requirements - Default: False
 
 #### Additional Information
