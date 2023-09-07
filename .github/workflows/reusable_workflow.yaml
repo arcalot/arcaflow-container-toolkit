@@ -93,4 +93,4 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ inputs.image_tag }}
+          tags: "${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ inputs.image_tag }}"
