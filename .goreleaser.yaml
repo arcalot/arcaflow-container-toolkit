@@ -28,9 +28,9 @@ archives:
 dockers:
   - dockerfile: Dockerfile.goreleaser
     image_templates:
-      - ghcr.io/jdowni000/arcaflow-container-toolkit:{{ .Tag }}
-      - ghcr.io/jdowni000/arcaflow-container-toolkit:{{ .Major }}
-      - ghcr.io/jdowni000/arcaflow-container-toolkit:latest
+      - ghcr.io/arcalot/arcaflow-container-toolkit:{{ .Tag }}
+      - ghcr.io/arcalot/arcaflow-container-toolkit:{{ .Major }}
+      - ghcr.io/arcalot/arcaflow-container-toolkit:latest
     extra_files:
       - .act.yaml
 checksum:

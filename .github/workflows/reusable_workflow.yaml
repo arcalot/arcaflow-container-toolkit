@@ -58,7 +58,7 @@ jobs:
         uses: docker/setup-qemu-action@v2
         
       - name: arcaflow-container-toolkit-action
-        uses: jdowni000/arcaflow-container-toolkit-action@v0.0.1
+        uses: arcalot/arcaflow-container-toolkit-action@v2.0.0
         with:
           image_name: ${{ inputs.image_name }}
           image_tag: ${{ inputs.image_tag }}
