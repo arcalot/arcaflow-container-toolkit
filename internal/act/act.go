@@ -46,7 +46,7 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 	}
 
 	if conf.Req_check_only {
-		logger.Infof("REQ_CHECK_ONLY requested disabling build and push through ACT")
+		logger.Infof("REQ_CHECK_ONLY requested disabling build and push through ACT. All requirements PASSED.")
 		return true, nil
 	}
 
