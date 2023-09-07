@@ -42,6 +42,9 @@ example `.act.yaml`
 revision: 20220824
 image_name: "<IMAGE_NAME>"
 image_tag: "<IMAGE_TAG>"
+quay_exp: 'never'
+archetype: ''
+req_check_only: false
 project_filepath: "<path/to/plugin/project/>"
 registries:
   - url: quay.io
