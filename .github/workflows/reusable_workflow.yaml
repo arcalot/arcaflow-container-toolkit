@@ -75,11 +75,11 @@ jobs:
           req_check_only: ${{ inputs.multi_arch }}
 
       - name: Set up Docker Buildx
-        if: ${{ inputs.multi-arch }}
+        if: ${{ inputs.multi_arch }}
         uses: docker/setup-buildx-action@v2
 
       - name: Login to Quay
-        if: ${{ inputs.multi-arch }}
+        if: ${{ inputs.multi_arch }}
         uses: docker/login-action@v2
         with:
           registry: quay.io
@@ -87,7 +87,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build and push
-        if: ${{ inputs.multi-arch }}
+        if: ${{ inputs.multi_arch }}
         uses: docker/build-push-action@v4
         with:
           context: .
