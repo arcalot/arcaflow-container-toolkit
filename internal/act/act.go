@@ -44,45 +44,25 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		QuayImgExp:            conf.Quay_Img_Exp,
 		BuildTimeLimitSeconds: conf.Build_Timeout,
 	}
-	if len(conf.Architypes) <= 1 {
-		architype := checkSingleArchitype(conf.Architypes)
-		if err := images.BuildImage(build_img, all_checks,
-			cec, abspath, conf.Image_Name, conf.Image_Tag, architype, &build_options,
-			logger); err != nil {
-			return false, err
-		}
-		for _, registry := range conf.Registries {
-			if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
-				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
-				logger.Errorf("(%w)", err)
-				return false, err
-			}
-		}
+
+	if conf.Req_check_only {
+		logger.Infof("REQ_CHECK_ONLY requested disabling build and push through ACT")
 		return true, nil
 	}
-	for i := 0; i < len(conf.Architypes); i++ {
-		conf.Image_Tag = ("manifest-" + conf.Architypes[i])
-		if err := images.BuildImage(build_img, all_checks, cec, abspath,
-			conf.Image_Name, conf.Image_Tag, conf.Architypes[i], &build_options,
-			logger); err != nil {
+
+	if err := images.BuildImage(build_img, all_checks,
+		cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Archetype, &build_options,
+		logger); err != nil {
+		return false, err
+	}
+	for _, registry := range conf.Registries {
+		if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
+			registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
+			logger.Errorf("(%w)", err)
 			return false, err
-		}
-		for _, registry := range conf.Registries {
-			if err := images.PushImage(all_checks, build_img, push_img, cec, conf.Image_Name, conf.Image_Tag,
-				registry.Username, registry.Password, registry.Url, registry.Namespace, logger); err != nil {
-				logger.Errorf("(%w)", err)
-				return false, err
-			}
 		}
 	}
 	return true, nil
-}
-
-func checkSingleArchitype(s []string) string {
-	if len(s) == 0 {
-		return ""
-	}
-	return s[0]
 }
 
 func AllTrue(checks []bool) bool {

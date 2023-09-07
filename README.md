@@ -63,13 +63,12 @@ registries:
   `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""  
   `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"  
   `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600  
-  `ARCHITYPES` Architecure(s) of image to build with - Default: ""
+  `ARCHETYPE` Request architecture (platform) of image to build with - Default: ""
 
 #### Additional Information
 
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
-* `ARCHITYPES` supports multiple architecture types. Pass multiple arguments as a single string with a space between. Architypes information can be found [here](https://docs.docker.com/build/building/multi-platform/)  
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows) 
 
 ## Build Arcaflow Container Toolkit as an Executable Locally
 
