@@ -155,7 +155,7 @@ jobs:
 * This workflow will automatically configure `IMAGE_TAG` to the format `branch_commit-hash[0:7]` if a development branch is detected.
 * This workflow will automatically configure `QUAY_IMG_EXP` to 90 days if a development branch is detected.
 * Setting the `archetype` input will configure the `ARCHETYPE` env variable.  
-* Setting the `multi_arch` input will configure the `REQ_CHECK_ONLY` env variable to True, thus allowing docker buildx to handle the build and push functionality in the [workflow](.github/workflows/reusable_workflow.yaml) for multi-arch builds.
+* Setting the `multi_arch` input will configure the `REQ_CHECK_ONLY` env variable to True, thus allowing docker buildx to handle the build and push functionality in the [workflow](.github/workflows/reusable_workflow.yaml) for multi-arch builds of type linux/amd64,linux/arm64.
 
 ## Arcaflow Container Toolkit as an Action
 
