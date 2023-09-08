@@ -31,7 +31,7 @@ func TestClient_BuildImage(t *testing.T) {
 	}
 
 	assert.Error(t, client.Build("some", "path", []string{"tag1", "tag2"},
-		docker.DefaultBuildOptions()))
+		"amd64", docker.DefaultBuildOptions()))
 }
 
 func TestClient_ImageTag(t *testing.T) {

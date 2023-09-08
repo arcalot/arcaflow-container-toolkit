@@ -3,6 +3,8 @@ image_name: arcaflow-plugin-template-python
 image_tag: '0.1.0'
 project_filepath: /github/workspace
 quay_exp: 'never'
+archetype: ''
+req_check_only: false
 registries:
   - url: quay.io
     username_envvar: "QUAY_USERNAME"

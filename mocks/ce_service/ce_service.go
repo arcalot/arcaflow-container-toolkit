@@ -35,17 +35,17 @@ func (m *MockContainerEngineService) EXPECT() *MockContainerEngineServiceMockRec
 }
 
 // Build mocks base method.
-func (m *MockContainerEngineService) Build(arg0, arg1 string, arg2 []string, arg3 *docker.BuildOptions) error {
+func (m *MockContainerEngineService) Build(arg0, arg1 string, arg2 []string, arg3 string, arg4 *docker.BuildOptions) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Build", arg0, arg1, arg2, arg3)
+	ret := m.ctrl.Call(m, "Build", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Build indicates an expected call of Build.
-func (mr *MockContainerEngineServiceMockRecorder) Build(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockContainerEngineServiceMockRecorder) Build(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockContainerEngineService)(nil).Build), arg0, arg1, arg2, arg3)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Build", reflect.TypeOf((*MockContainerEngineService)(nil).Build), arg0, arg1, arg2, arg3, arg4)
 }
 
 // Push mocks base method.

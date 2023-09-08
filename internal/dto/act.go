@@ -15,6 +15,8 @@ type ACT struct {
 	Image_Tag        string `default:"latest"`
 	Quay_Img_Exp     string `default:"never"`
 	Build_Timeout    uint32 `default:"600"`
+	Archetype        string
+	Req_check_only   bool
 	Registries       []Registry
 }
 
@@ -34,6 +36,8 @@ func Unmarshal(push bool, logger log.Logger) (ACT, error) {
 		Image_Tag:        viper.GetString("image_tag"),
 		Quay_Img_Exp:     viper.GetString("quay_img_exp"),
 		Build_Timeout:    viper.GetUint32("build_timeout"),
+		Archetype:        viper.GetString("archetype"),
+		Req_check_only:   viper.GetBool("req_check_only"),
 		Registries:       registries}
 	if err := defaults.Set(&conf); err != nil {
 		return ACT{}, fmt.Errorf("error setting defaults (%w)", err)

@@ -1,10 +1,11 @@
 package requirements
 
 import (
-	"go.arcalot.io/log"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"go.arcalot.io/log"
 )
 
 func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) {

@@ -19,7 +19,6 @@ import (
 func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.ACT, abspath string,
 	filenames []string, logger log.Logger,
 	pythonCodeStyleChecker func(abspath string, stdout *bytes.Buffer, logger log.Logger) error) (bool, error) {
-
 	meets_reqs := make([]bool, 3)
 	basic_reqs, err := requirements.BasicRequirements(filenames, logger)
 	if err != nil {
@@ -45,7 +44,14 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		QuayImgExp:            conf.Quay_Img_Exp,
 		BuildTimeLimitSeconds: conf.Build_Timeout,
 	}
-	if err := images.BuildImage(build_img, all_checks, cec, abspath, conf.Image_Name, conf.Image_Tag, &build_options,
+
+	if conf.Req_check_only {
+		logger.Infof("REQ_CHECK_ONLY requested disabling build and push through ACT. All requirements PASSED.")
+		return true, nil
+	}
+
+	if err := images.BuildImage(build_img, all_checks,
+		cec, abspath, conf.Image_Name, conf.Image_Tag, conf.Archetype, &build_options,
 		logger); err != nil {
 		return false, err
 	}

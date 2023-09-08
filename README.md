@@ -42,6 +42,9 @@ example `.act.yaml`
 revision: 20220824
 image_name: "<IMAGE_NAME>"
 image_tag: "<IMAGE_TAG>"
+quay_exp: 'never'
+archetype: ''
+req_check_only: false
 project_filepath: "<path/to/plugin/project/>"
 registries:
   - url: quay.io
@@ -63,11 +66,13 @@ registries:
   `QUAY_CUSTOM_NAMESPACE` Quay Namespace to push image that is not QUAY_NAMESPACE - Default: ""  
   `QUAY_IMG_EXP` Image label to automatically expire in Quay - Default: "never"  
   `BUILD_TIMEOUT` Length of time before a build will fail in seconds - Default: 600  
+  `ARCHETYPE` Request architecture (platform) of image to build with - Default: ""  
+  `REQ_CHECK_ONLY` Disables build and push but still checks requirements - Default: False
 
 #### Additional Information
 
 * `QUAY_IMG_EXP` more documentation and time formats can be found [here](https://docs.projectquay.io/use_quay.html#:~:text=Setting%20tag%20expiration%20from%20a%20Dockerfile)
-* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows)
+* `QUAY_CUSTOM_NAMESPACE` if set, will use in place of `QUAY_NAMESPACE`. More info [Arcaflow Container Toolkit and Reusable Workflows](#arcaflow-container-toolkit-and-reusable-workflows) 
 
 ## Build Arcaflow Container Toolkit as an Executable Locally
 
@@ -134,7 +139,9 @@ jobs:
     uses: arcalot/arcaflow-container-toolkit/.github/workflows/reusable_workflow.yaml@main
     with:
       image_name: ${{ github.event.repository.name }}
-      image_tag: 'latest'     
+      image_tag: 'latest'
+      archetype: 'arm64' # Optional input for demonstration purposes
+      multi_arch: True # Optional input for demonstration purposes     
     secrets: 
       QUAY_NAMESPACE: ${{ secrets.QUAY_NAMESPACE }}
       QUAY_USERNAME: ${{ secrets.QUAY_USERNAME }}
@@ -147,6 +154,8 @@ jobs:
 * This workflow will automatically configure `IMAGE_TAG` to version if a release is detected.
 * This workflow will automatically configure `IMAGE_TAG` to the format `branch_commit-hash[0:7]` if a development branch is detected.
 * This workflow will automatically configure `QUAY_IMG_EXP` to 90 days if a development branch is detected.
+* Setting the `archetype` input will configure the `ARCHETYPE` env variable.  
+* Setting the `multi_arch` input will configure the `REQ_CHECK_ONLY` env variable to True, thus allowing docker buildx to handle the build and push functionality in the [workflow](.github/workflows/reusable_workflow.yaml) for multi-arch builds of type linux/amd64,linux/arm64.
 
 ## Arcaflow Container Toolkit as an Action
 
