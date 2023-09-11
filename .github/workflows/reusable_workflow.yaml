@@ -85,12 +85,6 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
-      - name: Docker meta
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          labels: |
-            quay.expires-after=${{ env.QUAY_IMG_EXP }}
 
       - name: Build and push for Multi-Arch
         if: ${{ inputs.multi_arch }}
@@ -100,4 +94,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: "quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ env.IMAGE_TAG }}"
-          labels: ${{ steps.meta.labels }}
+          labels: |
+            "quay.expires-after=${{ env.QUAY_IMG_EXP }}"
