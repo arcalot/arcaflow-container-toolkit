@@ -34,10 +34,6 @@ on:
       QUAY_PASSWORD:
         required: false
 
-ENV:
-  IMAGE_NAME: ${{ inputs.image_name }}
-  IMAGE_TAG: ${{ inputs.image_tag }}
-
 jobs:
   act-build:
     name: Build ${{ github.ref_name }} from ${{ github.event_name }}
