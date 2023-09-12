@@ -40,17 +40,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set image tag for release
-        if: github.event_name == 'release'
+        if: github.event_name == release
         run: |
           echo "IMAGE_TAG=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
       
       - name: Set image tag for main
-        if: github.ref == 'refs/heads/main' && github.event_name != 'release'
+        if: github.ref == 'refs/heads/main' && github.event_name != release
         run: |
           echo "IMAGE_TAG=main_latest" >> $GITHUB_ENV
 
       - name: Set image tag and expiration for dev
-        if: github.ref != 'refs/heads/main' && github.event_name != 'release'
+        if: github.ref != 'refs/heads/main' && github.event_name != release
         run: |
           export commit_hash=${{ github.sha }}
           echo "IMAGE_TAG=${GITHUB_REF##*/}_${commit_hash:0:7}" >> $GITHUB_ENV
@@ -92,7 +92,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build and push multi-arch image for release
-        if: github.event_name == 'release' && ${{ inputs.multi_arch}}
+        if: github.event_name == release && ${{ inputs.multi_arch}}
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -102,7 +102,7 @@ jobs:
             quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:latest
 
       - name: Build and push multi-arch image
-        if: ${{ inputs.multi_arch }} && github.event_name != 'release'
+        if: github.event_name != release && ${{ inputs.multi_arch }}
         uses: docker/build-push-action@v4
         with:
           context: .
