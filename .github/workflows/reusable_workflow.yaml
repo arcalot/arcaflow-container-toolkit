@@ -102,7 +102,7 @@ jobs:
           labels: quay.expires-after=${{ env.QUAY_IMG_EXP }}
 
       - name: Build and push multi-arch image for release
-        if: $ {{ inputs.multi_arch}} && github.event_name == 'release'
+        if: ${{ inputs.multi_arch}} && github.event_name == 'release'
         uses: docker/build-push-action@v4
         with:
           context: .
