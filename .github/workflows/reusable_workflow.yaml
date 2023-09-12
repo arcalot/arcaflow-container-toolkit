@@ -91,6 +91,16 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
 
+      - name: Build and push multi-arch image for release
+        if: github.event_name == 'release' && ${{ inputs.multi_arch}}
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ env.IMAGE_TAG }},
+            quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:latest
+
       - name: Build and push multi-arch image
         if: ${{ inputs.multi_arch }} && github.event_name != 'release'
         uses: docker/build-push-action@v4
@@ -100,12 +110,3 @@ jobs:
           push: true
           tags: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ env.IMAGE_TAG }}
           labels: quay.expires-after=${{ env.QUAY_IMG_EXP }}
-
-      - name: Build and push multi-arch image for release
-        if: ${{ inputs.multi_arch}} && github.event_name == 'release'
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:${{ env.IMAGE_TAG }}, quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:latest
