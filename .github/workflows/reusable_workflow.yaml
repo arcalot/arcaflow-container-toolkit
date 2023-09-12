@@ -92,8 +92,7 @@ jobs:
           password: ${{ secrets.QUAY_PASSWORD }}
 
       - name: Build and push multi-arch image for release
-        if: github.event_name == 'release'
-        if: ${{ inputs.multi_arch }}
+        if: github.event_name == 'release' && ${{ inputs.multi_arch}} == true
         uses: docker/build-push-action@v4
         with:
           context: .
@@ -103,8 +102,7 @@ jobs:
             quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}:latest
 
       - name: Build and push multi-arch image
-        if: github.event_name != 'release'
-        if: ${{ inputs.multi_arch }}
+        if: github.event_name != 'release' && ${{ inputs.multi_arch }} == true
         uses: docker/build-push-action@v4
         with:
           context: .
