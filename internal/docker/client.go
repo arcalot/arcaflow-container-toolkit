@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
 )
@@ -128,7 +129,7 @@ func (ce CEClient) Tag(image_tag string, destination string) error {
 }
 
 func (ce CEClient) Push(destination string, username string, password string, registry_address string) error {
-	authConfig := types.AuthConfig{
+	authConfig := registry.AuthConfig{
 		Username:      username,
 		Password:      password,
 		ServerAddress: registry_address,
