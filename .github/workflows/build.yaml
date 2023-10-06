@@ -45,13 +45,13 @@ jobs:
         run: go install go.uber.org/mock/mockgen@latest
 
       - name: generate mocks ce_service
-        run: mockgen -source=mocks/ce_service/ce_service.go
+        run: mockgen -source=internal/ce_service/ce_service.go -destination=mocks/ce_service/ce_service.go
       
       - name: generate mocks docker
-        run: mockgen -source=mocks/docker/dockerClient.go
+        run: mockgen -source=internal/docker/dockerClient.go -destination=mocks/docker/dockerClient.go
       
       - name: generate mocks mock_ce_client
-        run: mockgen -source=mocks/mock_ce_client/mock_ce_client.go
+        run: mockgen -source=internal/mock_ce_client/mock_ce_client.go -destination=mocks/mock_ce_client/mock_ce_client.go
 
       - name: run tests
         run: |
