@@ -42,7 +42,7 @@ jobs:
           install-only: true
 
       - name: Setup go mockgen
-        run: go install go.uber.org/mock/mockgen@latest
+        run: go install go.uber.org/mock/mockgen@0.3.0
 
       - name: generate mocks
         run: go generate ./...
