@@ -7,7 +7,7 @@ package mocks
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 	docker "go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 )
 
