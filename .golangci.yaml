@@ -88,6 +88,7 @@ linters-settings:
       - github.com/spf13/viper
       - github.com/spf13/cobra
       - github.com/creasty/defaults
+      - go.uber.org/mock/gomock
       - github.com/golang/mock/gomock
   govet:
     enable-all: true

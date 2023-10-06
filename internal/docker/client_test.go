@@ -12,9 +12,9 @@ import (
 	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 
 	"github.com/docker/docker/api/types"
-	"github.com/golang/mock/gomock"
 	mock_docker "go.arcalot.io/arcaflow-container-toolkit/mocks/docker"
 	"go.arcalot.io/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestClient_BuildImage(t *testing.T) {

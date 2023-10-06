@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/images"
 	mocks "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
 	"go.arcalot.io/assert"
 	"go.arcalot.io/log"
+	"go.uber.org/mock/gomock"
 )
 
 func TestBuildImage(t *testing.T) {

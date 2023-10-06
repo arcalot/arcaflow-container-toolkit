@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	act "go.arcalot.io/arcaflow-container-toolkit/internal/act"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
 	mock_ces "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
 	"go.arcalot.io/assert"
 	arcalog "go.arcalot.io/log"
+	"go.uber.org/mock/gomock"
 )
 
 func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {

@@ -10,7 +10,7 @@ import (
 	reflect "reflect"
 
 	types "github.com/docker/docker/api/types"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockDockerClient is a mock of DockerClient interface.
