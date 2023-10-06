@@ -51,7 +51,7 @@ jobs:
         run: mockgen -source=internal/docker/dockerClient.go -destination=mocks/docker/dockerClient.go
       
       - name: generate mocks mock_ce_client
-        run: mockgen -source=internal/mock_ce_client/mock_ce_client.go -destination=mocks/mock_ce_client/mock_ce_client.go
+        run: mockgen -source=internal/docker/client.go -destination=mocks/mock_ce_client/mock_ce_client.go
 
       - name: run tests
         run: |
