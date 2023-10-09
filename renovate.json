@@ -2,5 +2,11 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>arcalot/.github:renovate-config"
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": ["github.com/klauspost/compress"],
+      "allowedVersions": "<=1.16.7"
+    }
   ]
 }
