@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 type Registry struct {

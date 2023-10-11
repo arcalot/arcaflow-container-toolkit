@@ -8,7 +8,7 @@ require (
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	go.arcalot.io/assert v1.6.0
-	go.arcalot.io/log v1.2.0
+	go.arcalot.io/log/v2 v2.0.0
 	go.uber.org/mock v0.3.0
 )
 

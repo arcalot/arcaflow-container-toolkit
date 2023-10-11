@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 func ContainerfileRequirements(abspath string, logger log.Logger) (bool, error) {

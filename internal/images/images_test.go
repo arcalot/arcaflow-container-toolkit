@@ -9,7 +9,7 @@ import (
 	"go.arcalot.io/arcaflow-container-toolkit/internal/images"
 	mocks "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
 	"go.arcalot.io/assert"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 	"go.uber.org/mock/gomock"
 )
 

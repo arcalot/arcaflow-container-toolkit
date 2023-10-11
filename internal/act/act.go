@@ -13,7 +13,7 @@ import (
 	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/images"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, conf dto.ACT, abspath string,

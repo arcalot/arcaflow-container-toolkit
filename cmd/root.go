@@ -9,7 +9,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 var cfgFile string
