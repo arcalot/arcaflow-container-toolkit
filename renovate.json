@@ -6,7 +6,8 @@
   "packageRules": [
     {
       "matchPackageNames": ["github.com/klauspost/compress"],
-      "allowedVersions": "<=1.16.7"
+      "allowedVersions": "<=1.16.7",
+      "groupName": "klauspost/compress"
     }
   ]
 }
