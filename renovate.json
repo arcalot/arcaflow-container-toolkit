@@ -6,7 +6,8 @@
   "packageRules": [
     {
       "matchPackageNames": ["github.com/klauspost/compress"],
-      "groupName": "klauspost/compress"
+      "groupName": "klauspost/compress",
+      "schedule": ["at any time"]
     }
   ]
 }
