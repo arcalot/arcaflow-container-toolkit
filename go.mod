@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/creasty/defaults v1.7.0
-	github.com/docker/docker v24.0.6+incompatible
+	github.com/docker/docker v24.0.7+incompatible
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
 	go.arcalot.io/assert v1.6.0
