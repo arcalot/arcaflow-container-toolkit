@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream8@sha256:ce6ec049788dd34c9fd99cf6c319a1cc69579977b8433d00cc982df6b75841f6
+FROM quay.io/centos/centos:stream8@sha256:5917fa6bdbced823c488264ba03f1cfab852c15b5e47714fc8c9a074adc7cfdd
 
 RUN dnf -y module install python39 && dnf -y install python39 python39-pip
 RUN dnf -y install fio-3.19-3.el8
