@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.21@sha256:5f5d61dcb58900bc57b230431b6367c900f9982b583adcabf9fa93fd0aa5544a AS builder
+FROM golang:1.21@sha256:76aadd914a29a2ee7a6b0f3389bb2fdb87727291d688e1d972abe6c0fa6f2ee0 AS builder
 COPY . /build
 WORKDIR /build
 RUN CGO_ENABLED=0 go build ./act.go
