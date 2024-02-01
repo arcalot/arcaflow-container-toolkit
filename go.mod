@@ -1,13 +1,13 @@
 module go.arcalot.io/arcaflow-container-toolkit
 
-go 1.18
+go 1.21
 
 require (
 	github.com/creasty/defaults v1.7.0
 	github.com/docker/docker v24.0.7+incompatible
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/viper v1.16.0
-	go.arcalot.io/assert v1.6.0
+	go.arcalot.io/assert v1.7.0
 	go.arcalot.io/log v1.2.0
 	go.uber.org/mock v0.3.0
 )
