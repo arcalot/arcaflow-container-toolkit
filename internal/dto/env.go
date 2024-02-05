@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 // LookupEnvVar returns the value of an enviornment variable.

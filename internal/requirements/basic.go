@@ -1,6 +1,6 @@
 package requirements
 
-import "go.arcalot.io/log"
+import "go.arcalot.io/log/v2"
 
 func BasicRequirements(filenames []string, logger log.Logger) (bool, error) {
 	meets_reqs := true

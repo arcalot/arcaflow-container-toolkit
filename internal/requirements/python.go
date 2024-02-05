@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/util"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 type ExternalProgramOnFile func(executable_filepath string, stdout *bytes.Buffer, logger log.Logger) error

@@ -5,7 +5,7 @@ import (
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/ce_service"
 	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 func BuildImage(build_img bool, all_checks bool, cec ce_service.ContainerEngineService, abspath string, image_name string,

@@ -1,14 +1,13 @@
 package dto
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/viper"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 type ErrorPushArg struct {
@@ -19,7 +18,7 @@ type ErrorPushArg struct {
 }
 
 func (e ErrorPushArg) Error() string {
-	return fmt.Sprintf("Push argument %q detected for %q, but error found. Not attempting to build or push.", e.arg, e.target)
+	return fmt.Sprintf("push argument %q detected for %q, but error found, not attempting to build or push", e.arg, e.target)
 }
 
 type Registry struct {
@@ -85,19 +84,19 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		}
 		username, err := LookupEnvVar(registries[i].Url, username_envvar, logger)
 		if err != nil {
-			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "username"}, err))
+			logger.Errorf("%v, due to %v", ErrorPushArg{registries[i].Url, "username"}, err)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
 		password, err := LookupEnvVar(registries[i].Url, password_envvar, logger)
 		if err != nil {
-			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "password"}, err))
+			logger.Errorf("%v, due to %v", ErrorPushArg{registries[i].Url, "password"}, err)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
 		namespace, err := LookupEnvVar(registries[i].Url, namespace_envvar, logger)
 		if err != nil {
-			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "namespace"}, err))
+			logger.Errorf("%v, due to %v", ErrorPushArg{registries[i].Url, "namespace"}, err)
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}

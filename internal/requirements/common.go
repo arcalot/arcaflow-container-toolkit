@@ -3,7 +3,7 @@ package requirements
 import (
 	"bytes"
 	"fmt"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 	"path/filepath"
 	"regexp"
 )

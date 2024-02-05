@@ -9,7 +9,7 @@ import (
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
 	"go.arcalot.io/assert"
-	arcalog "go.arcalot.io/log"
+	arcalog "go.arcalot.io/log/v2"
 )
 
 func emptyPythonCodeStyle(abspath string, stdout *bytes.Buffer, logger arcalog.Logger) error {

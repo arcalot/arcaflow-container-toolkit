@@ -6,7 +6,7 @@ import (
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/requirements"
 	"go.arcalot.io/assert"
-	"go.arcalot.io/log"
+	"go.arcalot.io/log/v2"
 )
 
 func TestBasicRequirements(t *testing.T) {
