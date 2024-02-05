@@ -7,8 +7,8 @@ package mock_ce_service
 import (
 	reflect "reflect"
 
-	gomock "go.uber.org/mock/gomock"
 	docker "go.arcalot.io/arcaflow-container-toolkit/internal/docker"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockContainerEngineService is a mock of ContainerEngineService interface.
