@@ -7,7 +7,7 @@ import (
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
 	"go.arcalot.io/assert"
-	arcalog "go.arcalot.io/log"
+	arcalog "go.arcalot.io/log/v2"
 )
 
 func TestFilterByIndex(t *testing.T) {

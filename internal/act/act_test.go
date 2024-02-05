@@ -8,7 +8,7 @@ import (
 	"go.arcalot.io/arcaflow-container-toolkit/internal/dto"
 	mock_ces "go.arcalot.io/arcaflow-container-toolkit/mocks/ce_service"
 	"go.arcalot.io/assert"
-	arcalog "go.arcalot.io/log"
+	arcalog "go.arcalot.io/log/v2"
 	"go.uber.org/mock/gomock"
 )
 
