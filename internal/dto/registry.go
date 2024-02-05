@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -9,6 +10,17 @@ import (
 	"github.com/spf13/viper"
 	"go.arcalot.io/log"
 )
+
+type ErrorPushArg struct {
+	// location that will receive payload
+	target string
+	// argument required to upload to target location
+	arg string
+}
+
+func (e ErrorPushArg) Error() string {
+	return fmt.Sprintf("Push argument %q detected for %q, but error found. Not attempting to build or push.", e.arg, e.target)
+}
 
 type Registry struct {
 	Url                          string
@@ -73,22 +85,19 @@ func (registries Registries) Parse(logger log.Logger) (Registries, error) {
 		}
 		username, err := LookupEnvVar(registries[i].Url, username_envvar, logger)
 		if err != nil {
-			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
-				" to %s from error: (%w)", registries[i].Url, err)
+			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "username"}, err))
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
 		password, err := LookupEnvVar(registries[i].Url, password_envvar, logger)
 		if err != nil {
-			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
-				" to %s from error: (%w)", registries[i].Url, err)
+			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "password"}, err))
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
 		namespace, err := LookupEnvVar(registries[i].Url, namespace_envvar, logger)
 		if err != nil {
-			logger.Errorf("Push argument detected but error found. Not attempting to build or push"+
-				" to %s from error: (%w)", registries[i].Url, err)
+			logger.Errorf("%s", errors.Join(ErrorPushArg{registries[i].Url, "namespace"}, err))
 			misconfigured_registries[strconv.FormatInt(int64(i), 10)] = PlaceHolder
 			continue
 		}
