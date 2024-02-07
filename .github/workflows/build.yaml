@@ -8,6 +8,7 @@ on:
   pull_request:
 env:
   go_version: 1.21.6
+  goreleaser_args: "build --snapshot"
 jobs:
   golangci-lint:
     name: golangci-lint
@@ -20,7 +21,7 @@ jobs:
         with:
           go-version: ${{ env.go_version }}
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@3a919529898de77ec3da873e3063ca4b10e7f5cc # v3
+        uses: golangci/golangci-lint-action@v3
         with:
           version: v1.55.2
 
@@ -108,23 +109,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and release
-        uses: goreleaser/goreleaser-action@v5
-        if: startsWith(github.event.ref, 'refs/tags/')
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: release if tagged
+        run: |
+          echo "goreleaser_args='release --clean'" >> $GITHUB_ENV
+        if: startsWith(github.ref, 'refs/tags')
 
-      - name: Build
+#      - name: Build and release
+#        uses: goreleaser/goreleaser-action@v5
+#        if: startsWith(github.event.ref, 'refs/tags/')
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: release --clean
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Build
+#        uses: goreleaser/goreleaser-action@v5
+#        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: build --snapshot
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and/or release
         uses: goreleaser/goreleaser-action@v5
-        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
         with:
           distribution: goreleaser
           version: latest
-          args: build --snapshot
+          args: ${{ env.goreleaser_args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
