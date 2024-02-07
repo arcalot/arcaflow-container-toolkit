@@ -8,7 +8,6 @@ on:
   pull_request:
 env:
   go_version: 1.21.6
-  goreleaser_args: "build --snapshot"
 jobs:
   golangci-lint:
     name: golangci-lint
@@ -109,41 +108,25 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: release if tagged
-        run: |
-          echo "goreleaser_args='release --clean'" >> $GITHUB_ENV
-        if: startsWith(github.ref, 'refs/tags')
-
-#      - name: Build and release
-#        uses: goreleaser/goreleaser-action@v5
-#        if: startsWith(github.event.ref, 'refs/tags/')
-#        with:
-#          distribution: goreleaser
-#          version: latest
-#          args: release --clean
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Build
-#        uses: goreleaser/goreleaser-action@v5
-#        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
-#        with:
-#          distribution: goreleaser
-#          version: latest
-#          args: build --snapshot
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build or release
+      - name: Build and release
         uses: goreleaser/goreleaser-action@v5
-        if:
+        if: startsWith(github.event.ref, 'refs/tags/')
         with:
           distribution: goreleaser
           version: latest
-          args: ${{ env.ARGS }}
+          args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          ARGS: $${{ startsWith(github.event.ref, 'refs/tags/') && 'release --clean' || 'build --snapshot' }}
+
+      - name: Build
+        uses: goreleaser/goreleaser-action@v5
+        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
+        with:
+          distribution: goreleaser
+          version: latest
+          args: build --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
