@@ -108,29 +108,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-#      - name: Build and release
-#        uses: goreleaser/goreleaser-action@v5
-#        if: startsWith(github.event.ref, 'refs/tags/')
-#        with:
-#          distribution: goreleaser
-#          version: latest
-#          args: release --clean
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Build
-#        uses: goreleaser/goreleaser-action@v5
-#        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
-#        with:
-#          distribution: goreleaser
-#          version: latest
-#          args: build --snapshot
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build or release
+      - name: Release if tagged, else Build
         uses: goreleaser/goreleaser-action@v5
-        if:
         with:
           distribution: goreleaser
           version: latest
