@@ -108,25 +108,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and release
-        uses: goreleaser/goreleaser-action@v5
-        if: startsWith(github.event.ref, 'refs/tags/')
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --clean
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Build and release
+#        uses: goreleaser/goreleaser-action@v5
+#        if: startsWith(github.event.ref, 'refs/tags/')
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: release --clean
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#
+#      - name: Build
+#        uses: goreleaser/goreleaser-action@v5
+#        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
+#        with:
+#          distribution: goreleaser
+#          version: latest
+#          args: build --snapshot
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build
+      - name: Build or release
         uses: goreleaser/goreleaser-action@v5
-        if: ${{ !startsWith(github.event.ref, 'refs/tags/') }}
+        if:
         with:
           distribution: goreleaser
           version: latest
-          args: build --snapshot
+          args: ${{ env.GR_CMD }} ${{ env.GR_ARGS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GR_ARGS: $${{ startsWith(github.event.ref, 'refs/tags/') && '--clean' || '--snapshot' }}
+          GR_CMD: $${{ startsWith(github.event.ref, 'refs/tags/') && 'release' || 'build' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
