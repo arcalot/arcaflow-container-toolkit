@@ -137,8 +137,8 @@ jobs:
           args: ${{ env.GR_CMD }} ${{ env.GR_ARGS }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GR_ARGS: $${{ startsWith(github.event.ref, 'refs/tags/') && '--clean' || '--snapshot' }}
-          GR_CMD: $${{ startsWith(github.event.ref, 'refs/tags/') && 'release' || 'build' }}
+          GR_ARGS: ${{ startsWith(github.event.ref, 'refs/tags/') && '--clean' || '--snapshot' }}
+          GR_CMD: ${{ startsWith(github.event.ref, 'refs/tags/') && 'release' || 'build' }}
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
