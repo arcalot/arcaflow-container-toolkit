@@ -1,11 +1,11 @@
 # Build stage
-FROM golang:1.21@sha256:b7bac393658f891b69189cfd98111525f951ac0fec8bab97a1990fe43c85d342 AS builder
+FROM golang:1.22@sha256:cefea7fa6852b85f0042ce9d4b883c7e0b03b2bcb25972372d59e4f7c4367c04 AS builder
 COPY . /build
 WORKDIR /build
 RUN CGO_ENABLED=0 go build ./act.go
 
 # Main stage
-FROM python:3.11.5-slim-bullseye@sha256:9f35f3a6420693c209c11bba63dcf103d88e47ebe0b205336b5168c122967edf
+FROM python:3.12.2-slim-bullseye@sha256:6229a3e2fd625bb99efb87e38e7ca4aff6351636ce41b3f229f672b18be8134c
 RUN python -m ensurepip
 RUN python -m pip install --user --upgrade flake8
 
