@@ -7,7 +7,7 @@ require (
 	github.com/docker/docker v25.0.3+incompatible
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/viper v1.18.2
-	go.arcalot.io/assert v1.7.0
+	go.arcalot.io/assert v1.8.0
 	go.arcalot.io/log/v2 v2.1.0
 	go.uber.org/mock v0.4.0
 )
@@ -36,7 +36,7 @@ require (
 	github.com/moby/term v0.5.0 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/image-spec v1.1.0-rc6 // indirect
+	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.1.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
