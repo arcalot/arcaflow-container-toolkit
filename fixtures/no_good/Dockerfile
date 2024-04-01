@@ -1,4 +1,4 @@
-FROM quay.io/centos/centos:stream8@sha256:35fbcb91cfbaa45eea2497abacbaf67d7df35efa8ff5ccef36e077cf5ac970f7
+FROM quay.io/centos/centos:stream8@sha256:02cbd1a3618827fa94d43fd35c116ce619b98cc79a1788db4913cfb74c3cc3b4
 RUN dnf -y install dnf-plugins-core &&\
     dnf -y config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo &&\
     dnf -y install golang docker-ce-cli
