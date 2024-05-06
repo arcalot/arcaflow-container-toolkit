@@ -37,6 +37,7 @@ on:
 env:
   QUAY_TAG_ROOT: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}
   QUAY_IMG_EXP: 0
+  BUILD_PLATFORMS: linux/amd64, linux/arm64
 
 jobs:
   act-build:
@@ -98,7 +99,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           context: .
-          platforms: linux/amd64, linux/arm64
+          platforms: ${{ env.BUILD_PLATFORMS }}
           tags: ${{ env.IMAGE_TAGS }}
           containerfiles: |
             ./Dockerfile
