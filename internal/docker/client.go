@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/archive"
@@ -136,7 +137,7 @@ func (ce CEClient) Push(destination string, username string, password string, re
 	}
 	authConfigBytes, _ := json.Marshal(authConfig)
 	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfigBytes)
-	opts := types.ImagePushOptions{RegistryAuth: authConfigEncoded}
+	opts := image.PushOptions{RegistryAuth: authConfigEncoded}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 	rdr, err := ce.Client.ImagePush(ctx, destination, opts)
