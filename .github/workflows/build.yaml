@@ -2,13 +2,16 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - "**"
+      - "main"
     tags:
-      - "**"
+      - "v*"
   pull_request:
-env:
-  go_version: 1.21.6
 jobs:
+  # lint_and_test:
+    # name: lint and test
+    # uses: arcalot/arcaflow-reusable-workflows/.github/workflows/go_lint_and_test.yaml@main
+    # with:
+      # go_version: ${{ vars.ARCALOT_GO_VERSION }}
   golangci-lint:
     name: golangci-lint
     runs-on: ubuntu-latest
@@ -18,7 +21,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ${{ vars.ARCALOT_GO_VERSION }}
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
@@ -33,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ${{ vars.ARCALOT_GO_VERSION }}
 
       - name: Set up gotestfmt
         uses: gotesttools/gotestfmt-action@v2
@@ -96,7 +99,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.go_version }}
+          go-version: ${{ vars.ARCALOT_GO_VERSION }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
