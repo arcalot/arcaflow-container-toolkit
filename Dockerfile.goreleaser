@@ -1,4 +1,4 @@
-FROM python:3.12.4-slim-bullseye
+FROM python:3.9-slim-bullseye
 
 RUN python -m pip install --user --upgrade flake8
     
