@@ -4,13 +4,15 @@ go 1.21
 
 require (
 	github.com/creasty/defaults v1.7.0
-	github.com/docker/docker v26.1.4+incompatible
-	github.com/spf13/cobra v1.8.0
+	github.com/docker/docker v27.0.1+incompatible
+	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	go.arcalot.io/assert v1.8.0
 	go.arcalot.io/log/v2 v2.1.0
 	go.uber.org/mock v0.4.0
 )
+
+require github.com/hashicorp/hcl v1.0.0 // indirect
 
 require (
 	github.com/Microsoft/go-winio v0.6.2 // indirect
@@ -24,7 +26,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.17.9 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
@@ -52,7 +53,7 @@ require (
 	go.opentelemetry.io/otel/metric v1.27.0 // indirect
 	go.opentelemetry.io/otel/trace v1.27.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8 // indirect
+	golang.org/x/exp v0.0.0-20240613232115-7f521ea00fb8 // indirect
 	golang.org/x/net v0.26.0 // indirect
 	golang.org/x/sys v0.21.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
