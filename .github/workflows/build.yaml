@@ -39,7 +39,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up limgo
-        uses: GoTestTools/limgo-action@v1.0.1
+        uses: GoTestTools/limgo-action@v1.0.2
         with:
           version: "v1.0.0"
           install-only: true
