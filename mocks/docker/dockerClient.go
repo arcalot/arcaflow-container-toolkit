@@ -10,6 +10,7 @@ import (
 	reflect "reflect"
 
 	types "github.com/docker/docker/api/types"
+	image "github.com/docker/docker/api/types/image"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -52,7 +53,7 @@ func (mr *MockDockerClientMockRecorder) ImageBuild(arg0, arg1, arg2 interface{})
 }
 
 // ImagePush mocks base method.
-func (m *MockDockerClient) ImagePush(arg0 context.Context, arg1 string, arg2 types.ImagePushOptions) (io.ReadCloser, error) {
+func (m *MockDockerClient) ImagePush(arg0 context.Context, arg1 string, arg2 image.PushOptions) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ImagePush", arg0, arg1, arg2)
 	ret0, _ := ret[0].(io.ReadCloser)
