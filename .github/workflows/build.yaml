@@ -17,6 +17,7 @@ jobs:
     name: release
     permissions:
       contents: write
+      packages: write
     needs:
       - lint_and_test
     uses: arcalot/arcaflow-reusable-workflows/.github/workflows/go_release.yaml@update-go-lint-and-test  # FIXME:  SHOULD BE @main
