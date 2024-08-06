@@ -25,7 +25,11 @@ on:
         type: string
       multi_arch:
         required: false
-        type: boolean   
+        type: boolean
+      build_platforms: 
+        required: false
+        type: string
+        default: linux/amd64, linux/arm64
     secrets:
       QUAY_NAMESPACE:
         required: false
@@ -37,7 +41,7 @@ on:
 env:
   QUAY_TAG_ROOT: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}
   QUAY_IMG_EXP: 0
-  BUILD_PLATFORMS: linux/amd64, linux/arm64
+  
 
 jobs:
   act-build:
@@ -98,7 +102,7 @@ jobs:
         uses: redhat-actions/buildah-build@v2
         with:
           context: .
-          platforms: ${{ env.BUILD_PLATFORMS }}
+          platforms: ${{ inputs.build_platforms }}
           tags: ${{ env.IMAGE_TAGS }}
           containerfiles: |
             ./Dockerfile
