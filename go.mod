@@ -1,6 +1,6 @@
 module go.arcalot.io/arcaflow-container-toolkit
 
-go 1.22.6
+go 1.22.0
 
 require (
 	github.com/creasty/defaults v1.8.0
@@ -20,7 +20,7 @@ require (
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
