@@ -41,33 +41,38 @@ on:
 env:
   QUAY_TAG_ROOT: quay.io/${{ secrets.QUAY_NAMESPACE }}/${{ inputs.image_name }}
   QUAY_IMG_EXP: 0
-  
 
 jobs:
   act-build:
     name: Build ${{ github.ref_name }} from ${{ github.event_name }}
     runs-on: ubuntu-latest
     steps:
-      - name: Set image tags for release
-        if: github.event_name == 'release'
+      - name: Set image tags
         run: |
-          echo "IMAGE_TAGS=${{ env.QUAY_TAG_ROOT }}:${GITHUB_REF#refs/*/} ${{ env.QUAY_TAG_ROOT }}:latest" >> $GITHUB_ENV
-      
-      - name: Set image tags for main
-        if: github.ref == 'refs/heads/main' && github.event_name != 'release'
-        run: |
-          echo "IMAGE_TAGS=${{ env.QUAY_TAG_ROOT }}:main_latest" >> $GITHUB_ENV
+          if [[ ${{ github.event_name }} == 'release' ]]; then
+            # Set image tags for release builds
+            IMAGE_TAGS="${{ env.QUAY_TAG_ROOT }}:${GITHUB_REF#refs/*/} ${{ env.QUAY_TAG_ROOT }}:latest"
+          elif [[ ${{ github.ref }} == 'refs/heads/main' ]]; then
+            # Set image tags for main branch builds
+            IMAGE_TAGS="${{ env.QUAY_TAG_ROOT }}:main_latest"
+          else
+            if [[ ${{ github.event_name }} == 'pull_request' ]]; then
+              # Set image tags for pull request builds
+              bname=${{ github.head_ref }}
+            else
+              # Set image tags for any other builds (such as tags)
+              bname=${GITHUB_REF##*/}
+            fi
+            commit_hash=${{ github.sha }}
+            IMAGE_TAGS="${{ env.QUAY_TAG_ROOT }}:${bname}_${commit_hash:0:7}"
+            # Builds other than main and releases get automatic expiration
+            echo "QUAY_IMG_EXP=90d" >> $GITHUB_ENV
+          fi
+          echo "IMAGE_TAGS=${IMAGE_TAGS}" | tee -a $GITHUB_ENV
 
-      - name: Set image tags and expiration for dev
-        if: github.ref != 'refs/heads/main' && github.event_name != 'release'
-        run: |
-          export commit_hash=${{ github.sha }}
-          echo "QUAY_IMG_EXP=90d" >> $GITHUB_ENV
-          echo "IMAGE_TAGS=${{ env.QUAY_TAG_ROOT }}:${GITHUB_REF##*/}_${commit_hash:0:7}" >> $GITHUB_ENV
-      
       - name: Checkout this project
         uses: actions/checkout@v4
-        
+
       - name: arcaflow-container-toolkit-action
         uses: arcalot/arcaflow-container-toolkit-action@v1.4.0
         with:
@@ -96,7 +101,7 @@ jobs:
           registry: quay.io
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_PASSWORD }}
-      
+
       - name: Build multi-arch image
         id: build-multi-arch
         uses: redhat-actions/buildah-build@v2
@@ -104,10 +109,9 @@ jobs:
           context: .
           platforms: ${{ inputs.build_platforms }}
           tags: ${{ env.IMAGE_TAGS }}
-          containerfiles: |
-            ./Dockerfile
+          containerfiles: ./Dockerfile
           labels: quay.expires-after=${{ env.QUAY_IMG_EXP }}
-      
+
       - name: Push image to quay.io
         uses: redhat-actions/push-to-registry@v2
         with:
