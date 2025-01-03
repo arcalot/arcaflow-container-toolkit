@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.22 AS builder
+FROM golang:1.23 AS builder
 COPY . /build
 WORKDIR /build
 RUN CGO_ENABLED=0 go build ./act.go
