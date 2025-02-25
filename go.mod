@@ -2,7 +2,7 @@ module go.arcalot.io/arcaflow-container-toolkit
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.23.6
 
 require (
 	github.com/creasty/defaults v1.8.0
