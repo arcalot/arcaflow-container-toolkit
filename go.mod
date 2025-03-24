@@ -6,7 +6,7 @@ toolchain go1.23.6
 
 require (
 	github.com/creasty/defaults v1.8.0
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.2+incompatible
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.0
 	go.arcalot.io/assert v1.8.0
