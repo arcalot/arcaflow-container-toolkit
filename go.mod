@@ -7,11 +7,12 @@ toolchain go1.23.6
 require (
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/docker v28.1.1+incompatible
+	github.com/moby/go-archive v0.1.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.20.1
 	go.arcalot.io/assert v1.8.0
 	go.arcalot.io/log/v2 v2.2.0
-	go.uber.org/mock v0.5.1
+	go.uber.org/mock v0.5.2
 )
 
 require (
@@ -29,7 +30,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/moby/docker-image-spec v1.3.1 // indirect
-	github.com/moby/go-archive v0.1.0 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/sys/atomicwriter v0.1.0 // indirect
 	github.com/moby/sys/sequential v0.6.0 // indirect
@@ -45,7 +45,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
-	github.com/spf13/cast v1.7.1 // indirect
+	github.com/spf13/cast v1.8.0 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
