@@ -1,8 +1,6 @@
 module go.arcalot.io/arcaflow-container-toolkit
 
-go 1.23.0
-
-toolchain go1.23.6
+go 1.24.3
 
 require (
 	github.com/creasty/defaults v1.8.0
@@ -47,7 +45,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
-	github.com/spf13/cast v1.9.1 // indirect
+	github.com/spf13/cast v1.9.2 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
