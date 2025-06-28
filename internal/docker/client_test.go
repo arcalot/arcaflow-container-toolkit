@@ -11,7 +11,7 @@ import (
 
 	"go.arcalot.io/arcaflow-container-toolkit/internal/docker"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/build"
 	mock_docker "go.arcalot.io/arcaflow-container-toolkit/mocks/docker"
 	"go.arcalot.io/assert"
 	"go.uber.org/mock/gomock"
@@ -24,7 +24,7 @@ func TestClient_BuildImage(t *testing.T) {
 	dockerClientMock.EXPECT().
 		ImageBuild(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1).
-		Return(types.ImageBuildResponse{}, fmt.Errorf("I totally crashed"))
+		Return(build.ImageBuildResponse{}, fmt.Errorf("I totally crashed"))
 
 	client := docker.CEClient{
 		Client: dockerClientMock,
