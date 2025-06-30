@@ -2,9 +2,9 @@ package docker
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/build"
 	"io"
 
+	"github.com/docker/docker/api/types/build"
 	"github.com/docker/docker/api/types/image"
 )
 

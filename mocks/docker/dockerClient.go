@@ -6,10 +6,10 @@ package mocks
 
 import (
 	context "context"
-	"github.com/docker/docker/api/types/build"
 	io "io"
 	reflect "reflect"
 
+	"github.com/docker/docker/api/types/build"
 	image "github.com/docker/docker/api/types/image"
 	gomock "go.uber.org/mock/gomock"
 )
