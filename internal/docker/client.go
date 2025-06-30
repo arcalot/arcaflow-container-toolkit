@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/build"
 	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/client"
@@ -57,7 +57,7 @@ func (ce CEClient) Build(filepath string, name string, tags []string, archetype 
 	if err != nil {
 		return fmt.Errorf("error archiving %s (%w)", filepath, err)
 	}
-	opts := types.ImageBuildOptions{
+	opts := build.ImageBuildOptions{
 		Dockerfile: "Dockerfile",
 		Tags:       []string{image_tag},
 		Labels:     quay_img_exp_value,
