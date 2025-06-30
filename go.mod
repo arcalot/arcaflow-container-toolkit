@@ -2,8 +2,6 @@ module go.arcalot.io/arcaflow-container-toolkit
 
 go 1.24.3
 
-toolchain go1.24.4
-
 require (
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/docker v28.3.0+incompatible
