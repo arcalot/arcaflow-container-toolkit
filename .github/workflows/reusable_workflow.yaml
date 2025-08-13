@@ -71,7 +71,7 @@ jobs:
           echo "IMAGE_TAGS=${IMAGE_TAGS}" | tee -a $GITHUB_ENV
 
       - name: Checkout this project
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: arcaflow-container-toolkit-action
         uses: arcalot/arcaflow-container-toolkit-action@v1.4.0
