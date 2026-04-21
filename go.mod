@@ -1,6 +1,6 @@
 module go.arcalot.io/arcaflow-container-toolkit
 
-go 1.24.3
+go 1.25.0
 
 require (
 	github.com/creasty/defaults v1.8.0
@@ -59,5 +59,4 @@ require (
 	golang.org/x/text v0.27.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-
 )

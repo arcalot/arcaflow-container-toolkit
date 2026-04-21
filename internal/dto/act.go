@@ -17,6 +17,7 @@ type ACT struct {
 	Build_Timeout    uint32 `default:"600"`
 	Archetype        string
 	Req_check_only   bool
+	Label_Validation string `default:"strict"`
 	Registries       []Registry
 }
 
@@ -38,6 +39,7 @@ func Unmarshal(push bool, logger log.Logger) (ACT, error) {
 		Build_Timeout:    viper.GetUint32("build_timeout"),
 		Archetype:        viper.GetString("archetype"),
 		Req_check_only:   viper.GetBool("req_check_only"),
+		Label_Validation: viper.GetString("label_validation"),
 		Registries:       registries}
 	if err := defaults.Set(&conf); err != nil {
 		return ACT{}, fmt.Errorf("error setting defaults (%w)", err)

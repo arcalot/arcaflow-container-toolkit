@@ -5,6 +5,7 @@ project_filepath: /github/workspace
 quay_exp: 'never'
 archetype: ''
 req_check_only: false
+label_validation: strict
 registries:
   - url: quay.io
     username_envvar: "QUAY_USERNAME"

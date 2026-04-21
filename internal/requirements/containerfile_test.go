@@ -11,16 +11,49 @@ import (
 
 func TestContainerRequirements(t *testing.T) {
 	testCases := map[string]struct {
-		path           string
-		expectedResult bool
+		path            string
+		labelValidation string
+		expectedResult  bool
 	}{
-		"good_dockerfile": {
+		"good_dockerfile_strict": {
 			"../../fixtures/perfect",
+			"strict",
 			true,
 		},
-		"bad_dockerfile": {
+		"bad_dockerfile_strict": {
 			"../../fixtures/no_good",
+			"strict",
 			false,
+		},
+		"good_dockerfile_lenient": {
+			"../../fixtures/perfect",
+			"lenient",
+			true,
+		},
+		"bad_dockerfile_lenient": {
+			"../../fixtures/no_good",
+			"lenient",
+			false,
+		},
+		"no_labels_lenient": {
+			"../../fixtures/no_labels",
+			"lenient",
+			true,
+		},
+		"no_labels_strict": {
+			"../../fixtures/no_labels",
+			"strict",
+			false,
+		},
+		"wrong_label_values_strict": {
+			"../../fixtures/wrong_label_values",
+			"strict",
+			false,
+		},
+		"wrong_label_values_lenient": {
+			"../../fixtures/wrong_label_values",
+			"lenient",
+			true,
 		},
 	}
 
@@ -29,7 +62,7 @@ func TestContainerRequirements(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			logger := log.NewLogger(log.LevelInfo, log.NewNOOPLogger())
-			act, err := requirements.ContainerfileRequirements(tc.path, logger)
+			act, err := requirements.ContainerfileRequirements(tc.path, tc.labelValidation, logger)
 			if err != nil {
 				log2.Fatal(err)
 			}
