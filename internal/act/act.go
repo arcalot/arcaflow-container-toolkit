@@ -25,7 +25,7 @@ func ACT(build_img bool, push_img bool, cec ce_service.ContainerEngineService, c
 		return false, err
 	}
 	meets_reqs[0] = basic_reqs
-	container_reqs, err := requirements.ContainerfileRequirements(abspath, logger)
+	container_reqs, err := requirements.ContainerfileRequirements(abspath, conf.Label_Validation, logger)
 	if err != nil {
 		return false, err
 	}
