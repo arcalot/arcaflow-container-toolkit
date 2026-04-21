@@ -135,7 +135,7 @@ func (ce CEClient) Push(destination string, username string, password string, re
 		Password:      password,
 		ServerAddress: registry_address,
 	}
-	authConfigBytes, _ := json.Marshal(authConfig)
+	authConfigBytes, _ := json.Marshal(authConfig) //nolint:gosec // G117: Password field is intentionally marshaled for Docker registry auth
 	authConfigEncoded := base64.URLEncoding.EncodeToString(authConfigBytes)
 	opts := image.PushOptions{RegistryAuth: authConfigEncoded}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)

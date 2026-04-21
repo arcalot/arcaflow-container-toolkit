@@ -33,7 +33,7 @@ func LanguageRequirements(abspath string, filenames []string, name string, versi
 	case "python":
 		return PythonRequirements(abspath, filenames, name, version, logger, pythonCodeStyleChecker)
 	default:
-		return false, fmt.Errorf("Programming Language %s not supported\n", lang)
+		return false, fmt.Errorf("programming language %s not supported", lang)
 	}
 }
 
