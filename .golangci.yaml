@@ -96,11 +96,6 @@ linters:
         # We don't care about variable shadowing.
         - shadow
         - fieldalignment
-    stylecheck:
-      checks:
-        - all
 formatters:
   enable:
     - gofmt
-issues:
-  exclude-use-default: false
