@@ -1,11 +1,11 @@
 # Build stage
-FROM golang:1.24 AS builder
+FROM golang:1.25 AS builder
 COPY . /build
 WORKDIR /build
 RUN CGO_ENABLED=0 go build ./act.go
 
 # Main stage
-FROM python:3.12-slim-bullseye
+FROM python:3.13-slim-bullseye
 RUN python -m ensurepip
 RUN python -m pip install --user --upgrade flake8
 
