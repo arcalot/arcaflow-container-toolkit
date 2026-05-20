@@ -63,6 +63,7 @@ jobs:
               # Set image tags for any other builds (such as tags)
               bname=${GITHUB_REF##*/}
             fi
+            bname="${bname//\//-}"
             commit_hash=${{ github.sha }}
             IMAGE_TAGS="${{ env.QUAY_TAG_ROOT }}:${bname}_${commit_hash:0:7}"
             # Builds other than main and releases get automatic expiration
